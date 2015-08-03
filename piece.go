@@ -50,6 +50,13 @@ const (
 	black
 )
 
+func (c color) other() color {
+	if c == white {
+		return black
+	}
+	return white
+}
+
 type pieceType int
 
 const (

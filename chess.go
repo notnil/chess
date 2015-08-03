@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrInvalidMove = errors.New("chess: invalid move")
+	ErrOutOfTurn   = errors.New("chess: out of turn")
 )
 
 type Game struct {
@@ -30,6 +31,9 @@ func NewGame(options ...func(*config)) *Game {
 }
 
 func (g *Game) Move(s1 *Square, s2 *Square, promo *Piece) error {
+	if g.board.piece(s1).color() != g.turn {
+		return ErrOutOfTurn
+	}
 	valid := squareSlice(g.board.validMoves(s1)).has(s2)
 	if !valid {
 		return ErrInvalidMove
@@ -46,6 +50,7 @@ func (g *Game) makeMove(s1 *Square, s2 *Square, promo *Piece) {
 	}
 	g.moves = append(g.moves, m)
 	g.board.move(m)
+	g.turn = g.turn.other()
 }
 
 type move struct {

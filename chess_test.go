@@ -4,6 +4,7 @@ import "testing"
 
 type testStruct struct {
 	Board Board
+	Turn  color
 	Moves []*move
 	Err   bool
 }
@@ -18,6 +19,7 @@ func TestMoves(t *testing.T) {
 			g := &Game{
 				moves: []*move{},
 				board: boardCopy,
+				turn:  tStruct.Turn,
 			}
 			p := g.board.piece(m.s1)
 			err := g.Move(m.s1, m.s2, nil)
@@ -61,11 +63,13 @@ var (
 		&move{s1: E4, s2: F5, promo: nil},
 	}
 	validKingE4Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{E4: WKing},
 		Moves: validKingE4Moves,
 		Err:   false,
 	}
 	invalidKingE4Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{E4: WKing},
 		Moves: allMovesExcluding(E4, validKingE4Moves),
 		Err:   true,
@@ -76,11 +80,13 @@ var (
 		&move{s1: A1, s2: B2, promo: nil},
 	}
 	validKingA1Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{A1: WKing},
 		Moves: validKingA1Moves,
 		Err:   false,
 	}
 	invalidKingA1Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{A1: WKing},
 		Moves: allMovesExcluding(A1, validKingA1Moves),
 		Err:   true,
@@ -113,11 +119,13 @@ var (
 		&move{s1: C5, s2: F8, promo: nil},
 	}
 	validQueenC5Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{C5: WQueen},
 		Moves: validQueenC5Moves,
 		Err:   false,
 	}
 	invalidQueenC5Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{C5: WQueen},
 		Moves: allMovesExcluding(C5, validQueenC5Moves),
 		Err:   true,
@@ -139,11 +147,13 @@ var (
 		&move{s1: C5, s2: C8, promo: nil},
 	}
 	validRookC5Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{C5: WRook},
 		Moves: validRookC5Moves,
 		Err:   false,
 	}
 	invalidRookC5Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{C5: WRook},
 		Moves: allMovesExcluding(C5, validRookC5Moves),
 		Err:   true,
@@ -160,11 +170,13 @@ var (
 		&move{s1: G2, s2: H3, promo: nil},
 	}
 	validBishopG2Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{G2: WBishop},
 		Moves: validBishopG2Moves,
 		Err:   false,
 	}
 	invalidBishopG2Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{G2: WBishop},
 		Moves: allMovesExcluding(G2, validBishopG2Moves),
 		Err:   true,
@@ -180,11 +192,13 @@ var (
 		&move{s1: D4, s2: F5, promo: nil},
 	}
 	validKnightD4Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{D4: WKnight},
 		Moves: validKnightD4Moves,
 		Err:   false,
 	}
 	invalidKnightD4Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{D4: WKnight},
 		Moves: allMovesExcluding(D4, validKnightD4Moves),
 		Err:   true,
@@ -194,11 +208,13 @@ var (
 		&move{s1: E2, s2: E4, promo: nil},
 	}
 	validWhitePawnE2Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{E2: WPawn},
 		Moves: validWhitePawnE2Moves,
 		Err:   false,
 	}
 	invalidWhitePawnE2Test = &testStruct{
+		Turn:  white,
 		Board: map[*Square]Piece{E2: WPawn},
 		Moves: allMovesExcluding(E2, validWhitePawnE2Moves),
 		Err:   true,
@@ -207,17 +223,20 @@ var (
 		&move{s1: A6, s2: A5, promo: nil},
 	}
 	validBlackPawnA6Test = &testStruct{
+		Turn:  black,
 		Board: map[*Square]Piece{A6: BPawn},
 		Moves: validBlackPawnA6Moves,
 		Err:   false,
 	}
 	invalidBlackPawnA6Test = &testStruct{
+		Turn:  black,
 		Board: map[*Square]Piece{A6: BPawn},
 		Moves: allMovesExcluding(A6, validBlackPawnA6Moves),
 		Err:   true,
 	}
 
 	blackPawnCaptureTest = &testStruct{
+		Turn:  black,
 		Board: map[*Square]Piece{G7: BPawn, H6: WRook},
 		Moves: []*move{
 			&move{s1: G7, s2: H6, promo: nil},
