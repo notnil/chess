@@ -135,13 +135,15 @@ func (s *Square) squaresTo(o *Square) []*Square {
 	rankStep := sign(int(o.rank) - int(s.rank))
 
 	squares := []*Square{}
-	for f := int(s.file); f < int(o.file); f += fileStep {
-		for r := int(s.rank); r < int(o.rank); r += rankStep {
-			sq := square(file(f), rank(r))
-			if sq != s && sq != o {
-				squares = append(squares, sq)
-			}
+	f := int(s.file)
+	r := int(s.rank)
+	for f != int(o.file) || r != int(o.rank) {
+		sq := square(file(f), rank(r))
+		if sq != s && sq != o {
+			squares = append(squares, sq)
 		}
+		f += fileStep
+		r += rankStep
 	}
 	return squares
 }

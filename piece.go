@@ -1,23 +1,29 @@
 package chess
 
-type Piece string
+type Piece struct {
+	uni string
+}
 
-const (
-	WKing   Piece = "♔"
-	WQueen  Piece = "♕"
-	WRook   Piece = "♖"
-	WBishop Piece = "♗"
-	WKnight Piece = "♘"
-	WPawn   Piece = "♙"
-	BKing   Piece = "♚"
-	BQueen  Piece = "♛"
-	BRook   Piece = "♜"
-	BBishop Piece = "♝"
-	BKnight Piece = "♞"
-	BPawn   Piece = "♟"
+var (
+	WKing   = &Piece{uni: "♔"}
+	WQueen  = &Piece{uni: "♕"}
+	WRook   = &Piece{uni: "♖"}
+	WBishop = &Piece{uni: "♗"}
+	WKnight = &Piece{uni: "♘"}
+	WPawn   = &Piece{uni: "♙"}
+	BKing   = &Piece{uni: "♚"}
+	BQueen  = &Piece{uni: "♛"}
+	BRook   = &Piece{uni: "♜"}
+	BBishop = &Piece{uni: "♝"}
+	BKnight = &Piece{uni: "♞"}
+	BPawn   = &Piece{uni: "♟"}
 )
 
-func (p Piece) color() color {
+func (p *Piece) String() string {
+	return p.uni
+}
+
+func (p *Piece) color() color {
 	switch p {
 	case WKing, WQueen, WRook, WBishop, WKnight, WPawn:
 		return white
@@ -25,7 +31,7 @@ func (p Piece) color() color {
 	return black
 }
 
-func (p Piece) pieceType() pieceType {
+func (p *Piece) pieceType() pieceType {
 	switch p {
 	case WKing, BKing:
 		return king
@@ -40,7 +46,7 @@ func (p Piece) pieceType() pieceType {
 	case WPawn, BPawn:
 		return pawn
 	}
-	panic("unreachable")
+	panic(p.uni)
 }
 
 type color int
@@ -67,3 +73,11 @@ const (
 	knight
 	pawn
 )
+
+func (p pieceType) isPromotable() bool {
+	switch p {
+	case queen, rook, bishop, knight:
+		return true
+	}
+	return false
+}

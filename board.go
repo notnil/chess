@@ -1,13 +1,21 @@
 package chess
 
-type Board map[*Square]Piece
+type Board map[*Square]*Piece
+
+func (b Board) copy() Board {
+	n := map[*Square]*Piece{}
+	for k, v := range b {
+		n[k] = v
+	}
+	return n
+}
 
 func (b Board) occupied(s *Square) bool {
 	_, occupied := b[s]
 	return occupied
 }
 
-func (b Board) piece(s *Square) Piece {
+func (b Board) piece(s *Square) *Piece {
 	p, _ := b[s]
 	return p
 }
@@ -15,6 +23,109 @@ func (b Board) piece(s *Square) Piece {
 func (b Board) move(m *move) {
 	b[m.s2] = b[m.s1]
 	delete(b, m.s1)
+	if m.promo != nil {
+		b[m.s2] = m.promo
+	}
+	if b.isCastling(m) {
+		var rookS1, rookS2 *Square
+		switch m.s2 {
+		case G1:
+			rookS1 = H1
+			rookS2 = F1
+		case G8:
+			rookS1 = H8
+			rookS2 = F8
+		case C1:
+			rookS1 = A1
+			rookS2 = D1
+		case C8:
+			rookS1 = A8
+			rookS2 = D8
+		}
+		b[rookS2] = b[rookS1]
+		delete(b, rookS1)
+	}
+}
+
+func (b Board) isCastling(m *move) bool {
+	turn := b.piece(m.s1).color()
+	backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+	if turn == black {
+		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
+	}
+	p := b.piece(m.s1)
+	kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
+	queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
+	isKing := p != nil && p.pieceType() == king
+	return isKing && (kingSide || queenSide)
+}
+
+func (b Board) squaresForColor(c color) []*Square {
+	squares := []*Square{}
+	for _, sq := range allSquares {
+		if b.occupied(sq) && b.piece(sq).color() == c {
+			squares = append(squares, sq)
+		}
+	}
+	return squares
+}
+
+func (b Board) hasValidMoves(c color) bool {
+	for _, sq := range b.squaresForColor(c) {
+		for _, s2 := range b.validMoves(sq) {
+			cp := b.copy()
+			m := &move{s1: sq, s2: s2, promo: nil} // TOOD might require a promotion
+			cp.move(m)
+			if !cp.inCheck(c) {
+				return true
+			}
+		}
+	}
+	return false
+}
+
+func (b Board) inCheck(c color) bool {
+	kingSq := b.kingSquare(c)
+	// should only happen in unit tests
+	if kingSq == nil {
+		return false
+	}
+	return b.isSquareAttacked(c, kingSq)
+}
+
+func (b Board) isSquareAttacked(c color, s *Square) bool {
+	for _, sq := range b.squaresForColor(c.other()) {
+		if squareSlice(b.validMoves(sq)).has(s) {
+			return true
+		}
+	}
+	return false
+}
+
+func (b Board) inCheckmate(c color) bool {
+	// should only happen in unit tests
+	if b.kingSquare(c) == nil {
+		return false
+	}
+	return b.inCheck(c) && !b.hasValidMoves(c)
+}
+
+func (b Board) inStalemate(c color) bool {
+	kingSq := b.kingSquare(c)
+	// should only happen in unit tests
+	if kingSq == nil {
+		return false
+	}
+	return !b.inCheck(c) && !b.hasValidMoves(c)
+}
+
+func (b Board) kingSquare(c color) *Square {
+	for _, sq := range b.squaresForColor(c) {
+		if b.piece(sq).pieceType() == king {
+			return sq
+		}
+	}
+	return nil
 }
 
 func (b Board) validMoves(s *Square) []*Square {
@@ -32,6 +143,15 @@ func (b Board) validMoves(s *Square) []*Square {
 		}
 	}
 	return validSquares
+}
+
+func (b Board) emptyBetween(s1 *Square, s2 *Square) bool {
+	for _, s := range s1.squaresTo(s2) {
+		if b.piece(s) != nil {
+			return false
+		}
+	}
+	return true
 }
 
 type squareFilter func(b Board, s1 *Square, s2 *Square) bool
