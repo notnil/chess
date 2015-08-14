@@ -63,6 +63,20 @@ func (c color) other() color {
 	return white
 }
 
+func (c color) rankStep() int {
+	if c == white {
+		return 1
+	}
+	return -1
+}
+
+func (c color) backRank() rank {
+	if c == white {
+		return rank1
+	}
+	return rank8
+}
+
 type pieceType int
 
 const (

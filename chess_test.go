@@ -164,6 +164,43 @@ func TestInvalidCastling(t *testing.T) {
 	}
 }
 
+func TestEnPassant(t *testing.T) {
+	// allow if pawn just moved two up
+	g1 := &Game{
+		moves: []*move{
+			&move{s1: A2, s2: A4, promo: nil},
+		},
+		board: map[*Square]*Piece{
+			A4: WPawn,
+			B3: WPawn,
+			A5: BPawn,
+			B4: BPawn,
+		},
+		turn:   black,
+		status: Ongoing,
+	}
+	if err := g1.Move(B4, A3, nil); err != nil {
+		t.Error(err)
+	}
+	// disallow if pawn didn't just move two up
+	g2 := &Game{
+		moves: []*move{
+			&move{s1: B2, s2: B3, promo: nil},
+		},
+		board: map[*Square]*Piece{
+			A4: WPawn,
+			B4: WPawn,
+			A5: BPawn,
+			B4: BPawn,
+		},
+		turn:   black,
+		status: Ongoing,
+	}
+	if err := g2.Move(B4, A3, nil); err == nil {
+		t.Error("shouldn't allow en passant w/ prior move being two up")
+	}
+}
+
 func allMovesExcluding(s1 *Square, moves []*move) []*move {
 	excluded := []*move{}
 	for _, s := range allSquares {

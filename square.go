@@ -130,6 +130,14 @@ func square(f file, r rank) *Square {
 	return nil
 }
 
+func (s *Square) fileDif(o *Square) int {
+	return abs(int(s.file) - int(o.file))
+}
+
+func (s *Square) rankDif(o *Square) int {
+	return abs(int(s.rank) - int(o.rank))
+}
+
 func (s *Square) squaresTo(o *Square) []*Square {
 	fileStep := sign(int(o.file) - int(s.file))
 	rankStep := sign(int(o.rank) - int(s.rank))

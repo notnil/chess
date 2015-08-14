@@ -11,6 +11,7 @@ var (
 	ErrGameAlreadyCompleted = errors.New("chess: attempted move after checkmate")
 	ErrInvalidPromotion     = errors.New("chess: attempted invalid pawn promotion")
 	ErrInvalidCastling      = errors.New("chess: attempted invalid castling")
+	ErrInvalidEnPassant     = errors.New("chess: attempted invalid en passant")
 )
 
 type Status int
@@ -77,12 +78,8 @@ func (g *Game) makeMove(s1 *Square, s2 *Square, promo *Piece) error {
 	m := &move{s1: s1, s2: s2, promo: promo}
 	valid := squareSlice(g.board.validMoves(s1)).has(s2)
 	if !valid {
-		if g.board.isCastling(m) {
-			if err := g.checkCastling(m); err != nil {
-				return err
-			}
-		} else {
-			return ErrInvalidMove
+		if err := g.checkSpecialMoves(m); err != nil {
+			return err
 		}
 	}
 	cp := g.board.copy()
@@ -98,6 +95,23 @@ func (g *Game) makeMove(s1 *Square, s2 *Square, promo *Piece) error {
 	g.turn = g.turn.other()
 	g.status = g.calcStatus()
 	return nil
+}
+
+func (g *Game) checkSpecialMoves(m *move) error {
+	if g.board.isCastling(m) {
+		if err := g.checkCastling(m); err != nil {
+			return err
+		} else {
+			return nil
+		}
+	} else if g.board.isEnPassant(m) {
+		if err := g.checkEnPassant(m); err != nil {
+			return err
+		} else {
+			return nil
+		}
+	}
+	return ErrInvalidMove
 }
 
 func (g *Game) checkPromotion(m *move) error {
@@ -116,10 +130,6 @@ func (g *Game) checkPromotion(m *move) error {
 }
 
 func (g *Game) checkCastling(m *move) error {
-	if !g.board.isCastling(m) {
-		return nil
-	}
-
 	isAttacked := func(squares ...*Square) bool {
 		for _, s := range squares {
 			if g.board.isSquareAttacked(g.turn, s) {
@@ -147,6 +157,26 @@ func (g *Game) checkCastling(m *move) error {
 	}
 	if queenSide && (kingMoved || queenRookMoved || queenSideOccupied || queenSideAttacked) {
 		return ErrInvalidCastling
+	}
+	return nil
+}
+
+func (g *Game) checkEnPassant(m *move) error {
+	len := len(g.moves)
+	// should only happen in tests
+	if len == 0 {
+		return nil
+	}
+	// make sure last move
+	lastMove := g.moves[len-1]
+	p := g.board.piece(m.s1)
+	c := p.color()
+	fifthRank := rank(int(c.backRank()) + (c.rankStep() * 4))
+	seventhRank := rank(int(c.backRank()) + (c.rankStep() * 6))
+	capPawnS1 := square(m.s2.file, seventhRank)
+	capPawnS2 := square(m.s2.file, fifthRank)
+	if lastMove.s1 != capPawnS1 || lastMove.s2 != capPawnS2 {
+		return ErrInvalidEnPassant
 	}
 	return nil
 }

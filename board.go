@@ -48,16 +48,38 @@ func (b Board) move(m *move) {
 }
 
 func (b Board) isCastling(m *move) bool {
+	p := b.piece(m.s1)
+	if p == nil {
+		return false
+	}
 	turn := b.piece(m.s1).color()
 	backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
 	if turn == black {
 		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
 	}
-	p := b.piece(m.s1)
 	kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
 	queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
 	isKing := p != nil && p.pieceType() == king
 	return isKing && (kingSide || queenSide)
+}
+
+func (b Board) isEnPassant(m *move) bool {
+	p := b.piece(m.s1)
+	if p == nil {
+		return false
+	}
+
+	c := p.color()
+	fifthRank := rank(int(c.backRank()) + (c.rankStep() * 4))
+	sixthRank := rank(int(fifthRank) + c.rankStep())
+	capPawnSq := square(m.s2.file, fifthRank)
+	capPawn := b.piece(capPawnSq)
+
+	isOnFifth := fifthRank == m.s1.rank
+	isPawn := p.pieceType() == pawn
+	isCapturing := m.s1.fileDif(m.s2) == 1 && m.s2.rank == sixthRank
+	isCapPawn := capPawn != nil && capPawn.pieceType() == pawn && capPawn.color() == c.other()
+	return isOnFifth && isPawn && isCapturing && isCapPawn
 }
 
 func (b Board) squaresForColor(c color) []*Square {
@@ -212,9 +234,7 @@ var (
 	}
 
 	kingFilter = func(b Board, s1 *Square, s2 *Square) bool {
-		fileDif := abs(int(s2.file) - int(s1.file))
-		rankDif := abs(int(s2.rank) - int(s1.rank))
-		return fileDif <= 1 && rankDif <= 1
+		return s1.fileDif(s2) <= 1 && s1.rankDif(s2) <= 1
 	}
 
 	queenFilter = func(b Board, s1 *Square, s2 *Square) bool {
@@ -226,26 +246,20 @@ var (
 	}
 
 	bishopFilter = func(b Board, s1 *Square, s2 *Square) bool {
-		fileDif := abs(int(s2.file) - int(s1.file))
-		rankDif := abs(int(s2.rank) - int(s1.rank))
-		return fileDif == rankDif
+		return s1.fileDif(s2) == s1.rankDif(s2)
 	}
 
 	knightFilter = func(b Board, s1 *Square, s2 *Square) bool {
-		fileDif := abs(int(s2.file) - int(s1.file))
-		rankDif := abs(int(s2.rank) - int(s1.rank))
+		fileDif := s1.fileDif(s2)
+		rankDif := s1.rankDif(s2)
 		return (fileDif == 1 && rankDif == 2) || (fileDif == 2 && rankDif == 1)
 	}
 
 	// TODO En passant
 	pawnFilter = func(b Board, s1 *Square, s2 *Square) bool {
 		p := b.piece(s1)
-		startRank := rank2
-		rankStep := 1
-		if p.color() == black {
-			startRank = rank7
-			rankStep = -1
-		}
+		rankStep := p.color().rankStep()
+		startRank := rank(int(p.color().backRank()) + rankStep)
 		sameFile := s1.file == s2.file
 		upOne := int(s2.rank) == int(s1.rank)+rankStep
 		upTwoFirstMove := s1.rank == startRank && int(s2.rank) == int(s1.rank)+(2*rankStep)
