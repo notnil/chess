@@ -1,9 +1,6 @@
 # chess
 
 ### TODO
-* [Notations](https://en.wikipedia.org/wiki/Chess_notation)
- * Algebraic chess notation
- * ICCF numeric notation
- * Coordinate notation
+* PGN Import / Export
 * Docs
-* Possible error w/ En_Passant and avoiding check / checkmate
+* Possible error w/ En_Passant and avoiding check / checkmate (board verification of valid moves vs. game validation)

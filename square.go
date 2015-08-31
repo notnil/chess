@@ -19,6 +19,19 @@ func (f file) String() string {
 	return s[i : i+1]
 }
 
+func files() []file {
+	return []file{fileA, fileB, fileC, fileD, fileE, fileF, fileG, fileH}
+}
+
+func fileFromString(s string) *file {
+	for _, f := range files() {
+		if f.String() == s {
+			return &f
+		}
+	}
+	return nil
+}
+
 type rank int
 
 const (
@@ -36,6 +49,19 @@ func (r rank) String() string {
 	s := "12345678"
 	i := int(r)
 	return s[i : i+1]
+}
+
+func ranks() []rank {
+	return []rank{rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8}
+}
+
+func rankFromString(s string) *rank {
+	for _, r := range ranks() {
+		if r.String() == s {
+			return &r
+		}
+	}
+	return nil
 }
 
 type Square struct {
@@ -125,6 +151,15 @@ func square(f file, r rank) *Square {
 	for _, s := range allSquares {
 		if s.file == f && s.rank == r {
 			return s
+		}
+	}
+	return nil
+}
+
+func squareFromString(s string) *Square {
+	for _, sq := range allSquares {
+		if sq.String() == s {
+			return sq
 		}
 	}
 	return nil

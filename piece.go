@@ -19,6 +19,22 @@ var (
 	BPawn   = &Piece{uni: "♟"}
 )
 
+var (
+	allPieces = []*Piece{
+		WKing, WQueen, WRook, WBishop, WKnight, WPawn,
+		BKing, BQueen, BRook, BBishop, BKnight, BPawn,
+	}
+)
+
+func piece(c color, p pieceType) *Piece {
+	for _, cp := range allPieces {
+		if cp.color() == c && cp.pieceType() == p {
+			return cp
+		}
+	}
+	return nil
+}
+
 func (p *Piece) String() string {
 	return p.uni
 }

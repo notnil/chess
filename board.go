@@ -2,6 +2,24 @@ package chess
 
 type Board map[*Square]*Piece
 
+func (b Board) String() string {
+	s := "\n A B C D E F G H\n"
+	for _, r := range []rank{rank8, rank7, rank6, rank5, rank4, rank3, rank2, rank1} {
+		s += r.String()
+		for _, f := range files() {
+			p := b.piece(square(f, r))
+			if p == nil {
+				s += "-"
+			} else {
+				s += p.String()
+			}
+			s += " "
+		}
+		s += "\n"
+	}
+	return s
+}
+
 func (b Board) copy() Board {
 	n := map[*Square]*Piece{}
 	for k, v := range b {
@@ -21,11 +39,6 @@ func (b Board) piece(s *Square) *Piece {
 }
 
 func (b Board) move(m *move) {
-	b[m.s2] = b[m.s1]
-	delete(b, m.s1)
-	if m.promo != nil {
-		b[m.s2] = m.promo
-	}
 	if b.isCastling(m) {
 		var rookS1, rookS2 *Square
 		switch m.s2 {
@@ -44,6 +57,11 @@ func (b Board) move(m *move) {
 		}
 		b[rookS2] = b[rookS1]
 		delete(b, rookS1)
+	}
+	b[m.s2] = b[m.s1]
+	delete(b, m.s1)
+	if m.promo != nil {
+		b[m.s2] = m.promo
 	}
 }
 
@@ -159,7 +177,6 @@ func (b Board) validMoves(s *Square) []*Square {
 	validSquares := []*Square{}
 	for _, sq := range allSquares {
 		valid := f(b, s, sq)
-		// log.Println(sq, "is", valid)
 		if valid {
 			validSquares = append(validSquares, sq)
 		}
@@ -255,7 +272,6 @@ var (
 		return (fileDif == 1 && rankDif == 2) || (fileDif == 2 && rankDif == 1)
 	}
 
-	// TODO En passant
 	pawnFilter = func(b Board, s1 *Square, s2 *Square) bool {
 		p := b.piece(s1)
 		rankStep := p.color().rankStep()

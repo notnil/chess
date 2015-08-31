@@ -9,14 +9,28 @@ type testStruct struct {
 	Err   bool
 }
 
-func TestSquaresTo(t *testing.T) {
-	squares := A1.squaresTo(H8)
-	if len(squares) != 6 {
-		t.Error(squares)
+// taken from http://en.lichess.org/YvHkKnvo
+func TestPartialGame(t *testing.T) {
+	moves := []*move{
+		{E2, E4, nil},
+		{D7, D5, nil},
+		{E4, D5, nil},
+		{D8, D5, nil},
+		{B1, C3, nil},
+		{D5, A5, nil},
+		{A2, A3, nil},
+		{B8, C6, nil},
+		{B2, B4, nil},
+		{C6, B4, nil},
+		{C3, B5, nil},
+		{A7, A6, nil},
+		{C2, C3, nil},
 	}
-	squares = C2.squaresTo(C6)
-	if len(squares) != 3 {
-		t.Error(squares)
+	g := NewGame()
+	for _, m := range moves {
+		if err := g.Move(m.s1, m.s2, m.promo); err != nil {
+			t.Fatal(err, m, "valid moves", g.board.validMoves(m.s1), g.board)
+		}
 	}
 }
 
@@ -58,7 +72,7 @@ func TestCheckmate(t *testing.T) {
 		t.Error(err)
 	}
 
-	expected := BlackCheckmated
+	expected := WhiteWon
 	if g.status != expected {
 		t.Errorf("expected %s got %s", expected, g.status)
 	}
@@ -78,7 +92,7 @@ func TestStalemate(t *testing.T) {
 	if err := g.Move(F5, G6, nil); err != nil {
 		t.Error(err)
 	}
-	expected := Stalemate
+	expected := Draw
 	if g.status != expected {
 		t.Errorf("expected %s got %s", expected, g.status)
 	}
@@ -164,6 +178,30 @@ func TestInvalidCastling(t *testing.T) {
 	}
 }
 
+func TestValidCastle(t *testing.T) {
+	g := NewGame()
+	moves := []*move{
+		{E2, E4, nil},
+		{E7, E5, nil},
+		{G1, F3, nil},
+		{B8, C6, nil},
+		{F1, B5, nil},
+		{A7, A6, nil},
+		{B5, A4, nil},
+		{G8, F6, nil},
+		{E1, G1, nil},
+	}
+	for _, m := range moves {
+		if err := g.Move(m.s1, m.s2, m.promo); err != nil {
+			t.Error(err)
+		}
+	}
+
+	p := g.board.piece(F1)
+	if p == nil || p != WRook {
+		t.Error("Rook should have moved.")
+	}
+}
 func TestEnPassant(t *testing.T) {
 	// allow if pawn just moved two up
 	g1 := &Game{

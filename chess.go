@@ -7,6 +7,7 @@ import (
 
 var (
 	ErrInvalidMove          = errors.New("chess: attempted invalid move")
+	ErrMoveIntoCheck        = errors.New("chess: attempted move into check")
 	ErrOutOfTurn            = errors.New("chess: attempted to move out of turn")
 	ErrGameAlreadyCompleted = errors.New("chess: attempted move after checkmate")
 	ErrInvalidPromotion     = errors.New("chess: attempted invalid pawn promotion")
@@ -18,11 +19,8 @@ type Status int
 
 const (
 	Ongoing Status = iota
-	Stalemate
-	BlackCheckmated
-	WhiteCheckmated
-	BlackResigned
-	WhiteResigned
+	WhiteWon
+	BlackWon
 	Draw
 )
 
@@ -51,15 +49,18 @@ func NewGame(options ...func(*config)) *Game {
 func (g *Game) Resign() {
 	switch g.turn {
 	case white:
-		g.status = WhiteResigned
+		g.status = BlackWon
 	case black:
-		g.status = BlackResigned
+		g.status = WhiteWon
 	}
 }
 
 func (g *Game) Move(s1 *Square, s2 *Square, promo *Piece) error {
 	if g.Finished() {
 		return ErrGameAlreadyCompleted
+	}
+	if g.board.piece(s1) == nil {
+		return ErrInvalidMove
 	}
 	if g.board.piece(s1).color() != g.turn {
 		return ErrOutOfTurn
@@ -74,6 +75,15 @@ func (g *Game) Finished() bool {
 	return g.status != Ongoing
 }
 
+func (g *Game) copy() *Game {
+	return &Game{
+		moves:  append([]*move(nil), g.moves...),
+		board:  g.board.copy(),
+		turn:   g.turn,
+		status: g.status,
+	}
+}
+
 func (g *Game) makeMove(s1 *Square, s2 *Square, promo *Piece) error {
 	m := &move{s1: s1, s2: s2, promo: promo}
 	valid := squareSlice(g.board.validMoves(s1)).has(s2)
@@ -85,7 +95,7 @@ func (g *Game) makeMove(s1 *Square, s2 *Square, promo *Piece) error {
 	cp := g.board.copy()
 	cp.move(m)
 	if cp.inCheck(g.turn) {
-		return ErrInvalidMove
+		return ErrMoveIntoCheck
 	}
 	if err := g.checkPromotion(m); err != nil {
 		return err
@@ -119,11 +129,13 @@ func (g *Game) checkPromotion(m *move) error {
 	if g.turn == white {
 		promoRank = rank8
 	}
-
-	pawnMoving := g.board.piece(m.s1).pieceType() == pawn
-	needsPromo := pawnMoving && promoRank == m.s2.rank
-	hasPromo := m.promo != nil && g.turn == m.promo.color() && m.promo.pieceType().isPromotable()
-	if needsPromo != hasPromo {
+	hasPromo := m.promo != nil
+	needsPromo := g.board.piece(m.s1).pieceType() == pawn && promoRank == m.s2.rank
+	isValid := hasPromo && g.turn == m.promo.color() && m.promo.pieceType().isPromotable()
+	if hasPromo && (!needsPromo || !isValid) {
+		return ErrInvalidPromotion
+	}
+	if !hasPromo && needsPromo {
 		return ErrInvalidPromotion
 	}
 	return nil
@@ -188,13 +200,13 @@ func (g *Game) calcStatus() Status {
 	if g.board.inCheckmate(g.turn) {
 		switch g.turn {
 		case white:
-			return WhiteCheckmated
+			return BlackWon
 		case black:
-			return BlackCheckmated
+			return WhiteWon
 		}
 	}
 	if g.board.inStalemate(g.turn) {
-		return Stalemate
+		return Draw
 	}
 	return g.status
 }
@@ -215,7 +227,10 @@ type move struct {
 }
 
 func (m *move) String() string {
-	return fmt.Sprintf("%s %s", m.s1, m.s2)
+	if m.promo == nil {
+		return fmt.Sprintf("%s %s", m.s1, m.s2)
+	}
+	return fmt.Sprintf("%s %s %s", m.s1, m.s2, m.promo)
 }
 
 func newBoard() Board {
