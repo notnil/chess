@@ -1,165 +1,73 @@
 package chess
 
-type file int
+type File int
 
 const (
-	fileA file = iota
-	fileB
-	fileC
-	fileD
-	fileE
-	fileF
-	fileG
-	fileH
+	A File = iota + 1
+	B
+	C
+	D
+	E
+	F
+	G
+	H
 )
 
-func (f file) String() string {
+func (f File) String() string {
 	s := "abcdefgh"
 	i := int(f)
-	return s[i : i+1]
+	return s[i-1 : i]
 }
 
-func files() []file {
-	return []file{fileA, fileB, fileC, fileD, fileE, fileF, fileG, fileH}
+func Files() [8]File {
+	return [8]File{A, B, C, D, E, F, G, H}
 }
 
-func fileFromString(s string) *file {
-	for _, f := range files() {
-		if f.String() == s {
-			return &f
-		}
-	}
-	return nil
-}
-
-type rank int
+type Rank int
 
 const (
-	rank1 rank = iota
-	rank2
-	rank3
-	rank4
-	rank5
-	rank6
-	rank7
-	rank8
+	R1 Rank = iota + 1
+	R2
+	R3
+	R4
+	R5
+	R6
+	R7
+	R8
 )
 
-func (r rank) String() string {
+func (r Rank) String() string {
 	s := "12345678"
 	i := int(r)
-	return s[i : i+1]
+	return s[i-1 : i]
 }
 
-func ranks() []rank {
-	return []rank{rank1, rank2, rank3, rank4, rank5, rank6, rank7, rank8}
-}
-
-func rankFromString(s string) *rank {
-	for _, r := range ranks() {
-		if r.String() == s {
-			return &r
-		}
-	}
-	return nil
+func Ranks() [8]Rank {
+	return [8]Rank{R1, R2, R3, R4, R5, R6, R7, R8}
 }
 
 type Square struct {
-	file file
-	rank rank
+	file File
+	rank Rank
 }
-
-var (
-	A1 = &Square{fileA, rank1}
-	A2 = &Square{fileA, rank2}
-	A3 = &Square{fileA, rank3}
-	A4 = &Square{fileA, rank4}
-	A5 = &Square{fileA, rank5}
-	A6 = &Square{fileA, rank6}
-	A7 = &Square{fileA, rank7}
-	A8 = &Square{fileA, rank8}
-
-	B1 = &Square{fileB, rank1}
-	B2 = &Square{fileB, rank2}
-	B3 = &Square{fileB, rank3}
-	B4 = &Square{fileB, rank4}
-	B5 = &Square{fileB, rank5}
-	B6 = &Square{fileB, rank6}
-	B7 = &Square{fileB, rank7}
-	B8 = &Square{fileB, rank8}
-
-	C1 = &Square{fileC, rank1}
-	C2 = &Square{fileC, rank2}
-	C3 = &Square{fileC, rank3}
-	C4 = &Square{fileC, rank4}
-	C5 = &Square{fileC, rank5}
-	C6 = &Square{fileC, rank6}
-	C7 = &Square{fileC, rank7}
-	C8 = &Square{fileC, rank8}
-
-	D1 = &Square{fileD, rank1}
-	D2 = &Square{fileD, rank2}
-	D3 = &Square{fileD, rank3}
-	D4 = &Square{fileD, rank4}
-	D5 = &Square{fileD, rank5}
-	D6 = &Square{fileD, rank6}
-	D7 = &Square{fileD, rank7}
-	D8 = &Square{fileD, rank8}
-
-	E1 = &Square{fileE, rank1}
-	E2 = &Square{fileE, rank2}
-	E3 = &Square{fileE, rank3}
-	E4 = &Square{fileE, rank4}
-	E5 = &Square{fileE, rank5}
-	E6 = &Square{fileE, rank6}
-	E7 = &Square{fileE, rank7}
-	E8 = &Square{fileE, rank8}
-
-	F1 = &Square{fileF, rank1}
-	F2 = &Square{fileF, rank2}
-	F3 = &Square{fileF, rank3}
-	F4 = &Square{fileF, rank4}
-	F5 = &Square{fileF, rank5}
-	F6 = &Square{fileF, rank6}
-	F7 = &Square{fileF, rank7}
-	F8 = &Square{fileF, rank8}
-
-	G1 = &Square{fileG, rank1}
-	G2 = &Square{fileG, rank2}
-	G3 = &Square{fileG, rank3}
-	G4 = &Square{fileG, rank4}
-	G5 = &Square{fileG, rank5}
-	G6 = &Square{fileG, rank6}
-	G7 = &Square{fileG, rank7}
-	G8 = &Square{fileG, rank8}
-
-	H1 = &Square{fileH, rank1}
-	H2 = &Square{fileH, rank2}
-	H3 = &Square{fileH, rank3}
-	H4 = &Square{fileH, rank4}
-	H5 = &Square{fileH, rank5}
-	H6 = &Square{fileH, rank6}
-	H7 = &Square{fileH, rank7}
-	H8 = &Square{fileH, rank8}
-)
 
 func (s *Square) String() string {
 	return s.file.String() + s.rank.String()
 }
 
-func square(f file, r rank) *Square {
-	for _, s := range allSquares {
-		if s.file == f && s.rank == r {
-			return s
+func squareFromStr(s string) *Square {
+	for _, sq := range allSquares {
+		if sq.String() == s {
+			return sq
 		}
 	}
 	return nil
 }
 
-func squareFromString(s string) *Square {
-	for _, sq := range allSquares {
-		if sq.String() == s {
-			return sq
+func getSquare(f File, r Rank) *Square {
+	for _, s := range allSquares {
+		if s.file == f && s.rank == r {
+			return s
 		}
 	}
 	return nil
@@ -181,7 +89,7 @@ func (s *Square) squaresTo(o *Square) []*Square {
 	f := int(s.file)
 	r := int(s.rank)
 	for f != int(o.file) || r != int(o.rank) {
-		sq := square(file(f), rank(r))
+		sq := getSquare(File(f), Rank(r))
 		if sq != s && sq != o {
 			squares = append(squares, sq)
 		}
@@ -202,36 +110,87 @@ func (a squareSlice) has(s *Square) bool {
 	return false
 }
 
-var allSquares = [64]*Square{
-	A1, A2, A3, A4, A5, A6, A7, A8,
-	B1, B2, B3, B4, B5, B6, B7, B8,
-	C1, C2, C3, C4, C5, C6, C7, C8,
-	D1, D2, D3, D4, D5, D6, D7, D8,
-	E1, E2, E3, E4, E5, E6, E7, E8,
-	F1, F2, F3, F4, F5, F6, F7, F8,
-	G1, G2, G3, G4, G5, G6, G7, G8,
-	H1, H2, H3, H4, H5, H6, H7, H8,
-}
+var (
+	A1 = &Square{A, R1}
+	A2 = &Square{A, R2}
+	A3 = &Square{A, R3}
+	A4 = &Square{A, R4}
+	A5 = &Square{A, R5}
+	A6 = &Square{A, R6}
+	A7 = &Square{A, R7}
+	A8 = &Square{A, R8}
 
-func sign(i int) int {
-	if i > 0 {
-		return 1
-	} else if i < 0 {
-		return -1
-	}
-	return 0
-}
+	B1 = &Square{B, R1}
+	B2 = &Square{B, R2}
+	B3 = &Square{B, R3}
+	B4 = &Square{B, R4}
+	B5 = &Square{B, R5}
+	B6 = &Square{B, R6}
+	B7 = &Square{B, R7}
+	B8 = &Square{B, R8}
 
-func min(i1, i2 int) int {
-	if i1 < i2 {
-		return i1
-	}
-	return i2
-}
+	C1 = &Square{C, R1}
+	C2 = &Square{C, R2}
+	C3 = &Square{C, R3}
+	C4 = &Square{C, R4}
+	C5 = &Square{C, R5}
+	C6 = &Square{C, R6}
+	C7 = &Square{C, R7}
+	C8 = &Square{C, R8}
 
-func max(i1, i2 int) int {
-	if i1 > i2 {
-		return i1
+	D1 = &Square{D, R1}
+	D2 = &Square{D, R2}
+	D3 = &Square{D, R3}
+	D4 = &Square{D, R4}
+	D5 = &Square{D, R5}
+	D6 = &Square{D, R6}
+	D7 = &Square{D, R7}
+	D8 = &Square{D, R8}
+
+	E1 = &Square{E, R1}
+	E2 = &Square{E, R2}
+	E3 = &Square{E, R3}
+	E4 = &Square{E, R4}
+	E5 = &Square{E, R5}
+	E6 = &Square{E, R6}
+	E7 = &Square{E, R7}
+	E8 = &Square{E, R8}
+
+	F1 = &Square{F, R1}
+	F2 = &Square{F, R2}
+	F3 = &Square{F, R3}
+	F4 = &Square{F, R4}
+	F5 = &Square{F, R5}
+	F6 = &Square{F, R6}
+	F7 = &Square{F, R7}
+	F8 = &Square{F, R8}
+
+	G1 = &Square{G, R1}
+	G2 = &Square{G, R2}
+	G3 = &Square{G, R3}
+	G4 = &Square{G, R4}
+	G5 = &Square{G, R5}
+	G6 = &Square{G, R6}
+	G7 = &Square{G, R7}
+	G8 = &Square{G, R8}
+
+	H1 = &Square{H, R1}
+	H2 = &Square{H, R2}
+	H3 = &Square{H, R3}
+	H4 = &Square{H, R4}
+	H5 = &Square{H, R5}
+	H6 = &Square{H, R6}
+	H7 = &Square{H, R7}
+	H8 = &Square{H, R8}
+
+	allSquares = [64]*Square{
+		A1, A2, A3, A4, A5, A6, A7, A8,
+		B1, B2, B3, B4, B5, B6, B7, B8,
+		C1, C2, C3, C4, C5, C6, C7, C8,
+		D1, D2, D3, D4, D5, D6, D7, D8,
+		E1, E2, E3, E4, E5, E6, E7, E8,
+		F1, F2, F3, F4, F5, F6, F7, F8,
+		G1, G2, G3, G4, G5, G6, G7, G8,
+		H1, H2, H3, H4, H5, H6, H7, H8,
 	}
-	return i2
-}
+)

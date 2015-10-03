@@ -1,113 +1,91 @@
 package chess
 
+type Color int
+
+const (
+	White Color = iota + 1
+	Black
+)
+
+func (c Color) Other() Color {
+	if c == White {
+		return Black
+	}
+	return White
+}
+
+func (c Color) String() string {
+	if c == White {
+		return "w"
+	}
+	return "b"
+}
+
+type PieceType int
+
+const (
+	King PieceType = iota + 1
+	Queen
+	Rook
+	Bishop
+	Knight
+	Pawn
+)
+
 type Piece struct {
+	t   PieceType
+	c   Color
 	uni string
 }
 
 var (
-	WKing   = &Piece{uni: "♔"}
-	WQueen  = &Piece{uni: "♕"}
-	WRook   = &Piece{uni: "♖"}
-	WBishop = &Piece{uni: "♗"}
-	WKnight = &Piece{uni: "♘"}
-	WPawn   = &Piece{uni: "♙"}
-	BKing   = &Piece{uni: "♚"}
-	BQueen  = &Piece{uni: "♛"}
-	BRook   = &Piece{uni: "♜"}
-	BBishop = &Piece{uni: "♝"}
-	BKnight = &Piece{uni: "♞"}
-	BPawn   = &Piece{uni: "♟"}
+	WhiteKing   = &Piece{t: King, c: White, uni: "♔"}
+	WhiteQueen  = &Piece{t: Queen, c: White, uni: "♕"}
+	WhiteRook   = &Piece{t: Rook, c: White, uni: "♖"}
+	WhiteBishop = &Piece{t: Bishop, c: White, uni: "♗"}
+	WhiteKnight = &Piece{t: Knight, c: White, uni: "♘"}
+	WhitePawn   = &Piece{t: Pawn, c: White, uni: "♙"}
+	BlackKing   = &Piece{t: King, c: Black, uni: "♚"}
+	BlackQueen  = &Piece{t: Queen, c: Black, uni: "♛"}
+	BlackRook   = &Piece{t: Rook, c: Black, uni: "♜"}
+	BlackBishop = &Piece{t: Bishop, c: Black, uni: "♝"}
+	BlackKnight = &Piece{t: Knight, c: Black, uni: "♞"}
+	BlackPawn   = &Piece{t: Pawn, c: Black, uni: "♟"}
 )
 
 var (
 	allPieces = []*Piece{
-		WKing, WQueen, WRook, WBishop, WKnight, WPawn,
-		BKing, BQueen, BRook, BBishop, BKnight, BPawn,
+		WhiteKing, WhiteQueen, WhiteRook, WhiteBishop, WhiteKnight, WhitePawn,
+		BlackKing, BlackQueen, BlackRook, BlackBishop, BlackKnight, BlackPawn,
 	}
 )
 
-func piece(c color, p pieceType) *Piece {
-	for _, cp := range allPieces {
-		if cp.color() == c && cp.pieceType() == p {
-			return cp
+func getPiece(t PieceType, c Color) *Piece {
+	for _, p := range allPieces {
+		if p.Color() == c && p.Type() == t {
+			return p
 		}
 	}
-	return nil
+	panic("unreachable")
+}
+
+func (p *Piece) Type() PieceType {
+	return p.t
+}
+
+func (p *Piece) Color() Color {
+	return p.c
 }
 
 func (p *Piece) String() string {
 	return p.uni
 }
 
-func (p *Piece) color() color {
-	switch p {
-	case WKing, WQueen, WRook, WBishop, WKnight, WPawn:
-		return white
+func (p *Piece) getFENChar() string {
+	for key, piece := range fenPieceMap {
+		if piece == p {
+			return key
+		}
 	}
-	return black
-}
-
-func (p *Piece) pieceType() pieceType {
-	switch p {
-	case WKing, BKing:
-		return king
-	case WQueen, BQueen:
-		return queen
-	case WRook, BRook:
-		return rook
-	case WBishop, BBishop:
-		return bishop
-	case WKnight, BKnight:
-		return knight
-	case WPawn, BPawn:
-		return pawn
-	}
-	panic(p.uni)
-}
-
-type color int
-
-const (
-	white color = iota + 1
-	black
-)
-
-func (c color) other() color {
-	if c == white {
-		return black
-	}
-	return white
-}
-
-func (c color) rankStep() int {
-	if c == white {
-		return 1
-	}
-	return -1
-}
-
-func (c color) backRank() rank {
-	if c == white {
-		return rank1
-	}
-	return rank8
-}
-
-type pieceType int
-
-const (
-	king pieceType = iota + 1
-	queen
-	rook
-	bishop
-	knight
-	pawn
-)
-
-func (p pieceType) isPromotable() bool {
-	switch p {
-	case queen, rook, bishop, knight:
-		return true
-	}
-	return false
+	panic("unreachable")
 }
