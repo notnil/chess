@@ -1,24 +1,72 @@
 package chess
 
+import "fmt"
+
 type Move struct {
 	s1    *Square
 	s2    *Square
 	promo *PieceType
-	b     Board
 	state *GameState
 }
 
+func (m *Move) S1() *Square {
+	return m.s1
+}
+
+func (m *Move) S2() *Square {
+	return m.s2
+}
+
+func (m *Move) Promo() *PieceType {
+	return m.promo
+}
+
+func (m *Move) PreMoveState() *GameState {
+	return m.state
+}
+
+func (m *Move) String() string {
+	return fmt.Sprintf("{s1:%s s2:%s FEN:%s}", m.s1, m.s2, m.state)
+}
+
 func (m *Move) isValid() bool {
-	return false
+	p := m.piece()
+	return filterForPiece(p)(m)
+}
+
+func (m *Move) piece() *Piece {
+	return m.state.Board.piece(m.s1)
+}
+
+func filterForPiece(p *Piece) moveFilter {
+	filters := []moveFilter{occupiedFilter}
+	switch p.Type() {
+	case King:
+		filters = append(filters, kingFilter)
+	case Queen:
+		filters = append(filters, queenFilter)
+	case Rook:
+		filters = append(filters, rookFilter)
+	case Bishop:
+		filters = append(filters, bishopFilter)
+	case Knight:
+		filters = append(filters, knightFilter)
+	case Pawn:
+		filters = append(filters, pawnFilter)
+	}
+	if p != nil && p.Type() != Knight {
+		filters = append(filters, blockedFilter)
+	}
+	return moveFilters(filters).chainAnd()
 }
 
 type moveFilter func(m *Move) bool
 
-func (f moveFilter) and(filters ...moveFilter) moveFilter {
-	cp := append([]moveFilter(nil), filters...)
-	cp = append(cp, f)
+type moveFilters []moveFilter
+
+func (a moveFilters) chainAnd() moveFilter {
 	return func(m *Move) bool {
-		for _, f := range cp {
+		for _, f := range a {
 			if !f(m) {
 				return false
 			}
@@ -30,14 +78,19 @@ func (f moveFilter) and(filters ...moveFilter) moveFilter {
 var (
 	// filters squares where s1 doesn't have a piece
 	occupiedFilter = func(m *Move) bool {
-		return !m.b.isOccupied(m.s1)
+		return m.state.Board.isOccupied(m.s1)
+	}
+
+	// filters squares that have pieces that can move on the game's turn
+	turnFilter = func(m *Move) bool {
+		return m.piece().Color() == m.state.Turn
 	}
 
 	// filters squares that have a piece in between s1 and s2 (not used for knights)
 	blockedFilter = func(m *Move) bool {
 		squares := m.s1.squaresTo(m.s2)
 		for _, sq := range squares {
-			if m.b.isOccupied(sq) {
+			if m.state.Board.isOccupied(sq) {
 				return false
 			}
 		}
@@ -73,13 +126,19 @@ var (
 
 	// filters invalid moves for the pawn w/o reguard for promotion and en passant
 	pawnFilter = func(m *Move) bool {
-		p := m.b.piece(m.s1)
+		p := m.piece()
 		rankStep := rankStep(p.Color())
 		startRank := Rank(int(backRank(p.Color())) + rankStep)
 		sameFile := m.s1.file == m.s2.file
 		upOne := int(m.s2.rank) == int(m.s1.rank)+rankStep
+		if upOne && sameFile {
+			return true
+		}
 		upTwoFirstMove := m.s1.rank == startRank && int(m.s2.rank) == int(m.s1.rank)+(2*rankStep)
-		capture := upOne && abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.b.isOccupied(m.s2)
-		return (upOne && sameFile) || (upTwoFirstMove && sameFile) || capture
+		if upTwoFirstMove && sameFile {
+			return true
+		}
+		capture := upOne && abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.state.Board.isOccupied(m.s2)
+		return capture
 	}
 )

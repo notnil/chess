@@ -118,13 +118,12 @@ func formCastleRights(castleStr string) (*CastleRights, error) {
 	return rights, nil
 }
 
-// TODO check for valid enPassant square dependent on turn
 func formEnPassant(enPassant string) (*Square, error) {
 	if enPassant == "-" {
 		return nil, nil
 	}
 	sq := squareFromStr(enPassant)
-	if sq == nil {
+	if sq == nil || !(sq.rank == R3 || sq.rank == R6) {
 		return nil, fmt.Errorf("chess: fen invalid En Passant square %s", enPassant)
 	}
 	return sq, nil
