@@ -31,11 +31,11 @@ func FEN(fen string) (*GameState, error) {
 		return nil, err
 	}
 	halfMoveClock, err := strconv.Atoi(parts[4])
-	if err != nil {
+	if err != nil || halfMoveClock < 0 {
 		return nil, fmt.Errorf("chess: fen invalid half move clock %s", parts[4])
 	}
 	moveCount, err := strconv.Atoi(parts[5])
-	if err != nil {
+	if err != nil || moveCount < 1 {
 		return nil, fmt.Errorf("chess: fen invalid move count %s", parts[5])
 	}
 	return &GameState{
@@ -91,9 +91,14 @@ func fenFormRank(rankStr string) (map[File]*Piece, error) {
 	return m, nil
 }
 
-// TODO check for duplicates aka. KKkq right now is valid
 func formCastleRights(castleStr string) (*CastleRights, error) {
 	rights := &CastleRights{}
+	// check for duplicates aka. KKkq right now is valid
+	for _, s := range []string{"K", "Q", "k", "q", "-"} {
+		if strings.Count(castleStr, s) > 1 {
+			return nil, fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
+		}
+	}
 	for _, r := range castleStr {
 		c := fmt.Sprintf("%c", r)
 		switch c {
