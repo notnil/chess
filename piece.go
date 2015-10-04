@@ -32,6 +32,18 @@ const (
 	Pawn
 )
 
+func (p PieceType) Ptr() *PieceType {
+	return &p
+}
+
+func (p PieceType) isPromotable() bool {
+	switch p {
+	case Queen, Rook, Bishop, Knight:
+		return true
+	}
+	return false
+}
+
 type Piece struct {
 	t   PieceType
 	c   Color

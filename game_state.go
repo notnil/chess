@@ -9,7 +9,7 @@ type CastleRights struct {
 	BlackQueenSide bool
 }
 
-func (c *CastleRights) String() string {
+func (c CastleRights) String() string {
 	s := ""
 	if c.WhiteKingSide {
 		s += "K"
@@ -32,7 +32,7 @@ func (c *CastleRights) String() string {
 type GameState struct {
 	Board           Board
 	Turn            Color
-	CastleRights    *CastleRights
+	CastleRights    CastleRights
 	EnPassantSquare *Square
 	HalfMoveClock   int
 	MoveCount       int
@@ -50,3 +50,12 @@ func (gs *GameState) String() string {
 	}
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, gs.HalfMoveClock, gs.MoveCount)
 }
+
+//
+// func (b Board) inCheckmate(c color) bool {
+// 	// should only happen in unit tests
+// 	if b.kingSquare(c) == nil {
+// 		return false
+// 	}
+// 	return b.inCheck(c) && !b.hasValidMoves(c)
+// }
