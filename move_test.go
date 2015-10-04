@@ -39,6 +39,17 @@ var (
 		&Move{s1: B2, s2: A1, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		&Move{s1: B2, s2: A2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		&Move{s1: B2, s2: H2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		// king moves
+		&Move{s1: E4, s2: E5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: E3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D4, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		// castleing
+		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E8, s2: G8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		&Move{s1: E8, s2: C8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
 	}
 
 	invalidMoves = []*Move{
@@ -68,6 +79,18 @@ var (
 		&Move{s1: B2, s2: C4, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		&Move{s1: B2, s2: B8, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		&Move{s1: B2, s2: G7, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		// king moves
+		&Move{s1: E4, s2: F3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: F4, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: F5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		// castleing
+		&Move{s1: E1, s2: B1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E8, s2: B8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("2r1k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
 	}
 )
 

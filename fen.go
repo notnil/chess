@@ -92,30 +92,21 @@ func fenFormRank(rankStr string) (map[File]*Piece, error) {
 }
 
 func formCastleRights(castleStr string) (CastleRights, error) {
-	rights := CastleRights{}
 	// check for duplicates aka. KKkq right now is valid
 	for _, s := range []string{"K", "Q", "k", "q", "-"} {
 		if strings.Count(castleStr, s) > 1 {
-			return rights, fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
+			return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
 		}
 	}
 	for _, r := range castleStr {
 		c := fmt.Sprintf("%c", r)
 		switch c {
-		case "K":
-			rights.WhiteKingSide = true
-		case "Q":
-			rights.WhiteQueenSide = true
-		case "k":
-			rights.BlackKingSide = true
-		case "q":
-			rights.BlackQueenSide = true
-		case "-":
+		case "K", "Q", "k", "q", "-":
 		default:
-			return rights, fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
+			return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
 		}
 	}
-	return rights, nil
+	return CastleRights(castleStr), nil
 }
 
 func formEnPassant(enPassant string) (*Square, error) {

@@ -26,20 +26,12 @@ func (m *Move) PreMoveState() *GameState {
 }
 
 func (m *Move) PostMoveState() *GameState {
-	// TODO account for castleing
-	b := m.state.Board.copy()
-	b[m.s2] = b[m.s1]
-	delete(b, m.s1)
-	if m.promo != nil {
-		b[m.s2] = getPiece(*m.promo, m.state.Turn)
-	}
-
 	moveCount := m.state.MoveCount
 	if m.state.Turn == Black {
 		moveCount++
 	}
 	return &GameState{
-		Board:           b,
+		Board:           m.postBoard(),
 		Turn:            m.state.Turn.Other(),
 		CastleRights:    m.state.CastleRights, // TODO
 		EnPassantSquare: nil,                  // TODO
@@ -61,6 +53,49 @@ func (m *Move) isValid() bool {
 
 func (m *Move) piece() *Piece {
 	return m.state.Board.piece(m.s1)
+}
+
+func (m *Move) postBoard() Board {
+	b := m.state.Board.copy()
+	if m.isCastling() {
+		var rookS1, rookS2 *Square
+		switch m.s2 {
+		case G1:
+			rookS1 = H1
+			rookS2 = F1
+		case G8:
+			rookS1 = H8
+			rookS2 = F8
+		case C1:
+			rookS1 = A1
+			rookS2 = D1
+		case C8:
+			rookS1 = A8
+			rookS2 = D8
+		}
+		b[rookS2] = b[rookS1]
+		delete(b, rookS1)
+	}
+	b[m.s2] = b[m.s1]
+	delete(b, m.s1)
+	if m.promo != nil {
+		b[m.s2] = getPiece(*m.promo, m.state.Turn)
+	}
+	return b
+}
+
+func (m *Move) isCastling() bool {
+	p := m.piece()
+	if p == nil {
+		return false
+	}
+	backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+	if m.state.Turn == Black {
+		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
+	}
+	kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
+	queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
+	return p.Type() == King && (kingSide || queenSide)
 }
 
 func filterForPiece(p *Piece) moveFilter {
@@ -124,24 +159,16 @@ var (
 
 	// filters squares that have a piece in between s1 and s2 (not used for knights)
 	blockedFilter = func(m *Move) bool {
-		squares := m.s1.squaresTo(m.s2)
-		for _, sq := range squares {
-			if m.state.Board.isOccupied(sq) {
-				return false
-			}
-		}
-		return true
+		return m.state.Board.emptyBetween(m.s1, m.s2)
 	}
 
 	// filters invalid moves for the king w/o regaurd to check or castleing
 	kingFilter = func(m *Move) bool {
-		return m.s1.fileDif(m.s2) <= 1 && m.s1.rankDif(m.s2) <= 1
+		kingMove := m.s1.fileDif(m.s2) <= 1 && m.s1.rankDif(m.s2) <= 1
+		return kingMove || castleFilter(m)
 	}
 
-	// filters invalid moves for the king castleing
-	// castleFilter = func(m *Move) bool {
-	// 	return m.s1.fileDif(m.s2) <= 1 && m.s1.rankDif(m.s2) <= 1
-	// }
+	castleFilter moveFilter
 
 	// filters invalid moves for the queen
 	queenFilter = func(m *Move) bool {
@@ -206,3 +233,36 @@ var (
 		return sq != nil && m.s2 == sq
 	}
 )
+
+func init() {
+	// Must be in init() because of initialization loop
+	// filters invalid moves for the king castleing
+	castleFilter = func(m *Move) bool {
+		if !m.isCastling() {
+			return false
+		}
+		c := m.state.Turn
+		canCastleKingSide := m.state.CastleRights.CanCastle(c, KingSide)
+		canCastleQueenSide := m.state.CastleRights.CanCastle(c, QueenSide)
+		if !(canCastleKingSide || canCastleQueenSide) {
+			return false
+		}
+		backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+		if c == Black {
+			backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
+		}
+		kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
+		queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
+		kingSideOccupied := !m.state.Board.emptyBetween(backRow[4], backRow[7])
+		kingSideAttacked := m.state.Board.isSquareAttacked(m.state.Turn, backRow[4], backRow[5], backRow[6])
+		if kingSide && (!canCastleKingSide || kingSideOccupied || kingSideAttacked) {
+			return false
+		}
+		queenSideOccupied := !m.state.Board.emptyBetween(backRow[0], backRow[4])
+		queenSideAttacked := m.state.Board.isSquareAttacked(m.state.Turn, backRow[2], backRow[3], backRow[4])
+		if queenSide && (!canCastleQueenSide || queenSideOccupied || queenSideAttacked) {
+			return false
+		}
+		return true
+	}
+}

@@ -1,32 +1,32 @@
 package chess
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-type CastleRights struct {
-	WhiteKingSide  bool
-	WhiteQueenSide bool
-	BlackKingSide  bool
-	BlackQueenSide bool
+type Side int
+
+const (
+	KingSide Side = iota + 1
+	QueenSide
+)
+
+type CastleRights string
+
+func (cr CastleRights) CanCastle(c Color, side Side) bool {
+	char := "k"
+	if side == QueenSide {
+		char = "q"
+	}
+	if c == White {
+		char = strings.ToUpper(char)
+	}
+	return strings.Contains(string(cr), char)
 }
 
-func (c CastleRights) String() string {
-	s := ""
-	if c.WhiteKingSide {
-		s += "K"
-	}
-	if c.WhiteQueenSide {
-		s += "Q"
-	}
-	if c.BlackKingSide {
-		s += "k"
-	}
-	if c.BlackQueenSide {
-		s += "q"
-	}
-	if len(s) == 0 {
-		s = "-"
-	}
-	return s
+func (cr CastleRights) String() string {
+	return string(cr)
 }
 
 type GameState struct {

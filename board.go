@@ -63,22 +63,6 @@ func (b Board) Draw() string {
 	return s
 }
 
-func (b Board) isOccupied(sq *Square) bool {
-	return b[sq] != nil
-}
-
-func (b Board) piece(sq *Square) *Piece {
-	return b[sq]
-}
-
-func (b Board) copy() Board {
-	n := map[*Square]*Piece{}
-	for k, v := range b {
-		n[k] = v
-	}
-	return n
-}
-
 // squaresForColor returns a slice of the squares that are
 // occupied by the given color.
 func (b Board) squaresForColor(c Color) []*Square {
@@ -105,13 +89,15 @@ func (b Board) kingSquare(c Color) *Square {
 }
 
 // isSquareAttacked returns whether the other color can move to or capture
-// the square.  It doesn't include game state in its calculation so it isn't
-// sufficient for checkmate or stalemate calculations.
-func (b Board) isSquareAttacked(c Color, s2 *Square) bool {
+// one of the given squares.  It doesn't include game state in its calculation
+// so it isn't sufficient for checkmate or stalemate calculations.
+func (b Board) isSquareAttacked(c Color, squares ...*Square) bool {
 	for _, s1 := range b.squaresForColor(c.Other()) {
-		m := &Move{s1: s1, s2: s2, state: &GameState{Board: b, Turn: c.Other()}}
-		if m.isValid() {
-			return true
+		for _, s2 := range squares {
+			m := &Move{s1: s1, s2: s2, state: &GameState{Board: b, Turn: c.Other()}}
+			if m.isValid() {
+				return true
+			}
 		}
 	}
 	return false
@@ -124,4 +110,29 @@ func (b Board) inCheck(c Color) bool {
 		return false
 	}
 	return b.isSquareAttacked(c, kingSq)
+}
+
+func (b Board) emptyBetween(s1, s2 *Square) bool {
+	for _, sq := range s1.squaresTo(s2) {
+		if b.isOccupied(sq) {
+			return false
+		}
+	}
+	return true
+}
+
+func (b Board) isOccupied(sq *Square) bool {
+	return b[sq] != nil
+}
+
+func (b Board) piece(sq *Square) *Piece {
+	return b[sq]
+}
+
+func (b Board) copy() Board {
+	n := map[*Square]*Piece{}
+	for k, v := range b {
+		n[k] = v
+	}
+	return n
 }
