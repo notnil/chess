@@ -1,6 +1,9 @@
 package chess
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type Move struct {
 	s1    *Square
@@ -30,12 +33,18 @@ func (m *Move) PostMoveState() *GameState {
 	if m.state.Turn == Black {
 		moveCount++
 	}
+	halfMove := m.state.HalfMoveClock
+	if m.piece().Type() == Pawn || m.state.Board.isOccupied(m.s2) {
+		halfMove = 0
+	} else {
+		halfMove++
+	}
 	return &GameState{
 		Board:           m.postBoard(),
 		Turn:            m.state.Turn.Other(),
-		CastleRights:    m.state.CastleRights, // TODO
-		EnPassantSquare: nil,                  // TODO
-		HalfMoveClock:   0,                    // TODO
+		CastleRights:    m.postCastleRights(),
+		EnPassantSquare: m.postEnPassantSquare(),
+		HalfMoveClock:   halfMove,
 		MoveCount:       moveCount,
 	}
 }
@@ -82,6 +91,32 @@ func (m *Move) postBoard() Board {
 		b[m.s2] = getPiece(*m.promo, m.state.Turn)
 	}
 	return b
+}
+
+func (m *Move) postEnPassantSquare() *Square {
+	p := m.piece()
+	if p.Type() == Pawn && pawnUpTwoFilter(m) {
+		return m.s1.squaresTo(m.s2)[0]
+	}
+	return nil
+}
+
+func (m *Move) postCastleRights() CastleRights {
+	cr := string(m.state.CastleRights)
+	p := m.piece()
+	if p == WhiteKing || m.s1 == H1 {
+		cr = strings.Replace(cr, "K", "", -1)
+	}
+	if p == WhiteKing || m.s1 == A1 {
+		cr = strings.Replace(cr, "Q", "", -1)
+	}
+	if p == BlackKing || m.s1 == H8 {
+		cr = strings.Replace(cr, "k", "", -1)
+	}
+	if p == BlackKing || m.s1 == A8 {
+		cr = strings.Replace(cr, "q", "", -1)
+	}
+	return CastleRights(cr)
 }
 
 func (m *Move) isCastling() bool {

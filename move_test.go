@@ -10,7 +10,6 @@ var (
 		// pawn moves
 		&Move{s1: E2, s2: E4, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
 		&Move{s1: A2, s2: A3, state: unsafeFEN("8/8/8/8/8/8/P7/8 w - - 0 1")},
-		&Move{s1: A2, s2: A4, state: unsafeFEN("8/8/8/8/8/8/P7/8 w - - 0 1")},
 		&Move{s1: A7, s2: A6, state: unsafeFEN("8/p7/8/8/8/8/8/8 b - - 0 1")},
 		&Move{s1: A7, s2: A5, state: unsafeFEN("8/p7/8/8/8/8/8/8 b - - 0 1")},
 		&Move{s1: C4, s2: B5, state: unsafeFEN("8/8/8/1p1p4/2P5/8/8/8 w - - 0 1")},
@@ -93,6 +92,11 @@ var (
 		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
 	}
 )
+
+type postMove struct {
+	Move      *Move
+	PostState *GameState
+}
 
 func unsafeFEN(s string) *GameState {
 	g, err := FEN(s)
