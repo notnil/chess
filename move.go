@@ -28,27 +28,6 @@ func (m *Move) PreMoveState() *GameState {
 	return m.state
 }
 
-func (m *Move) PostMoveState() *GameState {
-	moveCount := m.state.MoveCount
-	if m.state.Turn == Black {
-		moveCount++
-	}
-	halfMove := m.state.HalfMoveClock
-	if m.piece().Type() == Pawn || m.state.Board.isOccupied(m.s2) {
-		halfMove = 0
-	} else {
-		halfMove++
-	}
-	return &GameState{
-		Board:           m.postBoard(),
-		Turn:            m.state.Turn.Other(),
-		CastleRights:    m.postCastleRights(),
-		EnPassantSquare: m.postEnPassantSquare(),
-		HalfMoveClock:   halfMove,
-		MoveCount:       moveCount,
-	}
-}
-
 func (m *Move) String() string {
 	return fmt.Sprintf("{s1:%s s2:%s FEN:%s}", m.s1, m.s2, m.state)
 }
@@ -56,16 +35,40 @@ func (m *Move) String() string {
 func (m *Move) isValid() bool {
 	p := m.piece()
 	isValid := filterForPiece(p)(m)
-	inCheck := m.PostMoveState().Board.inCheck(m.state.Turn)
-	return isValid && !inCheck
+	if !isValid {
+		return false
+	}
+	inCheck := m.postMoveState().board.inCheck(m.state.turn)
+	return !inCheck
+}
+
+func (m *Move) postMoveState() *GameState {
+	moveCount := m.state.moveCount
+	if m.state.turn == Black {
+		moveCount++
+	}
+	halfMove := m.state.halfMoveClock
+	if m.piece().Type() == Pawn || m.state.board.isOccupied(m.s2) {
+		halfMove = 0
+	} else {
+		halfMove++
+	}
+	return &GameState{
+		board:           m.postBoard(),
+		turn:            m.state.turn.Other(),
+		castleRights:    m.postCastleRights(),
+		enPassantSquare: m.postEnPassantSquare(),
+		halfMoveClock:   halfMove,
+		moveCount:       moveCount,
+	}
 }
 
 func (m *Move) piece() *Piece {
-	return m.state.Board.piece(m.s1)
+	return m.state.board.piece(m.s1)
 }
 
 func (m *Move) postBoard() Board {
-	b := m.state.Board.copy()
+	b := m.state.board.copy()
 	if m.isCastling() {
 		var rookS1, rookS2 *Square
 		switch m.s2 {
@@ -85,10 +88,15 @@ func (m *Move) postBoard() Board {
 		b[rookS2] = b[rookS1]
 		delete(b, rookS1)
 	}
+	if m.piece().Type() == Pawn && pawnEnPassantFilter(m) {
+		rank := Rank(rankStep(m.state.turn.Other()) + int(m.state.enPassantSquare.rank))
+		capSq := getSquare(m.s2.file, rank)
+		delete(b, capSq)
+	}
 	b[m.s2] = b[m.s1]
 	delete(b, m.s1)
 	if m.promo != nil {
-		b[m.s2] = getPiece(*m.promo, m.state.Turn)
+		b[m.s2] = getPiece(*m.promo, m.state.turn)
 	}
 	return b
 }
@@ -102,7 +110,7 @@ func (m *Move) postEnPassantSquare() *Square {
 }
 
 func (m *Move) postCastleRights() CastleRights {
-	cr := string(m.state.CastleRights)
+	cr := string(m.state.castleRights)
 	p := m.piece()
 	if p == WhiteKing || m.s1 == H1 {
 		cr = strings.Replace(cr, "K", "", -1)
@@ -125,7 +133,7 @@ func (m *Move) isCastling() bool {
 		return false
 	}
 	backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
-	if m.state.Turn == Black {
+	if m.state.turn == Black {
 		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
 	}
 	kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
@@ -179,22 +187,22 @@ func (a moveFilters) chainAnd() moveFilter {
 var (
 	// filters squares where s1 doesn't have a piece
 	s1Filter = func(m *Move) bool {
-		return m.state.Board.isOccupied(m.s1)
+		return m.state.board.isOccupied(m.s1)
 	}
 
 	// filters squares that have pieces that can move on the game's turn
 	turnFilter = func(m *Move) bool {
-		return m.piece().Color() == m.state.Turn
+		return m.piece().Color() == m.state.turn
 	}
 
 	// filters squares where s2 isn't empty or the other color's piece (not used for pawns)
 	s2Filter = func(m *Move) bool {
-		return !m.state.Board.isOccupied(m.s2) || m.state.Board.piece(m.s2).Color() != m.state.Turn
+		return !m.state.board.isOccupied(m.s2) || m.state.board.piece(m.s2).Color() != m.state.turn
 	}
 
 	// filters squares that have a piece in between s1 and s2 (not used for knights)
 	blockedFilter = func(m *Move) bool {
-		return m.state.Board.emptyBetween(m.s1, m.s2)
+		return m.state.board.emptyBetween(m.s1, m.s2)
 	}
 
 	// filters invalid moves for the king w/o regaurd to check or castleing
@@ -258,13 +266,13 @@ var (
 		p := m.piece()
 		rankStep := rankStep(p.Color())
 		upOne := int(m.s2.rank) == int(m.s1.rank)+rankStep
-		capture := abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.state.Board.isOccupied(m.s2)
+		capture := abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.state.board.isOccupied(m.s2)
 		return upOne && capture
 	}
 
 	// filters invalid moves for the pawn using en passant
 	pawnEnPassantFilter = func(m *Move) bool {
-		sq := m.state.EnPassantSquare
+		sq := m.state.enPassantSquare
 		return sq != nil && m.s2 == sq
 	}
 )
@@ -276,9 +284,9 @@ func init() {
 		if !m.isCastling() {
 			return false
 		}
-		c := m.state.Turn
-		canCastleKingSide := m.state.CastleRights.CanCastle(c, KingSide)
-		canCastleQueenSide := m.state.CastleRights.CanCastle(c, QueenSide)
+		c := m.state.turn
+		canCastleKingSide := m.state.castleRights.CanCastle(c, KingSide)
+		canCastleQueenSide := m.state.castleRights.CanCastle(c, QueenSide)
 		if !(canCastleKingSide || canCastleQueenSide) {
 			return false
 		}
@@ -288,13 +296,13 @@ func init() {
 		}
 		kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
 		queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
-		kingSideOccupied := !m.state.Board.emptyBetween(backRow[4], backRow[7])
-		kingSideAttacked := m.state.Board.isSquareAttacked(m.state.Turn, backRow[4], backRow[5], backRow[6])
+		kingSideOccupied := !m.state.board.emptyBetween(backRow[4], backRow[7])
+		kingSideAttacked := m.state.board.isSquareAttacked(m.state.turn, backRow[4], backRow[5], backRow[6])
 		if kingSide && (!canCastleKingSide || kingSideOccupied || kingSideAttacked) {
 			return false
 		}
-		queenSideOccupied := !m.state.Board.emptyBetween(backRow[0], backRow[4])
-		queenSideAttacked := m.state.Board.isSquareAttacked(m.state.Turn, backRow[2], backRow[3], backRow[4])
+		queenSideOccupied := !m.state.board.emptyBetween(backRow[0], backRow[4])
+		queenSideAttacked := m.state.board.isSquareAttacked(m.state.turn, backRow[2], backRow[3], backRow[4])
 		if queenSide && (!canCastleQueenSide || queenSideOccupied || queenSideAttacked) {
 			return false
 		}

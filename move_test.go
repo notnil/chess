@@ -5,6 +5,11 @@ import (
 	"testing"
 )
 
+type moveState struct {
+	Move      *Move
+	PostState *GameState
+}
+
 var (
 	validMoves = []*Move{
 		// pawn moves
@@ -91,12 +96,22 @@ var (
 		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
 		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
 	}
-)
 
-type postMove struct {
-	Move      *Move
-	PostState *GameState
-}
+	validMoveState = []moveState{
+		{
+			Move:      &Move{s1: E2, s2: E4, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+			PostState: unsafeFEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"),
+		},
+		{
+			Move:      &Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+			PostState: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"),
+		},
+		{
+			Move:      &Move{s1: A4, s2: B3, state: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
+			PostState: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/11pP4/PpQ2N2/2RN1PPP/2R4K w - - 0 24"),
+		},
+	}
+)
 
 func unsafeFEN(s string) *GameState {
 	g, err := FEN(s)
@@ -109,7 +124,7 @@ func unsafeFEN(s string) *GameState {
 func TestValidMoves(t *testing.T) {
 	for _, m := range validMoves {
 		if !m.isValid() {
-			log.Println(m.state.Board.Draw())
+			log.Println(m.state.board.Draw())
 			t.Fatalf("expected move %s to be valid", m)
 		}
 	}
@@ -118,8 +133,23 @@ func TestValidMoves(t *testing.T) {
 func TestInvalidMoves(t *testing.T) {
 	for _, m := range invalidMoves {
 		if m.isValid() {
-			log.Println(m.state.Board.Draw())
+			log.Println(m.state.board.Draw())
 			t.Fatalf("expected move %s to be invalid", m)
+		}
+	}
+}
+
+func TestValidMoveStates(t *testing.T) {
+	for _, ms := range validMoveState {
+		if !ms.Move.isValid() {
+			log.Println(ms.Move.state.board.Draw())
+			t.Fatalf("expected move %s to be valid", ms.Move)
+		}
+		postState := ms.Move.postMoveState()
+		if postState.String() != ms.PostState.String() {
+			t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+				ms.Move.state.board.Draw(), ms.Move.String(), ms.PostState.String(),
+				ms.PostState.board.Draw(), postState.String(), postState.board.Draw())
 		}
 	}
 }

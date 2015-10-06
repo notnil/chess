@@ -39,12 +39,12 @@ func FEN(fen string) (*GameState, error) {
 		return nil, fmt.Errorf("chess: fen invalid move count %s", parts[5])
 	}
 	return &GameState{
-		Board:           b,
-		Turn:            turn,
-		CastleRights:    rights,
-		EnPassantSquare: sq,
-		HalfMoveClock:   halfMoveClock,
-		MoveCount:       moveCount,
+		board:           b,
+		turn:            turn,
+		castleRights:    rights,
+		enPassantSquare: sq,
+		halfMoveClock:   halfMoveClock,
+		moveCount:       moveCount,
 	}, nil
 }
 

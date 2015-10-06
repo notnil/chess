@@ -94,7 +94,7 @@ func (b Board) kingSquare(c Color) *Square {
 func (b Board) isSquareAttacked(c Color, squares ...*Square) bool {
 	for _, s1 := range b.squaresForColor(c.Other()) {
 		for _, s2 := range squares {
-			m := &Move{s1: s1, s2: s2, state: &GameState{Board: b, Turn: c.Other()}}
+			m := &Move{s1: s1, s2: s2, state: &GameState{board: b, turn: c.Other()}}
 			if m.isValid() {
 				return true
 			}

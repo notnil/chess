@@ -3,22 +3,29 @@ package chess
 type Color int
 
 const (
-	White Color = iota + 1
+	NoColor Color = iota
+	White
 	Black
 )
 
 func (c Color) Other() Color {
-	if c == White {
+	switch c {
+	case White:
 		return Black
+	case Black:
+		return White
 	}
-	return White
+	return NoColor
 }
 
 func (c Color) String() string {
-	if c == White {
+	switch c {
+	case White:
 		return "w"
+	case Black:
+		return "b"
 	}
-	return "b"
+	return "-"
 }
 
 type PieceType int
