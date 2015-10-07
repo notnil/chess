@@ -8,7 +8,7 @@ import (
 
 // https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-func FEN(fen string) (*GameState, error) {
+func fen(fen string) (*GameState, error) {
 	fen = strings.TrimSpace(fen)
 	parts := strings.Split(fen, " ")
 	if len(parts) != 6 {

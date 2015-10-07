@@ -39,6 +39,10 @@ const (
 	Pawn
 )
 
+func PieceTypes() []PieceType {
+	return []PieceType{King, Queen, Rook, Bishop, Knight, Pawn}
+}
+
 func (p PieceType) Ptr() *PieceType {
 	return &p
 }

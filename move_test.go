@@ -114,7 +114,7 @@ var (
 )
 
 func unsafeFEN(s string) *GameState {
-	g, err := FEN(s)
+	g, err := fen(s)
 	if err != nil {
 		log.Fatal(err)
 	}

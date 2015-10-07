@@ -1,9 +1,7 @@
-package chess_test
+package chess
 
 import (
 	"testing"
-
-	. "github.com/loganjspears/chess"
 )
 
 var (
@@ -38,21 +36,21 @@ var (
 )
 
 func TestValidFENs(t *testing.T) {
-	for _, fen := range validFENs {
-		state, err := FEN(fen)
+	for _, f := range validFENs {
+		state, err := fen(f)
 		if err != nil {
 			t.Fatal("recieved unexpected error", err)
 		}
-		if fen != state.String() {
-			t.Fatalf("fen expected board string %s but got %s", fen, state.String())
+		if f != state.String() {
+			t.Fatalf("fen expected board string %s but got %s", f, state.String())
 		}
 	}
 }
 
 func TestInvalidFENs(t *testing.T) {
-	for _, fen := range invalidFENs {
-		if _, err := FEN(fen); err == nil {
-			t.Fatal("fen expected error from ", fen)
+	for _, f := range invalidFENs {
+		if _, err := fen(f); err == nil {
+			t.Fatal("fen expected error from ", f)
 		}
 	}
 }
