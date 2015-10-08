@@ -3,26 +3,21 @@ package chess
 import (
 	"errors"
 	"fmt"
+	"io"
+	"io/ioutil"
 )
 
 const (
 	startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
-type Status int
+type Outcome string
 
 const (
-	InProgress Status = iota + 1
-	Complete
-)
-
-type Outcome int
-
-const (
-	NoOutcome Outcome = iota
-	WhiteWon
-	BlackWon
-	Draw
+	NoOutcome Outcome = "*"
+	WhiteWon  Outcome = "1-0"
+	BlackWon  Outcome = "0-1"
+	Draw      Outcome = "1/2-1/2"
 )
 
 type Method int
@@ -38,24 +33,40 @@ const (
 type Game struct {
 	moves   []*Move
 	state   *GameState
-	status  Status
 	outcome Outcome
 	method  Method
 }
 
-func NewGame() *Game {
+func FEN(r io.Reader) (func(*Game), error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	state, err := fen(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return func(g *Game) {
+		g.updateState(state)
+	}, nil
+}
+
+func NewGame(options ...func(*Game)) *Game {
 	state, _ := fen(startFEN)
-	return &Game{
+	game := &Game{
 		moves:   []*Move{},
 		state:   state,
-		status:  InProgress,
 		outcome: NoOutcome,
 		method:  NoMethod,
 	}
+	for _, f := range options {
+		f(game)
+	}
+	return game
 }
 
 func (g *Game) Move(s1, s2 *Square, promo *PieceType) error {
-	if g.status == Complete {
+	if g.outcome != NoOutcome {
 		return errors.New("chess: invalid move game complete")
 	}
 	move := &Move{
@@ -68,10 +79,7 @@ func (g *Game) Move(s1, s2 *Square, promo *PieceType) error {
 		return fmt.Errorf("chess: invalid move %s", move)
 	}
 	g.moves = append(g.moves, move)
-	g.state = move.postMoveState()
-	outcome, method := g.state.getOutcome()
-	g.outcome = outcome
-	g.method = method
+	g.updateState(move.postMoveState())
 	return nil
 }
 
@@ -87,14 +95,17 @@ func (g *Game) GameState() *GameState {
 	return g.state
 }
 
-func (g *Game) Status() Status {
-	return g.status
-}
-
 func (g *Game) Outcome() Outcome {
 	return g.outcome
 }
 
 func (g *Game) Method() Method {
 	return g.method
+}
+
+func (g *Game) updateState(state *GameState) {
+	g.state = state
+	outcome, method := state.getOutcome()
+	g.outcome = outcome
+	g.method = method
 }
