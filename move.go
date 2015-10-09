@@ -1,15 +1,13 @@
 package chess
 
-import (
-	"fmt"
-	"strings"
-)
+import "strings"
 
 type Move struct {
-	s1    *Square
-	s2    *Square
-	promo PieceType
-	state *GameState
+	s1       *Square
+	s2       *Square
+	promo    PieceType
+	state    *GameState
+	notation string
 }
 
 func (m *Move) S1() *Square {
@@ -29,7 +27,10 @@ func (m *Move) PreMoveState() *GameState {
 }
 
 func (m *Move) String() string {
-	return fmt.Sprintf("{s1:%s s2:%s FEN:%s}", m.s1, m.s2, m.state)
+	if m.notation == "" {
+		m.notation = encodeMove(m)
+	}
+	return m.notation
 }
 
 func (m *Move) isValid() bool {

@@ -121,7 +121,7 @@ var (
 )
 
 func unsafeFEN(s string) *GameState {
-	g, err := fen(s)
+	g, err := decodeFEN(s)
 	if err != nil {
 		log.Fatal(err)
 	}

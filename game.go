@@ -42,7 +42,7 @@ func FEN(r io.Reader) (func(*Game), error) {
 	if err != nil {
 		return nil, err
 	}
-	state, err := fen(string(b))
+	state, err := decodeFEN(string(b))
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func FEN(r io.Reader) (func(*Game), error) {
 }
 
 func NewGame(options ...func(*Game)) *Game {
-	state, _ := fen(startFEN)
+	state, _ := decodeFEN(startFEN)
 	game := &Game{
 		moves:   []*Move{},
 		state:   state,
