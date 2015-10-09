@@ -83,6 +83,14 @@ func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
 	return nil
 }
 
+func (g *Game) MoveAlg(alg string) error {
+	move, err := decodeMove(g.GameState(), alg)
+	if err != nil {
+		return err
+	}
+	return g.Move(move.S1(), move.S2(), move.Promo())
+}
+
 func (g *Game) ValidMoves() []*Move {
 	return g.state.validMoves()
 }
