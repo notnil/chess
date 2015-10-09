@@ -31,10 +31,11 @@ const (
 )
 
 type Game struct {
-	moves   []*Move
-	state   *GameState
-	outcome Outcome
-	method  Method
+	tagPairs map[string]string
+	moves    []*Move
+	state    *GameState
+	outcome  Outcome
+	method   Method
 }
 
 func FEN(r io.Reader) (func(*Game), error) {
@@ -49,6 +50,12 @@ func FEN(r io.Reader) (func(*Game), error) {
 	return func(g *Game) {
 		g.updateState(state)
 	}, nil
+}
+
+func TagPairs(tagPairs map[string]string) func(*Game) {
+	return func(g *Game) {
+		g.tagPairs = tagPairs
+	}
 }
 
 func NewGame(options ...func(*Game)) *Game {
@@ -97,6 +104,14 @@ func (g *Game) ValidMoves() []*Move {
 
 func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)
+}
+
+func (g *Game) TagPairs() map[string]string {
+	cp := map[string]string{}
+	for k, v := range g.tagPairs {
+		cp[k] = v
+	}
+	return cp
 }
 
 func (g *Game) GameState() *GameState {
