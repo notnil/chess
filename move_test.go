@@ -24,7 +24,7 @@ var (
 		&Move{s1: C5, s2: D4, state: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
 		&Move{s1: C5, s2: C4, state: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
 		&Move{s1: A4, s2: B3, state: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
-		&Move{s1: A2, s2: A1, promo: Queen.Ptr(), state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
+		&Move{s1: A2, s2: A1, promo: Queen, state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
 		// knight moves
 		&Move{s1: E4, s2: F6, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		&Move{s1: E4, s2: D6, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
@@ -64,7 +64,7 @@ var (
 		&Move{s1: E2, s2: D3, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
 		&Move{s1: E2, s2: F3, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
 		&Move{s1: E2, s2: E5, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
-		&Move{s1: A2, s2: A1, promo: nil, state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
+		&Move{s1: A2, s2: A1, state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
 		// knight moves
 		&Move{s1: E4, s2: F2, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		&Move{s1: E4, s2: F3, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
@@ -95,6 +95,8 @@ var (
 		&Move{s1: E1, s2: C1, state: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
 		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
 		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
+		// invalid promotion for non-pawn move
+		&Move{s1: B8, s2: D7, promo: Pawn, state: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
 	}
 
 	validMoveState = []moveState{
@@ -104,11 +106,16 @@ var (
 		},
 		{
 			Move:      &Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
-			PostState: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"),
+			PostState: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 0 1"),
 		},
 		{
 			Move:      &Move{s1: A4, s2: B3, state: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
 			PostState: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/11pP4/PpQ2N2/2RN1PPP/2R4K w - - 0 24"),
+		},
+		// castling should reset the half move clock
+		{
+			Move:      &Move{s1: E1, s2: G1, state: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9")},
+			PostState: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
 		},
 	}
 )

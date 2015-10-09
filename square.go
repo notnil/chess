@@ -3,7 +3,8 @@ package chess
 type File int
 
 const (
-	A File = iota + 1
+	NoFile File = iota
+	A
 	B
 	C
 	D
@@ -23,10 +24,19 @@ func Files() [8]File {
 	return [8]File{A, B, C, D, E, F, G, H}
 }
 
+func fileFromStr(s string) File {
+	file, in := strToFileMap[s]
+	if !in {
+		return NoFile
+	}
+	return file
+}
+
 type Rank int
 
 const (
-	R1 Rank = iota + 1
+	NoRank Rank = iota
+	R1
 	R2
 	R3
 	R4
@@ -46,6 +56,14 @@ func Ranks() [8]Rank {
 	return [8]Rank{R1, R2, R3, R4, R5, R6, R7, R8}
 }
 
+func rankFromStr(s string) Rank {
+	rank, in := strToRankMap[s]
+	if !in {
+		return NoRank
+	}
+	return rank
+}
+
 type Square struct {
 	file File
 	rank Rank
@@ -56,14 +74,10 @@ func (s *Square) String() string {
 }
 
 func squareFromStr(s string) *Square {
-	for _, sq := range allSquares {
-		if sq.String() == s {
-			return sq
-		}
-	}
-	return nil
+	return strToSquareMap[s]
 }
 
+// TODO should use direct access from the array
 func getSquare(f File, r Rank) *Square {
 	for _, s := range allSquares {
 		if s.file == f && s.rank == r {
@@ -192,5 +206,24 @@ var (
 		F1, F2, F3, F4, F5, F6, F7, F8,
 		G1, G2, G3, G4, G5, G6, G7, G8,
 		H1, H2, H3, H4, H5, H6, H7, H8,
+	}
+
+	strToSquareMap = map[string]*Square{
+		"a1": A1, "a2": A2, "a3": A3, "a4": A4, "a5": A5, "a6": A6, "a7": A7, "a8": A8,
+		"b1": B1, "b2": B2, "b3": B3, "b4": B4, "b5": B5, "b6": B6, "b7": B7, "b8": B8,
+		"c1": C1, "c2": C2, "c3": C3, "c4": C4, "c5": C5, "c6": C6, "c7": C7, "c8": C8,
+		"d1": D1, "d2": D2, "d3": D3, "d4": D4, "d5": D5, "d6": D6, "d7": D7, "d8": D8,
+		"e1": E1, "e2": E2, "e3": E3, "e4": E4, "e5": E5, "e6": E6, "e7": E7, "e8": E8,
+		"f1": F1, "f2": F2, "f3": F3, "f4": F4, "f5": F5, "f6": F6, "f7": F7, "f8": F8,
+		"g1": G1, "g2": G2, "g3": G3, "g4": G4, "g5": G5, "g6": G6, "g7": G7, "g8": G8,
+		"h1": H1, "h2": H2, "h3": H3, "h4": H4, "h5": H5, "h6": H6, "h7": H7, "h8": H8,
+	}
+
+	strToFileMap = map[string]File{
+		"a": A, "b": B, "c": C, "d": D, "e": E, "f": F, "g": G,
+	}
+
+	strToRankMap = map[string]Rank{
+		"1": R1, "2": R2, "3": R3, "4": R4, "5": R5, "6": R6, "7": R7, "8": R8,
 	}
 )

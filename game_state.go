@@ -81,7 +81,7 @@ func (gs *GameState) validMoves() []*Move {
 			if couldPromo {
 				for _, pt := range PieceTypes() {
 					if pt.isPromotable() {
-						m := &Move{s1: s1, s2: s2, state: gs, promo: pt.Ptr()}
+						m := &Move{s1: s1, s2: s2, state: gs, promo: pt}
 						if m.isValid() {
 							moves = append(moves, m)
 						}

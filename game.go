@@ -65,7 +65,7 @@ func NewGame(options ...func(*Game)) *Game {
 	return game
 }
 
-func (g *Game) Move(s1, s2 *Square, promo *PieceType) error {
+func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
 	if g.outcome != NoOutcome {
 		return errors.New("chess: invalid move game complete")
 	}

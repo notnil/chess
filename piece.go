@@ -31,7 +31,8 @@ func (c Color) String() string {
 type PieceType int
 
 const (
-	King PieceType = iota + 1
+	NoPiece PieceType = iota
+	King
 	Queen
 	Rook
 	Bishop
@@ -41,10 +42,6 @@ const (
 
 func PieceTypes() []PieceType {
 	return []PieceType{King, Queen, Rook, Bishop, Knight, Pawn}
-}
-
-func (p PieceType) Ptr() *PieceType {
-	return &p
 }
 
 func (p PieceType) isPromotable() bool {
