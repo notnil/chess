@@ -1,580 +1,164 @@
 package chess
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
-type testStruct struct {
-	Board Board
-	Turn  color
-	Moves []*move
-	Err   bool
-}
-
-// taken from http://en.lichess.org/YvHkKnvo
-func TestPartialGame(t *testing.T) {
-	moves := []*move{
-		{E2, E4, nil},
-		{D7, D5, nil},
-		{E4, D5, nil},
-		{D8, D5, nil},
-		{B1, C3, nil},
-		{D5, A5, nil},
-		{A2, A3, nil},
-		{B8, C6, nil},
-		{B2, B4, nil},
-		{C6, B4, nil},
-		{C3, B5, nil},
-		{A7, A6, nil},
-		{C2, C3, nil},
-	}
-	g := NewGame()
-	for _, m := range moves {
-		if err := g.Move(m.s1, m.s2, m.promo); err != nil {
-			t.Fatal(err, m, "valid moves", g.board.validMoves(m.s1), g.board)
-		}
-	}
-}
-
-func TestMoves(t *testing.T) {
-	for _, tStruct := range tests {
-		for _, m := range tStruct.Moves {
-			boardCopy := map[*Square]*Piece{}
-			for sq, p := range tStruct.Board {
-				boardCopy[sq] = p
-			}
-			g := &Game{
-				moves: []*move{},
-				board: boardCopy,
-				turn:  tStruct.Turn,
-			}
-			p := g.board.piece(m.s1)
-			err := g.Move(m.s1, m.s2, m.promo)
-			if tStruct.Err && err == nil {
-				t.Errorf("Expected error from piece %s move %+v", p, m)
-			} else if !tStruct.Err && err != nil {
-				t.Errorf("Received unexpected error %s from piece %s move %s", err.Error(), p, m)
-			}
-		}
-	}
-}
-
-func TestCheckmate(t *testing.T) {
-	g := &Game{
-		moves: []*move{},
-		board: map[*Square]*Piece{
-			C8: BKing,
-			C6: WKing,
-			H1: WRook,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g.Move(H1, H8, nil); err != nil {
-		t.Error(err)
-	}
-
-	expected := WhiteWon
-	if g.status != expected {
-		t.Errorf("expected %s got %s", expected, g.status)
-	}
-}
-
-func TestStalemate(t *testing.T) {
-	g := &Game{
-		moves: []*move{},
-		board: map[*Square]*Piece{
-			F7: WKing,
-			F5: WQueen,
-			H8: BKing,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g.Move(F5, G6, nil); err != nil {
-		t.Error(err)
-	}
-	expected := Draw
-	if g.status != expected {
-		t.Errorf("expected %s got %s", expected, g.status)
-	}
-}
-
-func TestInvalidCastling(t *testing.T) {
-	// test king previous move
-	g1 := &Game{
-		moves: []*move{
-			&move{s1: E2, s2: E1, promo: nil},
-		},
-		board: map[*Square]*Piece{
-			A1: WRook,
-			E1: WKing,
-			H1: WRook,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g1.Move(E1, G1, nil); err == nil {
-		t.Error("allowed castle with a previous move by the king")
-	}
-	// test rook previous move
-	g2 := &Game{
-		moves: []*move{
-			&move{s1: H2, s2: H1, promo: nil},
-		},
-		board: map[*Square]*Piece{
-			A1: WRook,
-			E1: WKing,
-			H1: WRook,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g2.Move(E1, G1, nil); err == nil {
-		t.Error("allowed castle with a previous move by the rook")
-	}
-	// test pieces between
-	g3 := &Game{
-		moves: []*move{},
-		board: map[*Square]*Piece{
-			A1: WRook,
-			B1: WKnight,
-			E1: WKing,
-			H1: WRook,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g3.Move(E1, C1, nil); err == nil {
-		t.Error("allowed castle with a piece in between the king and rook")
-	}
-	// The king is not currently in check.
-	g4 := &Game{
-		moves: []*move{},
-		board: map[*Square]*Piece{
-			A1: WRook,
-			E1: WKing,
-			H1: WRook,
-			H4: BBishop,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g4.Move(E1, G1, nil); err == nil {
-		t.Error("allowed castle with the king in check")
-	}
-	// The king does not pass through a square that is attacked by an enemy piece.[4]
-	g5 := &Game{
-		moves: []*move{},
-		board: map[*Square]*Piece{
-			A1: WRook,
-			E1: WKing,
-			H1: WRook,
-			H3: BBishop,
-		},
-		turn:   white,
-		status: Ongoing,
-	}
-	if err := g5.Move(E1, G1, nil); err == nil {
-		t.Error("allowed castle with the king traveling through an attacked square")
-	}
-}
-
-func TestValidCastle(t *testing.T) {
-	g := NewGame()
-	moves := []*move{
-		{E2, E4, nil},
-		{E7, E5, nil},
-		{G1, F3, nil},
-		{B8, C6, nil},
-		{F1, B5, nil},
-		{A7, A6, nil},
-		{B5, A4, nil},
-		{G8, F6, nil},
-		{E1, G1, nil},
-	}
-	for _, m := range moves {
-		if err := g.Move(m.s1, m.s2, m.promo); err != nil {
-			t.Error(err)
-		}
-	}
-
-	p := g.board.piece(F1)
-	if p == nil || p != WRook {
-		t.Error("Rook should have moved.")
-	}
-}
-func TestEnPassant(t *testing.T) {
-	// allow if pawn just moved two up
-	g1 := &Game{
-		moves: []*move{
-			&move{s1: A2, s2: A4, promo: nil},
-		},
-		board: map[*Square]*Piece{
-			A4: WPawn,
-			B3: WPawn,
-			A5: BPawn,
-			B4: BPawn,
-		},
-		turn:   black,
-		status: Ongoing,
-	}
-	if err := g1.Move(B4, A3, nil); err != nil {
-		t.Error(err)
-	}
-	// disallow if pawn didn't just move two up
-	g2 := &Game{
-		moves: []*move{
-			&move{s1: B2, s2: B3, promo: nil},
-		},
-		board: map[*Square]*Piece{
-			A4: WPawn,
-			B4: WPawn,
-			A5: BPawn,
-			B4: BPawn,
-		},
-		turn:   black,
-		status: Ongoing,
-	}
-	if err := g2.Move(B4, A3, nil); err == nil {
-		t.Error("shouldn't allow en passant w/ prior move being two up")
-	}
-}
-
-func allMovesExcluding(s1 *Square, moves []*move) []*move {
-	excluded := []*move{}
-	for _, s := range allSquares {
-		found := false
-		for _, m := range moves {
-			if m.s2 == s {
-				found = true
-				break
-			}
-		}
-		if !found {
-			excluded = append(excluded, &move{
-				s1: s1, s2: s, promo: nil,
-			})
-		}
-	}
-	return excluded
+type moveState struct {
+	Move      *Move
+	PostState *GameState
 }
 
 var (
-	validKingE4Moves = []*move{
-		&move{s1: E4, s2: D3, promo: nil},
-		&move{s1: E4, s2: D4, promo: nil},
-		&move{s1: E4, s2: D5, promo: nil},
-		&move{s1: E4, s2: E3, promo: nil},
-		&move{s1: E4, s2: E5, promo: nil},
-		&move{s1: E4, s2: F3, promo: nil},
-		&move{s1: E4, s2: F4, promo: nil},
-		&move{s1: E4, s2: F5, promo: nil},
+	validMoves = []*Move{
+		// pawn moves
+		&Move{s1: E2, s2: E4, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+		&Move{s1: A2, s2: A3, state: unsafeFEN("8/8/8/8/8/8/P7/8 w - - 0 1")},
+		&Move{s1: A7, s2: A6, state: unsafeFEN("8/p7/8/8/8/8/8/8 b - - 0 1")},
+		&Move{s1: A7, s2: A5, state: unsafeFEN("8/p7/8/8/8/8/8/8 b - - 0 1")},
+		&Move{s1: C4, s2: B5, state: unsafeFEN("8/8/8/1p1p4/2P5/8/8/8 w - - 0 1")},
+		&Move{s1: C4, s2: D5, state: unsafeFEN("8/8/8/1p1p4/2P5/8/8/8 w - - 0 1")},
+		&Move{s1: C4, s2: C5, state: unsafeFEN("8/8/8/1p1p4/2P5/8/8/8 w - - 0 1")},
+		&Move{s1: C5, s2: B4, state: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
+		&Move{s1: C5, s2: D4, state: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
+		&Move{s1: C5, s2: C4, state: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
+		&Move{s1: A4, s2: B3, state: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
+		&Move{s1: A2, s2: A1, promo: Queen, state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
+		// knight moves
+		&Move{s1: E4, s2: F6, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		&Move{s1: E4, s2: D6, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		&Move{s1: E4, s2: C3, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		// bishop moves
+		&Move{s1: E4, s2: H7, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D5, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: B1, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		// rook moves
+		&Move{s1: B2, s2: B4, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: B7, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: A2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: H2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		// queen moves
+		&Move{s1: B2, s2: E5, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: A1, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: A2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: H2, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		// king moves
+		&Move{s1: E4, s2: E5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: E3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D4, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: D5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		// castleing
+		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E8, s2: G8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		&Move{s1: E8, s2: C8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		// king moving in front of enemy pawn http://en.lichess.org/4HXJOtpN#75
+		&Move{s1: F8, s2: G7, state: unsafeFEN("3rrk2/8/2p3P1/1p2nP1p/pP2p3/P1B1NbPB/2P2K2/5R2 b - - 1 38")},
 	}
-	validKingE4Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{E4: WKing},
-		Moves: validKingE4Moves,
-		Err:   false,
+
+	invalidMoves = []*Move{
+		// out of turn moves
+		&Move{s1: E7, s2: E5, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+		&Move{s1: E2, s2: E4, state: unsafeFEN("rnbqkbnr/1ppppppp/p7/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")},
+		// pawn moves
+		&Move{s1: E2, s2: D3, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+		&Move{s1: E2, s2: F3, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+		&Move{s1: E2, s2: E5, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+		&Move{s1: A2, s2: A1, state: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
+		// knight moves
+		&Move{s1: E4, s2: F2, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		&Move{s1: E4, s2: F3, state: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		// bishop moves
+		&Move{s1: E4, s2: C6, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: E5, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: E4, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: F3, state: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
+		// rook moves
+		&Move{s1: B2, s2: B1, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: C3, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: B8, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: G7, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		// queen moves
+		&Move{s1: B2, s2: B1, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: C4, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: B8, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		&Move{s1: B2, s2: G7, state: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		// king moves
+		&Move{s1: E4, s2: F3, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: F4, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		&Move{s1: E4, s2: F5, state: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
+		// castleing
+		&Move{s1: E1, s2: B1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E8, s2: B8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("2r1k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		&Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
+		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
+		// invalid promotion for non-pawn move
+		&Move{s1: B8, s2: D7, promo: Pawn, state: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
 	}
-	invalidKingE4Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{E4: WKing},
-		Moves: allMovesExcluding(E4, validKingE4Moves),
-		Err:   true,
-	}
-	validKingA1Moves = []*move{
-		&move{s1: A1, s2: A2, promo: nil},
-		&move{s1: A1, s2: B1, promo: nil},
-		&move{s1: A1, s2: B2, promo: nil},
-	}
-	validKingA1Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{A1: WKing},
-		Moves: validKingA1Moves,
-		Err:   false,
-	}
-	invalidKingA1Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{A1: WKing},
-		Moves: allMovesExcluding(A1, validKingA1Moves),
-		Err:   true,
-	}
-	validQueenC5Moves = []*move{
-		&move{s1: C5, s2: A5, promo: nil},
-		&move{s1: C5, s2: B5, promo: nil},
-		&move{s1: C5, s2: D5, promo: nil},
-		&move{s1: C5, s2: E5, promo: nil},
-		&move{s1: C5, s2: F5, promo: nil},
-		&move{s1: C5, s2: G5, promo: nil},
-		&move{s1: C5, s2: H5, promo: nil},
-		&move{s1: C5, s2: C1, promo: nil},
-		&move{s1: C5, s2: C2, promo: nil},
-		&move{s1: C5, s2: C3, promo: nil},
-		&move{s1: C5, s2: C4, promo: nil},
-		&move{s1: C5, s2: C6, promo: nil},
-		&move{s1: C5, s2: C7, promo: nil},
-		&move{s1: C5, s2: C8, promo: nil},
-		&move{s1: C5, s2: A7, promo: nil},
-		&move{s1: C5, s2: B6, promo: nil},
-		&move{s1: C5, s2: D4, promo: nil},
-		&move{s1: C5, s2: E3, promo: nil},
-		&move{s1: C5, s2: F2, promo: nil},
-		&move{s1: C5, s2: G1, promo: nil},
-		&move{s1: C5, s2: A3, promo: nil},
-		&move{s1: C5, s2: B4, promo: nil},
-		&move{s1: C5, s2: D6, promo: nil},
-		&move{s1: C5, s2: E7, promo: nil},
-		&move{s1: C5, s2: F8, promo: nil},
-	}
-	validQueenC5Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{C5: WQueen},
-		Moves: validQueenC5Moves,
-		Err:   false,
-	}
-	invalidQueenC5Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{C5: WQueen},
-		Moves: allMovesExcluding(C5, validQueenC5Moves),
-		Err:   true,
-	}
-	validRookC5Moves = []*move{
-		&move{s1: C5, s2: A5, promo: nil},
-		&move{s1: C5, s2: B5, promo: nil},
-		&move{s1: C5, s2: D5, promo: nil},
-		&move{s1: C5, s2: E5, promo: nil},
-		&move{s1: C5, s2: F5, promo: nil},
-		&move{s1: C5, s2: G5, promo: nil},
-		&move{s1: C5, s2: H5, promo: nil},
-		&move{s1: C5, s2: C1, promo: nil},
-		&move{s1: C5, s2: C2, promo: nil},
-		&move{s1: C5, s2: C3, promo: nil},
-		&move{s1: C5, s2: C4, promo: nil},
-		&move{s1: C5, s2: C6, promo: nil},
-		&move{s1: C5, s2: C7, promo: nil},
-		&move{s1: C5, s2: C8, promo: nil},
-	}
-	validRookC5Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{C5: WRook},
-		Moves: validRookC5Moves,
-		Err:   false,
-	}
-	invalidRookC5Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{C5: WRook},
-		Moves: allMovesExcluding(C5, validRookC5Moves),
-		Err:   true,
-	}
-	validBishopG2Moves = []*move{
-		&move{s1: G2, s2: A8, promo: nil},
-		&move{s1: G2, s2: B7, promo: nil},
-		&move{s1: G2, s2: C6, promo: nil},
-		&move{s1: G2, s2: D5, promo: nil},
-		&move{s1: G2, s2: E4, promo: nil},
-		&move{s1: G2, s2: F3, promo: nil},
-		&move{s1: G2, s2: H1, promo: nil},
-		&move{s1: G2, s2: F1, promo: nil},
-		&move{s1: G2, s2: H3, promo: nil},
-	}
-	validBishopG2Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{G2: WBishop},
-		Moves: validBishopG2Moves,
-		Err:   false,
-	}
-	invalidBishopG2Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{G2: WBishop},
-		Moves: allMovesExcluding(G2, validBishopG2Moves),
-		Err:   true,
-	}
-	validKnightD4Moves = []*move{
-		&move{s1: D4, s2: B3, promo: nil},
-		&move{s1: D4, s2: B5, promo: nil},
-		&move{s1: D4, s2: C2, promo: nil},
-		&move{s1: D4, s2: C6, promo: nil},
-		&move{s1: D4, s2: E2, promo: nil},
-		&move{s1: D4, s2: E6, promo: nil},
-		&move{s1: D4, s2: F3, promo: nil},
-		&move{s1: D4, s2: F5, promo: nil},
-	}
-	validKnightD4Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{D4: WKnight},
-		Moves: validKnightD4Moves,
-		Err:   false,
-	}
-	invalidKnightD4Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{D4: WKnight},
-		Moves: allMovesExcluding(D4, validKnightD4Moves),
-		Err:   true,
-	}
-	validWhitePawnE2Moves = []*move{
-		&move{s1: E2, s2: E3, promo: nil},
-		&move{s1: E2, s2: E4, promo: nil},
-	}
-	validWhitePawnE2Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{E2: WPawn},
-		Moves: validWhitePawnE2Moves,
-		Err:   false,
-	}
-	invalidWhitePawnE2Test = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{E2: WPawn},
-		Moves: allMovesExcluding(E2, validWhitePawnE2Moves),
-		Err:   true,
-	}
-	validBlackPawnA6Moves = []*move{
-		&move{s1: A6, s2: A5, promo: nil},
-	}
-	validBlackPawnA6Test = &testStruct{
-		Turn:  black,
-		Board: map[*Square]*Piece{A6: BPawn},
-		Moves: validBlackPawnA6Moves,
-		Err:   false,
-	}
-	invalidBlackPawnA6Test = &testStruct{
-		Turn:  black,
-		Board: map[*Square]*Piece{A6: BPawn},
-		Moves: allMovesExcluding(A6, validBlackPawnA6Moves),
-		Err:   true,
-	}
-	blackPawnCaptureTest = &testStruct{
-		Turn:  black,
-		Board: map[*Square]*Piece{G7: BPawn, H6: WRook},
-		Moves: []*move{
-			&move{s1: G7, s2: H6, promo: nil},
-			&move{s1: G7, s2: G6, promo: nil},
-			&move{s1: G7, s2: G5, promo: nil},
+
+	validMoveState = []moveState{
+		{
+			Move:      &Move{s1: E2, s2: E4, state: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")},
+			PostState: unsafeFEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"),
 		},
-		Err: false,
-	}
-	blockedMoveTest = &testStruct{
-		Turn:  white,
-		Board: map[*Square]*Piece{C6: WRook, C4: WPawn},
-		Moves: []*move{
-			&move{s1: C6, s2: C4, promo: nil},
-			&move{s1: C6, s2: C3, promo: nil},
-			&move{s1: C6, s2: C2, promo: nil},
+		{
+			Move:      &Move{s1: E1, s2: G1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+			PostState: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 0 1"),
 		},
-		Err: true,
-	}
-	validCheckTest = &testStruct{
-		Turn: white,
-		Board: map[*Square]*Piece{
-			A2: BBishop,
-			B4: WKnight,
-			C6: WRook,
-			D7: WPawn,
-			E6: WKing,
-			F1: BRook,
-			H8: BKing,
+		{
+			Move:      &Move{s1: A4, s2: B3, state: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
+			PostState: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/11pP4/PpQ2N2/2RN1PPP/2R4K w - - 0 24"),
 		},
-		Moves: []*move{
-			&move{s1: E6, s2: E7, promo: nil},
-			&move{s1: E6, s2: E5, promo: nil},
-			&move{s1: E6, s2: D6, promo: nil},
-			&move{s1: B4, s2: D5, promo: nil},
+		// castling should reset the half move clock
+		{
+			Move:      &Move{s1: E1, s2: G1, state: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9")},
+			PostState: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
 		},
-		Err: false,
-	}
-	invalidCheckTest = &testStruct{
-		Turn: white,
-		Board: map[*Square]*Piece{
-			A2: BBishop,
-			B4: WKnight,
-			C6: WRook,
-			D7: WPawn,
-			E6: WKing,
-			F1: BRook,
-			H8: BKing,
-		},
-		Moves: []*move{
-			&move{s1: E6, s2: D5, promo: nil},
-			&move{s1: E6, s2: F6, promo: nil},
-			&move{s1: C6, s2: C3, promo: nil},
-		},
-		Err: true,
-	}
-	validWhitePawnPromomtion = &testStruct{
-		Turn: white,
-		Board: map[*Square]*Piece{
-			A7: WPawn,
-			B8: BKnight,
-		},
-		Moves: []*move{
-			&move{s1: A7, s2: A8, promo: WQueen},
-			&move{s1: A7, s2: A8, promo: WRook},
-			&move{s1: A7, s2: B8, promo: WBishop},
-			&move{s1: A7, s2: B8, promo: WKnight},
-		},
-		Err: false,
-	}
-	invalidWhitePawnPromomtion = &testStruct{
-		Turn: white,
-		Board: map[*Square]*Piece{
-			A7: WPawn,
-			B8: BKnight,
-		},
-		Moves: []*move{
-			&move{s1: A7, s2: A8, promo: WKing},
-			&move{s1: A7, s2: A8, promo: nil},
-			&move{s1: A7, s2: A8, promo: WPawn},
-		},
-		Err: true,
-	}
-	validWhiteCastling = &testStruct{
-		Turn: white,
-		Board: map[*Square]*Piece{
-			A1: WRook,
-			E1: WKing,
-			H1: WRook,
-		},
-		Moves: []*move{
-			&move{s1: E1, s2: G1, promo: nil},
-			&move{s1: E1, s2: C1, promo: nil},
-		},
-		Err: false,
-	}
-	validBlackCastling = &testStruct{
-		Turn: black,
-		Board: map[*Square]*Piece{
-			A8: BRook,
-			E8: BKing,
-			H8: BRook,
-		},
-		Moves: []*move{
-			&move{s1: E8, s2: G8, promo: nil},
-			&move{s1: E8, s2: C8, promo: nil},
-		},
-		Err: false,
-	}
-	tests = []*testStruct{
-		validKingE4Test,
-		invalidKingE4Test,
-		validKingA1Test,
-		invalidKingA1Test,
-		validQueenC5Test,
-		invalidQueenC5Test,
-		validRookC5Test,
-		invalidRookC5Test,
-		validBishopG2Test,
-		invalidBishopG2Test,
-		validKnightD4Test,
-		invalidKnightD4Test,
-		validWhitePawnE2Test,
-		invalidWhitePawnE2Test,
-		validBlackPawnA6Test,
-		invalidBlackPawnA6Test,
-		blackPawnCaptureTest,
-		blockedMoveTest,
-		validCheckTest,
-		invalidCheckTest,
-		validWhitePawnPromomtion,
-		invalidWhitePawnPromomtion,
-		validWhiteCastling,
-		validBlackCastling,
 	}
 )
+
+func unsafeFEN(s string) *GameState {
+	g, err := decodeFEN(s)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return g
+}
+
+func TestValidMoves(t *testing.T) {
+	for _, m := range validMoves {
+		if !m.isValid() {
+			log.Println(m.state.board.Draw())
+			t.Fatalf("expected move %s to be valid", m)
+		}
+	}
+}
+
+func TestInvalidMoves(t *testing.T) {
+	for _, m := range invalidMoves {
+		if m.isValid() {
+			log.Println(m.state.board.Draw())
+			t.Fatalf("expected move %s to be invalid", m)
+		}
+	}
+}
+
+func TestValidMoveStates(t *testing.T) {
+	for _, ms := range validMoveState {
+		if !ms.Move.isValid() {
+			log.Println(ms.Move.state.board.Draw())
+			t.Fatalf("expected move %s to be valid", ms.Move)
+		}
+		postState := ms.Move.postMoveState()
+		if postState.String() != ms.PostState.String() {
+			t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+				ms.Move.state.board.Draw(), ms.Move.String(), ms.PostState.String(),
+				ms.PostState.board.Draw(), postState.String(), postState.board.Draw())
+		}
+	}
+}

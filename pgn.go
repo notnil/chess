@@ -1,212 +1,98 @@
 package chess
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"regexp"
 	"strings"
 )
 
-type Notation interface {
-	Encode(*Game) []byte
-	Decode(text []byte) (*Game, error)
-}
+/*
+[Event "Troll Masters"]
+[Site "Gausdal NOR"]
+[Date "2001.01.05"]
+[Round "1"]
+[White "Edvardsen,R"]
+[Black "Carlsen,Magnus"]
+[Result "1/2-1/2"]
+[WhiteElo "2055"]
+[BlackElo ""]
+[ECO "D12"]
 
-type PGN struct{}
+1.d4 Nf6 2.Nf3 d5 3.e3 Bf5 4.c4 c6 5.Nc3 e6 6.Bd3 Bxd3 7.Qxd3 Nbd7 8.b3 Bd6
+9.O-O O-O 10.Bb2 Qe7 11.Rad1 Rad8 12.Rfe1 dxc4 13.bxc4 e5 14.dxe5 Nxe5 15.Nxe5 Bxe5
+16.Qe2 Rxd1 17.Rxd1 Rd8 18.Rxd8+ Qxd8 19.Qd1 Qxd1+ 20.Nxd1 Bxb2 21.Nxb2 b5
+22.f3 Kf8 23.Kf2 Ke7  1/2-1/2
+*/
 
-func (n PGN) Encode(g *Game) []byte {
-	return []byte{}
-}
-
-func (n PGN) Decode(b []byte) (*Game, error) {
-	text := string(b)
-	// remove comments
-	text = removeSection("{", "}", text)
-	// remove tag pairs
-	text = removeSection(`\[`, `\]`, text)
-	// remove line breaks
-	text = strings.Replace(text, "\n", "", -1)
-	g := NewGame()
-	for _, txtMove := range sepMoves(text) {
-		// log.Println(g.board)
-		// log.Println(txtMove)
-		m, err := formMove(g, txtMove)
-		if err != nil {
-			return nil, err
-		} else if m == nil {
-			continue
-		}
-		log.Println("MOVE", m)
-		if err := g.Move(m.s1, m.s2, m.promo); err != nil {
+func decodePGN(pgn string) (*Game, error) {
+	tagPairs := getTagPairs(pgn)
+	moveStrs, outcome := moveList(pgn)
+	g := NewGame(TagPairs(tagPairs))
+	for _, alg := range moveStrs {
+		if err := g.MoveAlg(alg); err != nil {
+			log.Println(moveStrs)
 			return nil, err
 		}
 	}
+	g.outcome = outcome
 	return g, nil
 }
 
-const (
-	pgnShortCastle = "O-O"
-	pgnLongCastle  = "O-O-O"
-	pgnWhiteWin    = "1-0"
-	pgnBlackWin    = "0-1"
-	pgnDraw        = "1/2-1/2"
+func encodePGN(g *Game) string {
+	return ""
+}
+
+var (
+	tagPairRegex = regexp.MustCompile(`[(.*)\w"(.*)"]`)
 )
 
-func formMove(g *Game, txtMove string) (*move, error) {
-	// e4 Bb5 Ra6+ Rae8 Nxf7 Rxe1+ O-O O-O-O b8=Q+
-	c := g.turn
-	switch txtMove {
-	case pgnShortCastle:
-		s1 := square(fileE, c.backRank())
-		s2 := square(fileG, c.backRank())
-		return &move{s1: s1, s2: s2}, nil
-	case pgnLongCastle:
-		s1 := square(fileE, c.backRank())
-		s2 := square(fileC, c.backRank())
-		return &move{s1: s1, s2: s2}, nil
-	case pgnWhiteWin:
-		g.status = WhiteWon
-		return nil, nil
-	case pgnBlackWin:
-		g.status = BlackWon
-		return nil, nil
-	case pgnDraw:
-		g.status = Draw
-		return nil, nil
+func getTagPairs(pgn string) map[string]string {
+	tagPairs := map[string]string{}
+	matches := tagPairRegex.FindAllString(pgn, -1)
+	for _, m := range matches {
+		results := tagPairRegex.FindStringSubmatch(m)
+		if len(results) == 3 {
+			tagPairs[results[1]] = results[2]
+		}
 	}
-	parts, err := calcMoveParts(txtMove)
-	if err != nil {
-		return nil, err
-	}
-	s1 := parts.S1(g)
-	if s1 == nil {
-		return nil, errors.New("chess: pgn decoder couldn't resolve origin square for " + txtMove)
-	}
-	promo := parts.Promotion(g)
-	return &move{s1: s1, s2: parts.s2, promo: promo}, nil
+	return tagPairs
 }
 
-type moveParts struct {
-	p      pieceType
-	s1File *file
-	s1Rank *rank
-	s2     *Square
-	promo  *pieceType
-}
-
-const (
-	moveRegex = `([K,Q,R,B,N])?([a-h])?([1-8])?x?([a-h][1-8])(?:e\.p\.)?\+?\+?(=[Q,R,B,N])?`
+var (
+	moveNumRegex = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
 )
 
-func calcMoveParts(txtMove string) (*moveParts, error) {
-	// parsed list format: ["Ra1xe8+" "R" "a" "1" "e8" ""]
-	// parseErr := errors.New("chess: pgn move text " + txtMove + " could not be parsed")
-	r := regexp.MustCompile(moveRegex)
-	m := r.FindStringSubmatch(txtMove)
-	if m == nil || len(m) != 6 {
-		return nil, errors.New("chess: pgn move text " + txtMove + " could not be parsed")
-	}
-	s2 := squareFromString(m[4])
-	if s2 == nil {
-		return nil, errors.New("chess: pgn decoder couldn't resolve destination square for " + txtMove)
-	}
-	p, found := peiceTypeFromChar(m[1])
-	if !found {
-		return nil, errors.New("chess: pgn decoder couldn't resolve piece type for " + txtMove)
-	}
-	var promo *pieceType
-	promoType, found := peiceTypeFromChar(m[5])
-	if found {
-		promo = &promoType
-	}
-	return &moveParts{
-		p:      p,
-		s1File: fileFromString(m[2]),
-		s1Rank: rankFromString(m[3]),
-		s2:     s2,
-		promo:  promo,
-	}, nil
-}
+func moveList(pgn string) ([]string, Outcome) {
+	// remove comments
+	text := removeSection("{", "}", pgn)
+	// remove variations
+	text = removeSection(`\(`, `\)`, text)
+	// remove tag pairs
+	text = removeSection(`\[`, `\]`, text)
+	// remove line breaks
+	text = strings.Replace(text, "\n", " ", -1)
 
-func (m *moveParts) S1(g *Game) *Square {
-	for _, sq := range g.board.squaresForColor(g.turn) {
-		p := g.board.piece(sq)
-		if p == nil || p.pieceType() != m.p {
-			continue
-		}
-		if m.s1File != nil && sq.file != *m.s1File {
-			continue
-		}
-		if m.s1Rank != nil && sq.rank != *m.s1Rank {
-			continue
-		}
-		promo := m.Promotion(g)
-		if err := g.copy().Move(sq, m.s2, promo); err == nil {
-			return sq
-		}
-	}
-	return nil
-}
-
-func (m *moveParts) Promotion(g *Game) *Piece {
-	var promo *Piece
-	if m.promo != nil && *m.promo != pawn {
-		promo = piece(g.turn, *m.promo)
-	}
-	return promo
-}
-
-func peiceTypeFromChar(c string) (pieceType, bool) {
-	switch c {
-	case "K":
-		return king, true
-	case "Q":
-		return queen, true
-	case "R":
-		return rook, true
-	case "B":
-		return bishop, true
-	case "N":
-		return knight, true
-	case "":
-		return pawn, true
-	}
-	return pawn, false
-}
-
-func sepMoves(n string) []string {
-	moves := []string{}
-	addMovePair := func(s string) {
-		s = strings.TrimSpace(s)
-		for _, m := range strings.Split(s, " ") {
-			m = strings.TrimSpace(m)
-			if m != "" {
-				moves = append(moves, m)
+	list := strings.Split(text, " ")
+	filtered := []string{}
+	var outcome Outcome
+	for _, move := range list {
+		move = strings.TrimSpace(move)
+		switch move {
+		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
+			outcome = Outcome(move)
+		case "":
+		default:
+			results := moveNumRegex.FindStringSubmatch(move)
+			if len(results) == 2 && results[1] != "" {
+				filtered = append(filtered, results[1])
 			}
 		}
 	}
-
-	count := 1
-	for {
-		start := fmt.Sprintf("%d.", count)
-		startIndex := strings.Index(n, start)
-		count += 1
-		end := fmt.Sprintf("%d.", count)
-		endIndex := strings.Index(n, end)
-		if startIndex == -1 {
-			return moves
-		} else if endIndex == -1 {
-			addMovePair(n[startIndex+len(start) : len(n)])
-		} else {
-			addMovePair(n[startIndex+len(start) : endIndex])
-		}
-	}
-	return moves
+	return filtered, outcome
 }
 
 func removeSection(leftChar, rightChar, s string) string {
-	r := regexp.MustCompile(leftChar + ".*" + rightChar)
+	r := regexp.MustCompile(leftChar + ".*?" + rightChar)
 	for {
 		i := r.FindStringIndex(s)
 		if i == nil {
