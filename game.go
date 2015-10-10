@@ -38,6 +38,24 @@ type Game struct {
 	method   Method
 }
 
+func PGN(r io.Reader) (func(*Game), error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	game, err := decodePGN(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return func(g *Game) {
+		g.tagPairs = game.tagPairs
+		g.moves = game.moves
+		g.state = game.state
+		g.outcome = game.outcome
+		g.method = game.method
+	}, nil
+}
+
 func FEN(r io.Reader) (func(*Game), error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
