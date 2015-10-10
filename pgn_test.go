@@ -59,10 +59,10 @@ func TestValidPGNs(t *testing.T) {
 		if err != nil {
 			t.Fatalf("recieved unexpected pgn error %s", err.Error())
 		}
-		if game.GameState().String() != test.PostState.String() {
+		if game.State().String() != test.PostState.String() {
 			t.Fatalf("expected board to be \n%s\nFEN:%s\n but got \n%s\n\nFEN:%s\n",
 				test.PostState.board.Draw(), test.PostState.String(),
-				game.GameState().board.Draw(), game.GameState().String())
+				game.State().board.Draw(), game.State().String())
 		}
 	}
 }

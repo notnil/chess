@@ -11,25 +11,37 @@ const (
 	startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
 )
 
+// A Outcome is the result of a game.
 type Outcome string
 
 const (
+	// NoOutcome indicates that a game is in progress or ended without a result.
 	NoOutcome Outcome = "*"
-	WhiteWon  Outcome = "1-0"
-	BlackWon  Outcome = "0-1"
-	Draw      Outcome = "1/2-1/2"
+	// WhiteWon indicates that white won the game.
+	WhiteWon Outcome = "1-0"
+	// BlackWon indicates that black won the game.
+	BlackWon Outcome = "0-1"
+	// Draw indicates that game was a draw.
+	Draw Outcome = "1/2-1/2"
 )
 
+// A Method is the way in which the outcome occured.
 type Method int
 
 const (
+	// NoMethod indicates that an outcome hasn't occured or that the method can't be determined.
 	NoMethod Method = iota
+	// Checkmate indicates that the game was won by a playing being checkmated.
 	Checkmate
+	// Resignation indicates that the game was won by player resigning.
 	Resignation
+	// DrawOffer indicates that the game was drawn by player agreeing to a draw offer.
 	DrawOffer
+	// Stalemate indicates that the game was drawn by player being stalemated.
 	Stalemate
 )
 
+// A Game represents a single chess game.
 type Game struct {
 	tagPairs map[string]string
 	moves    []*Move
@@ -38,6 +50,11 @@ type Game struct {
 	method   Method
 }
 
+// PGN takes a reader and returns a function that updates
+// the game to reflect the PGN data.  The returned function
+// is designed to be used in the NewGame constructor.  An
+// error is returned if there is a problem parsing the PGN
+// data.
 func PGN(r io.Reader) (func(*Game), error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -52,6 +69,11 @@ func PGN(r io.Reader) (func(*Game), error) {
 	}, nil
 }
 
+// FEN takes a reader and returns a function that updates
+// the game to reflect the FEN data.  Since FEN doesn't include
+// prior moves, the move list will be empty.  The returned
+// function is designed to be used in the NewGame constructor.
+// An error is returned if there is a problem parsing the FEN data.
 func FEN(r io.Reader) (func(*Game), error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -66,12 +88,18 @@ func FEN(r io.Reader) (func(*Game), error) {
 	}, nil
 }
 
+// TagPairs returns a function that sets the tag pairs
+// to the given value.  The returned function is designed
+// to be used in the NewGame constructor.
 func TagPairs(tagPairs map[string]string) func(*Game) {
 	return func(g *Game) {
 		g.tagPairs = tagPairs
 	}
 }
 
+// NewGame defaults to returning a game in the standard
+// opening position.  Options can be given to change
+// the game's initial state.
 func NewGame(options ...func(*Game)) *Game {
 	state, _ := decodeFEN(startFEN)
 	game := &Game{
@@ -86,6 +114,9 @@ func NewGame(options ...func(*Game)) *Game {
 	return game
 }
 
+// Move moves the piece at s1 to s2, applies the given
+// promotion, and updates the game.  An error is returned
+// if the move is invalid or the game has already been completed.
 func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
 	if g.outcome != NoOutcome {
 		return errors.New("chess: invalid move game complete")
@@ -104,22 +135,30 @@ func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
 	return nil
 }
 
+// MoveAlg decodes the given string in algebraic notation
+// and calls the Move function.  An error is returned if
+// the move can't be decoded, the move is invalid, or the
+// game has already been completed.
 func (g *Game) MoveAlg(alg string) error {
-	move, err := decodeMove(g.GameState(), alg)
+	move, err := decodeMove(g.State(), alg)
 	if err != nil {
 		return err
 	}
 	return g.Move(move.S1(), move.S2(), move.Promo())
 }
 
+// ValidMoves returns a list of valid moves in the
+// current position.
 func (g *Game) ValidMoves() []*Move {
 	return g.state.validMoves()
 }
 
+// Moves returns the move history of the game.
 func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)
 }
 
+// TagPairs returns the game's tag pairs.
 func (g *Game) TagPairs() map[string]string {
 	cp := map[string]string{}
 	for k, v := range g.tagPairs {
@@ -128,26 +167,35 @@ func (g *Game) TagPairs() map[string]string {
 	return cp
 }
 
-func (g *Game) GameState() *GameState {
+// State returns the game's current state.
+func (g *Game) State() *GameState {
 	return g.state
 }
 
+// Outcome returns the game outcome.
 func (g *Game) Outcome() Outcome {
 	return g.outcome
 }
 
+// Method returns the method in which the outcome occured.
 func (g *Game) Method() Method {
 	return g.method
 }
 
+// String implements the fmt.Stringer interface and returns
+// the game's PGN.
 func (g *Game) String() string {
 	return encodePGN(g)
 }
 
+// MarshalText implements the encoding.TextMarshaler interface and
+// encodes the game's PGN.
 func (g *Game) MarshalText() (text []byte, err error) {
 	return []byte(encodePGN(g)), nil
 }
 
+// UnmarshalText implements the encoding.TextUnarshaler interface and
+// assumes the data is in the PGN format.
 func (g *Game) UnmarshalText(text []byte) error {
 	game, err := decodePGN(string(text))
 	if err != nil {
