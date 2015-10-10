@@ -54,6 +54,8 @@ var (
 		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
 		&Move{s1: E8, s2: G8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
 		&Move{s1: E8, s2: C8, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		// king moving in front of enemy pawn http://en.lichess.org/4HXJOtpN#75
+		&Move{s1: F8, s2: G7, state: unsafeFEN("3rrk2/8/2p3P1/1p2nP1p/pP2p3/P1B1NbPB/2P2K2/5R2 b - - 1 38")},
 	}
 
 	invalidMoves = []*Move{

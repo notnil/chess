@@ -51,6 +51,18 @@ var (
 			AlgText:   "Nf6",
 			PostState: unsafeFEN("rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2"),
 		},
+		{
+			// http://en.lichess.org/4HXJOtpN#26
+			PreState:  unsafeFEN("r4rk1/ppbn1p2/2p1pn1p/q2p2pb/7N/PP1PP1PP/1BPN1PB1/R3QRK1 w - g6 0 14"),
+			AlgText:   "Nhf3",
+			PostState: unsafeFEN("r4rk1/ppbn1p2/2p1pn1p/q2p2pb/8/PP1PPNPP/1BPN1PB1/R3QRK1 b - - 1 14"),
+		},
+		{
+			// http://en.lichess.org/4HXJOtpN#87
+			PreState:  unsafeFEN("4r3/8/2p2PPk/1p1r4/pP2p1R1/P1B5/2P2K2/8 b - - 0 44"),
+			AlgText:   "Rd1??",
+			PostState: unsafeFEN("4r3/8/2p2PPk/1p6/pP2p1R1/P1B5/2P2K2/3r4 w - - 1 45"),
+		},
 	}
 
 	invalidAlgDecodeTests = []algDecodeTest{

@@ -129,6 +129,9 @@ func (m *Move) postCastleRights() CastleRights {
 	if p == BlackKing || m.s1 == A8 {
 		cr = strings.Replace(cr, "q", "", -1)
 	}
+	if cr == "" {
+		cr = "-"
+	}
 	return CastleRights(cr)
 }
 

@@ -15,6 +15,9 @@ const (
 )
 
 func (f File) String() string {
+	if f == NoFile {
+		return ""
+	}
 	s := "abcdefgh"
 	i := int(f)
 	return s[i-1 : i]
@@ -47,6 +50,9 @@ const (
 )
 
 func (r Rank) String() string {
+	if r == NoRank {
+		return ""
+	}
 	s := "12345678"
 	i := int(r)
 	return s[i-1 : i]
@@ -220,7 +226,7 @@ var (
 	}
 
 	strToFileMap = map[string]File{
-		"a": A, "b": B, "c": C, "d": D, "e": E, "f": F, "g": G,
+		"a": A, "b": B, "c": C, "d": D, "e": E, "f": F, "g": G, "h": H,
 	}
 
 	strToRankMap = map[string]Rank{

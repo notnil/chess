@@ -28,9 +28,9 @@ func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)
 	g := NewGame(TagPairs(tagPairs))
-	log.Println(moveStrs)
 	for _, alg := range moveStrs {
 		if err := g.MoveAlg(alg); err != nil {
+			log.Println(moveStrs)
 			return nil, err
 		}
 	}
@@ -65,23 +65,25 @@ var (
 func moveList(pgn string) ([]string, Outcome) {
 	// remove comments
 	text := removeSection("{", "}", pgn)
+	// remove variations
+	text = removeSection(`\(`, `\)`, text)
 	// remove tag pairs
 	text = removeSection(`\[`, `\]`, text)
 	// remove line breaks
 	text = strings.Replace(text, "\n", " ", -1)
 
 	list := strings.Split(text, " ")
-	log.Println(list)
 	filtered := []string{}
 	var outcome Outcome
 	for _, move := range list {
+		move = strings.TrimSpace(move)
 		switch move {
 		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
 			outcome = Outcome(move)
 		case "":
 		default:
 			results := moveNumRegex.FindStringSubmatch(move)
-			if len(results) == 2 {
+			if len(results) == 2 && results[1] != "" {
 				filtered = append(filtered, results[1])
 			}
 		}
@@ -90,7 +92,7 @@ func moveList(pgn string) ([]string, Outcome) {
 }
 
 func removeSection(leftChar, rightChar, s string) string {
-	r := regexp.MustCompile(leftChar + ".*" + rightChar)
+	r := regexp.MustCompile(leftChar + ".*?" + rightChar)
 	for {
 		i := r.FindStringIndex(s)
 		if i == nil {
