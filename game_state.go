@@ -51,6 +51,24 @@ func (gs *GameState) String() string {
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, gs.halfMoveClock, gs.moveCount)
 }
 
+func (gs *GameState) MarshalText() (text []byte, err error) {
+	return []byte(gs.String()), nil
+}
+
+func (gs *GameState) UnmarshalText(text []byte) error {
+	state, err := decodeFEN(string(text))
+	if err != nil {
+		return err
+	}
+	gs.board = state.board
+	gs.turn = state.turn
+	gs.castleRights = state.castleRights
+	gs.enPassantSquare = state.enPassantSquare
+	gs.halfMoveClock = state.halfMoveClock
+	gs.moveCount = state.moveCount
+	return nil
+}
+
 func (gs *GameState) getOutcome() (Outcome, Method) {
 	// should only happen in unit tests
 	if gs.board.kingSquare(gs.turn) == nil {

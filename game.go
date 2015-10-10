@@ -48,11 +48,7 @@ func PGN(r io.Reader) (func(*Game), error) {
 		return nil, err
 	}
 	return func(g *Game) {
-		g.tagPairs = game.tagPairs
-		g.moves = game.moves
-		g.state = game.state
-		g.outcome = game.outcome
-		g.method = game.method
+		g.copy(game)
 	}, nil
 }
 
@@ -142,6 +138,31 @@ func (g *Game) Outcome() Outcome {
 
 func (g *Game) Method() Method {
 	return g.method
+}
+
+func (g *Game) String() string {
+	return encodePGN(g)
+}
+
+func (g *Game) MarshalText() (text []byte, err error) {
+	return []byte(encodePGN(g)), nil
+}
+
+func (g *Game) UnmarshalText(text []byte) error {
+	game, err := decodePGN(string(text))
+	if err != nil {
+		return err
+	}
+	g.copy(game)
+	return nil
+}
+
+func (g *Game) copy(game *Game) {
+	g.tagPairs = game.tagPairs
+	g.moves = game.moves
+	g.state = game.state
+	g.outcome = game.outcome
+	g.method = game.method
 }
 
 func (g *Game) updateState(state *GameState) {
