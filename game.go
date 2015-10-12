@@ -1,7 +1,6 @@
 package chess
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -41,9 +40,14 @@ const (
 	Stalemate
 )
 
+type TagPair struct {
+	Key   string
+	Value string
+}
+
 // A Game represents a single chess game.
 type Game struct {
-	tagPairs map[string]string
+	tagPairs []*TagPair
 	moves    []*Move
 	state    *GameState
 	outcome  Outcome
@@ -91,9 +95,9 @@ func FEN(r io.Reader) (func(*Game), error) {
 // TagPairs returns a function that sets the tag pairs
 // to the given value.  The returned function is designed
 // to be used in the NewGame constructor.
-func TagPairs(tagPairs map[string]string) func(*Game) {
+func TagPairs(tagPairs []*TagPair) func(*Game) {
 	return func(g *Game) {
-		g.tagPairs = tagPairs
+		g.tagPairs = append([]*TagPair(nil), tagPairs...)
 	}
 }
 
@@ -118,14 +122,14 @@ func NewGame(options ...func(*Game)) *Game {
 // promotion, and updates the game.  An error is returned
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
-	if g.outcome != NoOutcome {
-		return errors.New("chess: invalid move game complete")
-	}
 	move := &Move{
 		s1:    s1,
 		s2:    s2,
 		promo: promo,
 		state: g.state,
+	}
+	if g.outcome != NoOutcome {
+		return fmt.Errorf("chess: invalid move %s game %s by %s", move, g.Outcome(), g.Method())
 	}
 	if !move.isValid() {
 		return fmt.Errorf("chess: invalid move %s", move)
@@ -159,12 +163,8 @@ func (g *Game) Moves() []*Move {
 }
 
 // TagPairs returns the game's tag pairs.
-func (g *Game) TagPairs() map[string]string {
-	cp := map[string]string{}
-	for k, v := range g.tagPairs {
-		cp[k] = v
-	}
-	return cp
+func (g *Game) TagPairs() []*TagPair {
+	return append([]*TagPair(nil), g.tagPairs...)
 }
 
 // State returns the game's current state.

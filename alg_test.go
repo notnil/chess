@@ -63,6 +63,24 @@ var (
 			AlgText:   "Rd1??",
 			PostState: unsafeFEN("4r3/8/2p2PPk/1p6/pP2p1R1/P1B5/2P2K2/3r4 w - - 1 45"),
 		},
+		{
+			// http://en.lichess.org/YXPuk8kg#79
+			PreState:  unsafeFEN("8/3k2Kp/p7/1p1r4/6P1/8/Pn1p4/7R b - - 0 40"),
+			AlgText:   "d1=Q",
+			PostState: unsafeFEN("8/3k2Kp/p7/1p1r4/6P1/8/Pn6/3q3R w - - 0 41"),
+		},
+		{
+			// http://en.lichess.org/dimuEVR0#18
+			PreState:  unsafeFEN("rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10"),
+			AlgText:   "O-O-O+",
+			PostState: unsafeFEN("rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 0 10"),
+		},
+		{
+			// only 1 rook can move because of pin http://en.lichess.org/JCRBhXH7#62
+			PreState:  unsafeFEN("4R3/1r1k2pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 w - - 5 32"),
+			AlgText:   "Re7+",
+			PostState: unsafeFEN("8/1r1kR1pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 b - - 6 32"),
+		},
 	}
 
 	invalidAlgDecodeTests = []algDecodeTest{
@@ -114,6 +132,10 @@ var (
 			Move:    &Move{s1: D8, s2: D1, state: unsafeFEN("3q2k1/pp3ppp/2p2n2/4b3/2P5/2N1P3/PB3PPP/3Q2K1 b - - 1 19")},
 			AlgText: "Qxd1+",
 		},
+		{
+			Move:    &Move{s1: E1, s2: C1, state: unsafeFEN("rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10")},
+			AlgText: "O-O-O+",
+		},
 	}
 )
 
@@ -121,7 +143,7 @@ func TestValidAlgDecoding(t *testing.T) {
 	for _, test := range validAlgDecodeTests {
 		move, err := decodeMove(test.PreState, test.AlgText)
 		if err != nil || !move.isValid() {
-			t.Fatalf("starting from board\n%s\n expected move notation %s to be valid", test.PreState.board.Draw(), test.AlgText)
+			t.Fatalf("starting from board\n%s\n expected move notation %s to be valid err - %s", test.PreState.board.Draw(), test.AlgText, err)
 		}
 		postState := move.postMoveState()
 		if postState.String() != test.PostState.String() {

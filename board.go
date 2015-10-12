@@ -96,7 +96,7 @@ func (b Board) isSquareAttacked(c Color, squares ...*Square) bool {
 		for _, s2 := range squares {
 			m := &Move{s1: s1, s2: s2, state: &GameState{board: b, turn: c.Other()}}
 			pieceType := m.piece().Type()
-			if m.isValid() && (pieceType != Pawn || (pieceType == Pawn && pawnCaptureFilter(m))) {
+			if m.isValidWithCheck(false) && (pieceType != Pawn || (pieceType == Pawn && pawnCaptureFilter(m))) {
 				return true
 			}
 		}

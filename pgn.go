@@ -1,10 +1,42 @@
 package chess
 
 import (
-	"log"
+	"bufio"
+	"fmt"
+	"io"
 	"regexp"
 	"strings"
 )
+
+func GamesFromPGN(r io.Reader) ([]*Game, error) {
+	games := []*Game{}
+	current := ""
+	count := 0
+	br := bufio.NewReader(r)
+	for {
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+		if strings.TrimSpace(line) == "" {
+			count++
+		} else {
+			current += line
+		}
+		if count == 2 {
+			game, err := decodePGN(current)
+			if err != nil {
+				return nil, err
+			}
+			games = append(games, game)
+			count = 0
+			current = ""
+		}
+	}
+	return games, nil
+}
 
 /*
 [Event "Troll Masters"]
@@ -30,7 +62,6 @@ func decodePGN(pgn string) (*Game, error) {
 	g := NewGame(TagPairs(tagPairs))
 	for _, alg := range moveStrs {
 		if err := g.MoveAlg(alg); err != nil {
-			log.Println(moveStrs)
 			return nil, err
 		}
 	}
@@ -39,20 +70,37 @@ func decodePGN(pgn string) (*Game, error) {
 }
 
 func encodePGN(g *Game) string {
-	return ""
+	s := ""
+	for _, tag := range g.tagPairs {
+		s += fmt.Sprintf("[%s \"%s\"]\n", tag.Key, tag.Value)
+	}
+	s += "\n"
+	for i, move := range g.moves {
+		if i%2 == 0 {
+			s += fmt.Sprintf("%d.%s", (i/2)+1, move)
+		} else {
+			s += fmt.Sprintf(" %s ", move)
+		}
+	}
+	s += " " + string(g.outcome)
+	return s
 }
 
 var (
-	tagPairRegex = regexp.MustCompile(`[(.*)\w"(.*)"]`)
+	tagPairRegex = regexp.MustCompile(`\[(.*)\s\"(.*)\"\]`)
 )
 
-func getTagPairs(pgn string) map[string]string {
-	tagPairs := map[string]string{}
+func getTagPairs(pgn string) []*TagPair {
+	tagPairs := []*TagPair{}
 	matches := tagPairRegex.FindAllString(pgn, -1)
 	for _, m := range matches {
 		results := tagPairRegex.FindStringSubmatch(m)
 		if len(results) == 3 {
-			tagPairs[results[1]] = results[2]
+			pair := &TagPair{
+				Key:   results[1],
+				Value: results[2],
+			}
+			tagPairs = append(tagPairs, pair)
 		}
 	}
 	return tagPairs

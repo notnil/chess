@@ -1,6 +1,9 @@
 package chess
 
-import "testing"
+import (
+	"os"
+	"testing"
+)
 
 type pgnTest struct {
 	PostState *GameState
@@ -63,6 +66,38 @@ func TestValidPGNs(t *testing.T) {
 			t.Fatalf("expected board to be \n%s\nFEN:%s\n but got \n%s\n\nFEN:%s\n",
 				test.PostState.board.Draw(), test.PostState.String(),
 				game.State().board.Draw(), game.State().String())
+		}
+	}
+}
+
+// uncomment to run test on Carlesen.pgn
+// func TestMultiPGNs(t *testing.T) {
+// 	file, err := os.Open("./Carlsen.pgn")
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	defer file.Close()
+//
+// 	games, err := GamesFromPGN(file)
+// 	if err != nil {
+// 		t.Fatal(err)
+// 	}
+// 	if len(games) != 1782 {
+// 		t.Fatalf("expected %d games found %d", 1782, len(games))
+// 	}
+// }
+
+func BenchmarkPGN(b *testing.B) {
+	file, err := os.Open("./Carlsen.pgn")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer file.Close()
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		if _, err := GamesFromPGN(file); err != nil {
+			b.Fatal(err)
 		}
 	}
 }

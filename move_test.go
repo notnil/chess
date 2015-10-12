@@ -99,6 +99,10 @@ var (
 		&Move{s1: E1, s2: C1, state: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
 		// invalid promotion for non-pawn move
 		&Move{s1: B8, s2: D7, promo: Pawn, state: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
+		// en passant on doubled pawn file http://en.lichess.org/TnRtrHxf#24
+		&Move{s1: E3, s2: F6, state: unsafeFEN("r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13")},
+		// can't move piece out of pin (even if checking enemy king) http://en.lichess.org/JCRBhXH7#62
+		&Move{s1: E1, s2: E7, state: unsafeFEN("4R3/1r1k2pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 w - - 5 32")},
 	}
 
 	validMoveState = []moveState{

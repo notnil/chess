@@ -40,3 +40,19 @@ func TestStalemate(t *testing.T) {
 		t.Fatalf("expected outcome %s but got %s", Draw, g.Outcome())
 	}
 }
+
+// position shouldn't result in stalemate because pawn can move http://en.lichess.org/Pc6mJDZN#138
+func TestInvalidStalemate(t *testing.T) {
+	fenStr := "8/3P4/8/8/8/7k/7p/7K w - - 2 70"
+	fen, err := FEN(strings.NewReader(fenStr))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := NewGame(fen)
+	if err := g.Move(D7, D8, Queen); err != nil {
+		t.Fatal(err)
+	}
+	if g.Outcome() != NoOutcome {
+		t.Fatalf("expected outcome %s but got %s", NoOutcome, g.Outcome())
+	}
+}

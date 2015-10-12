@@ -1,3 +1,3 @@
 // Package chess ...
-//go:generate stringer -type=Method -output=stringer.go
+//go:generate stringer -type=Method,PieceType -output=stringer.go
 package chess

@@ -95,7 +95,7 @@ func (gs *GameState) validMoves() []*Move {
 		p := gs.board.piece(s1)
 		// TODO s2 can only be an empty or enemy square
 		for _, s2 := range allSquares {
-			couldPromo := p.Type() == Pawn && (s2.rank == R1 || s2.rank == R2)
+			couldPromo := p.Type() == Pawn && (s2.rank == R1 || s2.rank == R8)
 			if couldPromo {
 				for _, pt := range PieceTypes() {
 					if pt.isPromotable() {

@@ -102,9 +102,15 @@ func (s *Square) rankDif(o *Square) int {
 }
 
 func (s *Square) squaresTo(o *Square) []*Square {
+	fileDif := s.fileDif(o)
+	rankDif := s.rankDif(o)
+	difSame := fileDif == rankDif
+	// quick fail where no path exists
+	if (fileDif > 1 || rankDif > 1) && !(fileDif == 0 || rankDif == 0) && !difSame {
+		return []*Square{}
+	}
 	fileStep := sign(int(o.file) - int(s.file))
 	rankStep := sign(int(o.rank) - int(s.rank))
-
 	squares := []*Square{}
 	f := int(s.file)
 	r := int(s.rank)

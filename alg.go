@@ -12,7 +12,9 @@ const (
 
 var (
 	// parsed list format: ["Ra1xe8+" "R" "a" "1" "e8" ""]
-	moveReg = regexp.MustCompile(`([K,Q,R,B,N])?([a-h])?([1-8])?x?([a-h][1-8])(?:e\.p\.)?\+?\+?(=[Q,R,B,N])?`)
+	moveReg     = regexp.MustCompile(`([KQRBN])?([a-h])?([1-8])?x?([a-h][1-8])(?:e\.p\.)?\+?\+?=?([QRBN])?`)
+	ksCastleReg = regexp.MustCompile(`^O-O[\+#\?!]*$`)
+	qsCastleReg = regexp.MustCompile(`^O-O-O[\+#\?!]*$`)
 )
 
 const (
@@ -24,12 +26,13 @@ const (
 )
 
 func encodeMove(move *Move) string {
+	checkChar := getCheckChar(move)
 	if move.isCastling() {
 		switch move.s2.file {
 		case G:
-			return algKingSideCastle
+			return algKingSideCastle + checkChar
 		}
-		return algQueenSideCastle
+		return algQueenSideCastle + checkChar
 	}
 	pChar := charFromPieceType(move.piece().Type())
 	s1Str := formS1(move)
@@ -42,6 +45,10 @@ func encodeMove(move *Move) string {
 		epText = "e.p."
 	}
 	promoText := charFromPromo(move.promo)
+	return fmt.Sprint(pChar, s1Str, capChar, move.s2, epText, promoText, checkChar)
+}
+
+func getCheckChar(move *Move) string {
 	checkChar := ""
 	postState := move.postMoveState()
 	if _, method := postState.getOutcome(); method == Checkmate {
@@ -49,12 +56,13 @@ func encodeMove(move *Move) string {
 	} else if postState.board.inCheck(move.state.turn.Other()) {
 		checkChar = "+"
 	}
-	return fmt.Sprint(pChar, s1Str, capChar, move.s2, epText, promoText, checkChar)
+	return checkChar
 }
 
 func decodeMove(state *GameState, s string) (*Move, error) {
-	switch s {
-	case algKingSideCastle, algQueenSideCastle:
+	ksCastle := ksCastleReg.MatchString(s)
+	qsCastle := qsCastleReg.MatchString(s)
+	if ksCastle || qsCastle {
 		return formCastle(state, s), nil
 	}
 	match := moveReg.FindStringSubmatch(s)
@@ -73,6 +81,7 @@ func decodeMove(state *GameState, s string) (*Move, error) {
 	file := fileFromStr(match[algFileIdx])
 	rank := rankFromStr(match[algRankIdx])
 	move := findMove(state, s2, pieceType, file, rank, promo)
+
 	if move == nil {
 		return nil, fmt.Errorf("chess: algebraic notation move %s could not resolve origin square", s)
 	}
@@ -136,17 +145,18 @@ func formCastle(state *GameState, s string) *Move {
 	if state.turn == Black {
 		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
 	}
-	switch s {
-	case algKingSideCastle:
-		return &Move{
-			s1:    backRow[4],
-			s2:    backRow[6],
-			state: state,
-		}
-	case algQueenSideCastle:
+	ksCastle := ksCastleReg.MatchString(s)
+	qsCastle := qsCastleReg.MatchString(s)
+	if qsCastle {
 		return &Move{
 			s1:    backRow[4],
 			s2:    backRow[2],
+			state: state,
+		}
+	} else if ksCastle {
+		return &Move{
+			s1:    backRow[4],
+			s2:    backRow[6],
 			state: state,
 		}
 	}

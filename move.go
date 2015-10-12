@@ -34,10 +34,17 @@ func (m *Move) String() string {
 }
 
 func (m *Move) isValid() bool {
+	return m.isValidWithCheck(true)
+}
+
+func (m *Move) isValidWithCheck(check bool) bool {
 	p := m.piece()
 	isValid := filterForPiece(p)(m)
 	if !isValid {
 		return false
+	}
+	if !check {
+		return true
 	}
 	inCheck := m.postMoveState().board.inCheck(m.state.turn)
 	return !inCheck
@@ -285,8 +292,11 @@ var (
 
 	// filters invalid moves for the pawn using en passant
 	pawnEnPassantFilter = func(m *Move) bool {
-		sq := m.state.enPassantSquare
-		return sq != nil && m.s2 == sq
+		p := m.piece()
+		rankStep := rankStep(p.Color())
+		upOne := int(m.s2.rank) == int(m.s1.rank)+rankStep
+		capture := abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.s2 == m.state.enPassantSquare
+		return upOne && capture
 	}
 )
 
