@@ -70,23 +70,6 @@ func TestValidPGNs(t *testing.T) {
 	}
 }
 
-// uncomment to run test on Carlesen.pgn
-// func TestMultiPGNs(t *testing.T) {
-// 	file, err := os.Open("./Carlsen.pgn")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer file.Close()
-//
-// 	games, err := GamesFromPGN(file)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	if len(games) != 1782 {
-// 		t.Fatalf("expected %d games found %d", 1782, len(games))
-// 	}
-// }
-
 func BenchmarkPGN(b *testing.B) {
 	pgn := `[Event "?"]
 	[Site "?"]
