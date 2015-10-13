@@ -1,6 +1,7 @@
 # chess
 [![GoDoc](https://godoc.org/github.com/loganjspears/chess?status.svg)](https://godoc.org/github.com/loganjspears/chess)
 [![Build Status](https://drone.io/github.com/loganjspears/chess/status.png)](https://drone.io/github.com/loganjspears/chess/latest)
+[![Coverage Status](https://coveralls.io/repos/loganjspears/chess/badge.svg?branch=master&service=github)](https://coveralls.io/github/loganjspears/chess?branch=master)
 
 package chess is a go library designed to accomplish the following:
 - chess game / turn management
@@ -54,6 +55,5 @@ func main() {
 chesscli is a fully functioning client of the chess package.  It takes moves from algebraic notation and updates the state of the game.  I use it to record live games and test the package.
 
 ## TODO
-- [Test Coverage Badge](http://tleyden.github.io/blog/2015/03/31/test-coverage-for-go-with-drone-dot-io-and-coveralls-dot-io/)
 - HTML based tool w/ GopherJS
 - More robust cli tool
