@@ -36,7 +36,7 @@ func main() {
 	// draw initial board
     fmt.Println(game.State().Board().Draw())
 	// generate moves until game is over
-    for g.Outcome() == chess.NoOutcome {
+    for game.Outcome() == chess.NoOutcome {
 		// select a random move
         moves := game.ValidMoves()
         move := moves[rand.Intn(len(moves))]
