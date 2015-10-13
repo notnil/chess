@@ -52,3 +52,8 @@ func main() {
 ## chesscli
 
 chesscli is a fully functioning client of the chess package.  It takes moves from algebraic notation and updates the state of the game.  I use it to record live games and test the package.
+
+## TODO
+- [Test Coverage Badge](http://tleyden.github.io/blog/2015/03/31/test-coverage-for-go-with-drone-dot-io-and-coveralls-dot-io/)
+- HTML based tool w/ GopherJS
+- More robust cli tool
