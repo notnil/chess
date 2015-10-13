@@ -5,10 +5,11 @@ import (
 	"strings"
 )
 
+// A Board represents the mapping of squares to pieces.
 type Board map[*Square]*Piece
 
 // String implements the fmt.Stringer interface and returns
-// a string in the format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+// a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 func (b Board) String() string {
 	rankStrs := []string{}
 	for _, r := range []Rank{R8, R7, R6, R5, R4, R3, R2, R1} {
@@ -113,6 +114,8 @@ func (b Board) inCheck(c Color) bool {
 	return b.isSquareAttacked(c, kingSq)
 }
 
+// emptyBetween returns true if the squares between
+// s1 and s2 are empty, otherwise returns false.
 func (b Board) emptyBetween(s1, s2 *Square) bool {
 	for _, sq := range s1.squaresTo(s2) {
 		if b.isOccupied(sq) {
@@ -122,14 +125,20 @@ func (b Board) emptyBetween(s1, s2 *Square) bool {
 	return true
 }
 
+// isOccupied returns true if a piece is occupying
+// the given square, otherwise returns false.
 func (b Board) isOccupied(sq *Square) bool {
 	return b[sq] != nil
 }
 
+// piece returns the piece at the given square.
+// If no piece is occupying the square, nil is
+// returned.
 func (b Board) piece(sq *Square) *Piece {
 	return b[sq]
 }
 
+// copy returns a copy of the board.
 func (b Board) copy() Board {
 	n := map[*Square]*Piece{}
 	for k, v := range b {

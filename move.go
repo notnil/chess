@@ -2,6 +2,7 @@ package chess
 
 import "strings"
 
+// A Move is the moving of a piece from one square to another.
 type Move struct {
 	s1       *Square
 	s2       *Square
@@ -10,22 +11,29 @@ type Move struct {
 	notation string
 }
 
+// S1 returns the origin square of the move.
 func (m *Move) S1() *Square {
 	return m.s1
 }
 
+// S2 returns the destination square of the move.
 func (m *Move) S2() *Square {
 	return m.s2
 }
 
+// Promo returns promotion peice type of the move.
 func (m *Move) Promo() PieceType {
 	return m.promo
 }
 
+// PreMoveState returns the game state prior to the
+// move.
 func (m *Move) PreMoveState() *GameState {
 	return m.state
 }
 
+// String implements the fmt.Stringer interface and returns
+// the move's algebraic notation.
 func (m *Move) String() string {
 	if m.notation == "" {
 		m.notation = encodeMove(m)

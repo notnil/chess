@@ -6,7 +6,8 @@ import (
 	"strings"
 )
 
-// https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation
+// Decodes FEN notation into a GameState.  An error is returned
+// if there is a parsing error.  FEN notation format:
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 func decodeFEN(fen string) (*GameState, error) {
 	fen = strings.TrimSpace(fen)

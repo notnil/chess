@@ -40,6 +40,7 @@ const (
 	Stalemate
 )
 
+// TagPair represents metadata in a key value pairing.
 type TagPair struct {
 	Key   string
 	Value string

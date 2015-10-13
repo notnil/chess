@@ -5,15 +5,21 @@ import (
 	"strings"
 )
 
+// Side represents a side of the board.
 type Side int
 
 const (
+	// KingSide is the right side of the board from white's perspective.
 	KingSide Side = iota + 1
+	// QueenSide is the left side of the board from white's perspective.
 	QueenSide
 )
 
+// CastleRights holds the state of both sides castling abilities.
 type CastleRights string
 
+// CanCastle returns true if the given color and side combination
+// can castle, otherwise returns false.
 func (cr CastleRights) CanCastle(c Color, side Side) bool {
 	char := "k"
 	if side == QueenSide {
@@ -25,10 +31,14 @@ func (cr CastleRights) CanCastle(c Color, side Side) bool {
 	return strings.Contains(string(cr), char)
 }
 
+// String implements the fmt.Stringer interface and returns
+// a FEN compatible string.  Ex. KQq
 func (cr CastleRights) String() string {
 	return string(cr)
 }
 
+// GameState represents the state of the game without regaurd
+// to its outcome.  GameState is translatable to FEN notation.
 type GameState struct {
 	board           Board
 	turn            Color
@@ -38,6 +48,7 @@ type GameState struct {
 	moveCount       int
 }
 
+// Board returns the gamestate's board.
 func (gs *GameState) Board() Board {
 	return gs.board.copy()
 }
@@ -55,10 +66,14 @@ func (gs *GameState) String() string {
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, gs.halfMoveClock, gs.moveCount)
 }
 
+// MarshalText implements the encoding.TextMarshaler interface and
+// encodes the gamestate's FEN.
 func (gs *GameState) MarshalText() (text []byte, err error) {
 	return []byte(gs.String()), nil
 }
 
+// UnmarshalText implements the encoding.TextUnarshaler interface and
+// assumes the data is in the FEN format.
 func (gs *GameState) UnmarshalText(text []byte) error {
 	state, err := decodeFEN(string(text))
 	if err != nil {
