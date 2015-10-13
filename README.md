@@ -33,18 +33,15 @@ import (
 func main() {
 	// start game
     game := chess.NewGame()
-	// draw initial board
-    fmt.Println(game.State().Board().Draw())
 	// generate moves until game is over
     for game.Outcome() == chess.NoOutcome {
 		// select a random move
         moves := game.ValidMoves()
         move := moves[rand.Intn(len(moves))]
 		game.Move(move.S1(),move.S2(),move.Promo())
-		// draw updated board
-        fmt.Println(game.State().Board().Draw())
     }
 	// print outcome and game PGN
+	fmt.Println(game.State().Board().Draw())
 	fmt.Printf("Game completed. %s by %s.\n", game.Outcome(), game.Method())
     fmt.Println(game.String())    
 }
