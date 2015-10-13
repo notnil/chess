@@ -1,5 +1,6 @@
 # chess
 [![GoDoc](https://godoc.org/github.com/loganjspears/chess?status.svg)](https://godoc.org/github.com/loganjspears/chess)
+[![Build Status](https://drone.io/github.com/loganjspears/chess/status.png)](https://drone.io/github.com/loganjspears/chess/latest)
 package chess is a go library designed to accomplish the following:
 - chess game / turn management
 - move validation
