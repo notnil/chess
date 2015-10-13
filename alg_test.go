@@ -136,6 +136,14 @@ var (
 			Move:    &Move{s1: E1, s2: C1, state: unsafeFEN("rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10")},
 			AlgText: "O-O-O+",
 		},
+		{
+			Move:    &Move{s1: D4, s2: E5, state: unsafeFEN("8/8/8/4p3/3P4/8/8/8 w - - 0 10")},
+			AlgText: "dxe5",
+		},
+		{
+			Move:    &Move{s1: F4, s2: E5, state: unsafeFEN("8/8/8/4p3/3P1P2/8/8/8 w - - 0 10")},
+			AlgText: "fxe5",
+		},
 	}
 )
 

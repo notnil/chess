@@ -56,3 +56,17 @@ func TestInvalidStalemate(t *testing.T) {
 		t.Fatalf("expected outcome %s but got %s", NoOutcome, g.Outcome())
 	}
 }
+
+func TestTakeBack(t *testing.T) {
+	g := NewGame()
+	if err := g.MoveAlg("e4"); err != nil {
+		t.Fatal(err)
+	}
+	g = g.TakeBack(1)
+	if startFEN != g.FEN() {
+		t.Fatalf("take back expected fen %s but got %s", startFEN, g.FEN())
+	}
+	if len(NewGame().moves) != len(g.moves) {
+		t.Fatalf("take back expected %d move but got %d", len(NewGame().moves), len(g.moves))
+	}
+}

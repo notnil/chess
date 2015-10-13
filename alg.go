@@ -38,10 +38,9 @@ func encodeMove(move *Move) string {
 	s1Str := formS1(move)
 	capChar := ""
 	if move.isCapture() {
-		if move.piece().Type() == Pawn {
+		capChar = "x"
+		if move.piece().Type() == Pawn && s1Str == "" {
 			capChar = move.s1.file.String() + "x"
-		} else {
-			capChar = "x"
 		}
 	}
 
@@ -129,9 +128,6 @@ func formS1(m *Move) string {
 		}
 	}
 	if len(possibleSqs) == 1 {
-		if m.piece().Type() == Pawn {
-
-		}
 		return ""
 	}
 	files := map[File]int{}

@@ -195,11 +195,19 @@ func (g *Game) TakeBack(n int) *Game {
 	var state *GameState
 	if len(cp.moves) < n || n < 0 {
 		state = cp.moves[0].PreMoveState()
+		cp.moves = []*Move{}
 	} else {
-		state = cp.moves[len(cp.moves)-n].PreMoveState()
+		i := len(cp.moves) - n
+		state = cp.moves[i].PreMoveState()
+		cp.moves = g.moves[:i]
 	}
 	cp.updateState(state)
 	return cp
+}
+
+// FEN returns the FEN notation of the current state.
+func (g *Game) FEN() string {
+	return g.State().String()
 }
 
 // String implements the fmt.Stringer interface and returns
