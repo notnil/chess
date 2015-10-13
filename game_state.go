@@ -38,6 +38,10 @@ type GameState struct {
 	moveCount       int
 }
 
+func (gs *GameState) Board() Board {
+	return gs.board.copy()
+}
+
 // String implements the fmt.Stringer interface and returns a
 // string with the format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 func (gs *GameState) String() string {

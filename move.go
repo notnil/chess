@@ -160,7 +160,7 @@ func filterForPiece(p *Piece) moveFilter {
 	if p == nil {
 		return s1Filter
 	}
-	filters := []moveFilter{s1Filter, turnFilter}
+	filters := []moveFilter{s1Filter, turnFilter, s2Filter}
 	switch p.Type() {
 	case King:
 		filters = append(filters, kingFilter)
@@ -179,7 +179,7 @@ func filterForPiece(p *Piece) moveFilter {
 		filters = append(filters, blockedFilter)
 	}
 	if p.Type() != Pawn {
-		filters = append(filters, promotionFilter, s2Filter)
+		filters = append(filters, promotionFilter)
 	}
 	return moveFilters(filters).chainAnd()
 }

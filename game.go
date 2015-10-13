@@ -182,6 +182,25 @@ func (g *Game) Method() Method {
 	return g.method
 }
 
+// TakeBack returns a copy of the game with the most recent
+// n moves removed.  If n is greater than the number of moves
+// or is negative then the game is set back to its initial state.
+func (g *Game) TakeBack(n int) *Game {
+	cp := &Game{}
+	cp.copy(g)
+	if len(cp.moves) == 0 {
+		return cp
+	}
+	var state *GameState
+	if len(cp.moves) < n || n < 0 {
+		state = cp.moves[0].PreMoveState()
+	} else {
+		state = cp.moves[len(cp.moves)-n].PreMoveState()
+	}
+	cp.updateState(state)
+	return cp
+}
+
 // String implements the fmt.Stringer interface and returns
 // the game's PGN.
 func (g *Game) String() string {
