@@ -119,25 +119,31 @@ func NewGame(options ...func(*Game)) *Game {
 	return game
 }
 
-// Move moves the piece at s1 to s2, applies the given
+// Move updates the game with the given move.  An error is returned
+// if the move is invalid or the game has already been completed.
+func (g *Game) Move(m *Move) error {
+	if g.outcome != NoOutcome {
+		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method())
+	}
+	if !m.isValid() {
+		return fmt.Errorf("chess: invalid move %s", m)
+	}
+	g.moves = append(g.moves, m)
+	g.updateState(m.postMoveState())
+	return nil
+}
+
+// MoveSq moves the piece at s1 to s2, applies the given
 // promotion, and updates the game.  An error is returned
 // if the move is invalid or the game has already been completed.
-func (g *Game) Move(s1, s2 *Square, promo PieceType) error {
+func (g *Game) MoveSq(s1, s2 *Square, promo PieceType) error {
 	move := &Move{
 		s1:    s1,
 		s2:    s2,
 		promo: promo,
 		state: g.state,
 	}
-	if g.outcome != NoOutcome {
-		return fmt.Errorf("chess: invalid move %s game %s by %s", move, g.Outcome(), g.Method())
-	}
-	if !move.isValid() {
-		return fmt.Errorf("chess: invalid move %s", move)
-	}
-	g.moves = append(g.moves, move)
-	g.updateState(move.postMoveState())
-	return nil
+	return g.Move(move)
 }
 
 // MoveAlg decodes the given string in algebraic notation
@@ -149,7 +155,7 @@ func (g *Game) MoveAlg(alg string) error {
 	if err != nil {
 		return err
 	}
-	return g.Move(move.S1(), move.S2(), move.Promo())
+	return g.MoveSq(move.S1(), move.S2(), move.Promo())
 }
 
 // ValidMoves returns a list of valid moves in the

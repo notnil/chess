@@ -12,7 +12,7 @@ func TestCheckmate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.Move(F3, F7, NoPiece); err != nil {
+	if err := g.MoveSq(F3, F7, NoPiece); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Checkmate {
@@ -30,7 +30,7 @@ func TestStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.Move(B1, B6, NoPiece); err != nil {
+	if err := g.MoveSq(B1, B6, NoPiece); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Stalemate {
@@ -49,7 +49,7 @@ func TestInvalidStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.Move(D7, D8, Queen); err != nil {
+	if err := g.MoveSq(D7, D8, Queen); err != nil {
 		t.Fatal(err)
 	}
 	if g.Outcome() != NoOutcome {

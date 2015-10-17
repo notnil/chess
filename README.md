@@ -11,10 +11,17 @@ package chess is a go library designed to accomplish the following:
 
 ## Usage
 
-Using API
+Using Valid Move
 ```go
 game := chess.NewGame()
-game.Move(chess.E2,chess.E4,chess.NoPromo)
+moves := game.ValidMoves()
+game.Move(moves[0])
+```
+
+Using Squares
+```go
+game := chess.NewGame()
+game.MoveSq(chess.E2,chess.E4,chess.NoPromo)
 ```
 
 Using Algebraic Notation
@@ -34,14 +41,13 @@ import (
 )
 
 func main() {
-	// start game
     game := chess.NewGame()
 	// generate moves until game is over
     for game.Outcome() == chess.NoOutcome {
 		// select a random move
         moves := game.ValidMoves()
         move := moves[rand.Intn(len(moves))]
-		game.Move(move.S1(),move.S2(),move.Promo())
+		game.Move(move)
     }
 	// print outcome and game PGN
 	fmt.Println(game.State().Board().Draw())
