@@ -164,6 +164,16 @@ func (g *Game) ValidMoves() []*Move {
 	return g.state.validMoves()
 }
 
+// States returns the state history of the game.
+func (g *Game) States() []*GameState {
+	states := []*GameState{}
+	for _, m := range g.moves {
+		states = append(states, m.PreMoveState())
+	}
+	states = append(states, g.state)
+	return states
+}
+
 // Moves returns the move history of the game.
 func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)

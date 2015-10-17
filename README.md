@@ -56,9 +56,11 @@ func main() {
 }
 ```
 
-## chesscli
-
-chesscli is a fully functioning client of the chess package.  It takes moves from algebraic notation and updates the state of the game.  I use it to record live games and test the package.
+## cmd/chess
+The chess command line tool includes:
+- game recorder using algebraic notation
+- fen viewer
+- pgn viewer
 
 ## TODO
 - HTML based tool w/ GopherJS
