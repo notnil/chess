@@ -12,7 +12,7 @@ const (
 
 var (
 	// parsed list format: ["Ra1xe8+" "R" "a" "1" "e8" ""]
-	moveReg     = regexp.MustCompile(`([KQRBN])?([a-h])?([1-8])?x?([a-h][1-8])(?:e\.p\.)?\+?\+?=?([QRBN])?`)
+	moveReg     = regexp.MustCompile(`^([KQRBN])?([a-h])?([1-8])?x?([a-h][1-8])(?:e\.p\.)?\+?\+?=?([QRBN])?[!\?]*$`)
 	ksCastleReg = regexp.MustCompile(`^O-O[\+#\?!]*$`)
 	qsCastleReg = regexp.MustCompile(`^O-O-O[\+#\?!]*$`)
 )

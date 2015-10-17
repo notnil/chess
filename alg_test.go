@@ -105,6 +105,11 @@ var (
 			PreState: unsafeFEN("3r1rk1/pp1nqppp/2pbpn2/3p4/2PP4/1PNQPN2/PB3PPP/3RR1K1 b - - 5 12"),
 			AlgText:  "dx4",
 		},
+		{
+			// should not assume pawn for unknown peice type "n"
+			PreState: unsafeFEN("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"),
+			AlgText:  "nf3",
+		},
 	}
 
 	algEncodeTests = []algEncodeTest{
