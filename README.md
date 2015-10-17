@@ -11,7 +11,7 @@ package chess is a go library designed to accomplish the following:
 
 ## Usage
 
-Using Valid Move
+Using Moves
 ```go
 game := chess.NewGame()
 moves := game.ValidMoves()
