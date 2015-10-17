@@ -30,6 +30,18 @@ game := chess.NewGame()
 game.MoveAlg("e4")
 ```
 
+Using PGN
+```go
+pgn, _ := chess.PGN(pgnReader)
+game := chess.NewGame(pgn)
+```
+
+Using FEN
+```go
+fen, _ := chess.FEN(fenReader)
+game := chess.NewGame(fen)
+```
+
 Random Game
 ```go
 package main
