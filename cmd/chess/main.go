@@ -65,13 +65,25 @@ func fen() cli.Command {
 func pgn() cli.Command {
 	return cli.Command{
 		Name:  "pgn",
-		Usage: "Enter PGN using standard input.  Use (k/j) to view the next or previous move, or quit to stop.",
+		Usage: "Enter file name of PGN.  Press enter to view next move, \"b\" to go back a move, or \"q\" to stop.",
 		Action: func(c *cli.Context) {
-			pgn, err := chess.PGN(os.Stdin)
+			if len(c.Args()) != 1 {
+				fmt.Fprintln(os.Stderr, "no file given")
+				return
+			}
+			file, err := os.Open(c.Args()[0])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
 				return
 			}
+			defer file.Close()
+
+			pgn, err := chess.PGN(file)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				return
+			}
+
 			g := chess.NewGame(pgn)
 			fmt.Println("Viewing PGN:")
 			fmt.Println(g.String())
@@ -81,21 +93,21 @@ func pgn() cli.Command {
 				state := states[count]
 				fmt.Println(state.Board().Draw())
 				fmt.Println(state.String())
-				fmt.Println("Use (s/d) to view the previous or next move, or quit to stop.")
+				fmt.Println("Press enter to view next move, \"b\" to go back a move, or \"q\" to stop.")
 				input := ""
 				fmt.Scanln(&input)
 				switch input {
-				case "d":
+				case "":
 					if count == len(states)-1 {
 						fmt.Printf("Game completed. %s by %s.\n", g.Outcome(), g.Method())
 					} else {
 						count++
 					}
-				case "s":
+				case "b":
 					if count != 0 {
 						count--
 					}
-				case "quit":
+				case "q":
 					return
 				}
 			}
