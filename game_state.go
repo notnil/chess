@@ -135,3 +135,10 @@ func (gs *GameState) validMoves() []*Move {
 	}
 	return moves
 }
+
+func (gs *GameState) samePosition(g *GameState) bool {
+	return gs.board.String() == g.board.String() &&
+		gs.turn == g.turn &&
+		gs.castleRights.String() == g.castleRights.String() &&
+		gs.enPassantSquare == g.enPassantSquare
+}

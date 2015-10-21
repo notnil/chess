@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -38,6 +39,18 @@ const (
 	DrawOffer
 	// Stalemate indicates that the game was drawn by player being stalemated.
 	Stalemate
+	// ThreefoldRepetition indicates that the game was drawn by the game
+	// state being repeated three times and a player requested a draw.
+	ThreefoldRepetition
+	// FivefoldRepetition indicates that the game was automatically drawn
+	// by the game state being repeated five times.
+	FivefoldRepetition
+	// FiftyMoveRule indicates that the game was drawn by the half
+	// move clock being fifty or greater and a player requested a draw.
+	FiftyMoveRule
+	// SeventyFiveMoveRule indicates that the game was automatically drawn
+	// by the half move clock being seventy five or greater.
+	SeventyFiveMoveRule
 )
 
 // TagPair represents metadata in a key value pairing.
@@ -249,6 +262,24 @@ func (g *Game) UnmarshalText(text []byte) error {
 	return nil
 }
 
+func (g *Game) Draw(method Method) error {
+	switch method {
+	case ThreefoldRepetition:
+		if g.numOfRepitions() < 3 {
+			return errors.New("chess: draw by ThreefoldRepetition requires at least three repetitions of the current board state")
+		}
+	case FiftyMoveRule:
+		if g.state.halfMoveClock < 50 {
+			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.state.halfMoveClock)
+		}
+	default:
+		return fmt.Errorf("chess: unsupported draw method %s", method)
+	}
+	g.outcome = Draw
+	g.method = method
+	return nil
+}
+
 func (g *Game) copy(game *Game) {
 	g.tagPairs = game.tagPairs
 	g.moves = game.moves
@@ -262,4 +293,26 @@ func (g *Game) updateState(state *GameState) {
 	outcome, method := state.getOutcome()
 	g.outcome = outcome
 	g.method = method
+
+	// five fold rep creates automatic draw
+	if g.numOfRepitions() == 5 {
+		g.outcome = Draw
+		g.method = FivefoldRepetition
+	}
+
+	// 75 move rule creates automatic draw
+	if g.state.halfMoveClock > 75 {
+		g.outcome = Draw
+		g.method = SeventyFiveMoveRule
+	}
+}
+
+func (g *Game) numOfRepitions() int {
+	count := 0
+	for _, gs := range g.States() {
+		if g.state.samePosition(gs) {
+			count++
+		}
+	}
+	return count
 }
