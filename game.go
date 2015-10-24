@@ -301,6 +301,19 @@ func (g *Game) Resign(color Color) {
 	g.method = Resignation
 }
 
+// EligibleDraws returns the draw methods that eligible for game's
+// Draw method.
+func (g *Game) EligibleDraws() []Method {
+	draws := []Method{DrawOffer}
+	if g.numOfRepitions() >= 3 {
+		draws = append(draws, ThreefoldRepetition)
+	}
+	if g.state.halfMoveClock < 50 {
+		draws = append(draws, FiftyMoveRule)
+	}
+	return draws
+}
+
 func (g *Game) copy(game *Game) {
 	g.tagPairs = game.tagPairs
 	g.moves = game.moves
