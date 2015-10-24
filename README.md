@@ -75,6 +75,5 @@ The chess command line tool includes:
 - pgn viewer
 
 ## TODO
-- Cover all drawing possibilities: https://en.wikipedia.org/wiki/Draw_(chess)#Draws_in_all_games
 - HTML based tool w/ GopherJS
 - More robust cli tool..
