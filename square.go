@@ -1,6 +1,7 @@
 package chess
 
-// File is a file of the board.
+// File is a column of the chessboard.  Files are named after letters A through H
+// starting from the Queen's side of the board.
 type File int
 
 const (
@@ -16,7 +17,7 @@ const (
 )
 
 // String implements the fmt.Stringer interface and returns
-// the file's algebraic notation.
+// the file in algebraic notation.
 func (f File) String() string {
 	if f == NoFile {
 		return ""
@@ -39,7 +40,8 @@ func fileFromStr(s string) File {
 	return file
 }
 
-// Rank is a rank of the board.
+// Rank is a row of the chessboard.  Ranks are named after numbers 1 through 8 starting
+// from White's side of the board.
 type Rank int
 
 const (
@@ -55,7 +57,7 @@ const (
 )
 
 // String implements the fmt.Stringer interface and returns
-// the rank's algebraic notation.
+// the rank in algebraic notation.
 func (r Rank) String() string {
 	if r == NoRank {
 		return ""
@@ -78,7 +80,8 @@ func rankFromStr(s string) Rank {
 	return rank
 }
 
-// Square is a square of the board.
+// A Square is one of the 64 possible squares that
+// pieces can be positioned on.
 type Square struct {
 	file File
 	rank Rank

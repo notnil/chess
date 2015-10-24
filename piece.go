@@ -128,6 +128,7 @@ func (p *Piece) Color() Color {
 	return p.c
 }
 
+// String implements the fmt.Stringer interface
 func (p *Piece) String() string {
 	return p.uni
 }

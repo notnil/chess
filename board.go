@@ -158,7 +158,7 @@ const (
 func (b Board) hasSufficientMaterial() bool {
 	count := map[PieceType]int{}
 	for _, p := range b {
-		count[p.Type()] += 1
+		count[p.Type()]++
 	}
 	if count[Pawn] > 0 || count[Queen] > 0 || count[Rook] > 0 {
 		return true
