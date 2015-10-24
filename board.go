@@ -146,3 +146,59 @@ func (b Board) copy() Board {
 	}
 	return n
 }
+
+type squareColor int
+
+const (
+	noSquareColor squareColor = iota
+	lightSquare
+	darkSquare
+)
+
+func (b Board) hasSufficientMaterial() bool {
+	count := map[PieceType]int{}
+	for _, p := range b {
+		count[p.Type()] += 1
+	}
+	if count[Pawn] > 0 || count[Queen] > 0 || count[Rook] > 0 {
+		return true
+	}
+	// 	king versus king
+	if count[King] == 2 && count[Bishop] == 0 && count[Knight] == 0 {
+		return false
+	}
+	// king and bishop versus king
+	if count[King] == 2 && count[Bishop] == 1 && count[Knight] == 0 {
+		return false
+	}
+	// king and knight versus king
+	if count[King] == 2 && count[Bishop] == 0 && count[Knight] == 1 {
+		return false
+	}
+	// king and bishop(s) versus king and bishop(s) with the bishops on the same colour.
+	if count[King] == 2 && count[Knight] == 0 {
+		color := noSquareColor
+		for sq, p := range b {
+			if p.Type() != Bishop {
+				continue
+			}
+			c := colorForSquare(sq)
+			if color == noSquareColor {
+				color = c
+				continue
+			}
+			if c != color {
+				return true
+			}
+		}
+		return false
+	}
+	return true
+}
+
+func colorForSquare(sq *Square) squareColor {
+	if (int(sq.file)+int(sq.rank))%2 == 0 {
+		return darkSquare
+	}
+	return lightSquare
+}

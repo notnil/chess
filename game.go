@@ -39,18 +39,21 @@ const (
 	DrawOffer
 	// Stalemate indicates that the game was drawn by player being stalemated.
 	Stalemate
-	// ThreefoldRepetition indicates that the game was drawn by the game
-	// state being repeated three times and a player requested a draw.
+	// ThreefoldRepetition indicates that the game was drawn when the game
+	// state was repeated three times and a player requested a draw.
 	ThreefoldRepetition
 	// FivefoldRepetition indicates that the game was automatically drawn
 	// by the game state being repeated five times.
 	FivefoldRepetition
 	// FiftyMoveRule indicates that the game was drawn by the half
-	// move clock being fifty or greater and a player requested a draw.
+	// move clock being fifty or greater when a player requested a draw.
 	FiftyMoveRule
 	// SeventyFiveMoveRule indicates that the game was automatically drawn
-	// by the half move clock being seventy five or greater.
+	// when the half move clock was seventy five or greater.
 	SeventyFiveMoveRule
+	// InsufficientMaterial indicates that the game was automatically drawn
+	// because there was insufficent material for checkmate.
+	InsufficientMaterial
 )
 
 // TagPair represents metadata in a key value pairing.
@@ -262,6 +265,9 @@ func (g *Game) UnmarshalText(text []byte) error {
 	return nil
 }
 
+// Draw attempts to draw the game by the given method.  If the
+// method is valid, then the game is updated to a draw by that
+// method.  If the method isn't valid then an error is returned.
 func (g *Game) Draw(method Method) error {
 	switch method {
 	case ThreefoldRepetition:
@@ -272,12 +278,27 @@ func (g *Game) Draw(method Method) error {
 		if g.state.halfMoveClock < 50 {
 			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.state.halfMoveClock)
 		}
+	case DrawOffer:
 	default:
 		return fmt.Errorf("chess: unsupported draw method %s", method)
 	}
 	g.outcome = Draw
 	g.method = method
 	return nil
+}
+
+// Resign resigns the game for the given color.  If the game has
+// already been completed then the game is not updated.
+func (g *Game) Resign(color Color) {
+	if g.outcome != NoOutcome || color == NoColor {
+		return
+	}
+	if color == White {
+		g.outcome = BlackWon
+	} else {
+		g.outcome = WhiteWon
+	}
+	g.method = Resignation
 }
 
 func (g *Game) copy(game *Game) {
@@ -295,15 +316,21 @@ func (g *Game) updateState(state *GameState) {
 	g.method = method
 
 	// five fold rep creates automatic draw
-	if g.numOfRepitions() == 5 {
+	if g.numOfRepitions() >= 5 {
 		g.outcome = Draw
 		g.method = FivefoldRepetition
 	}
 
 	// 75 move rule creates automatic draw
-	if g.state.halfMoveClock > 75 {
+	if g.state.halfMoveClock >= 75 && g.method != Checkmate {
 		g.outcome = Draw
 		g.method = SeventyFiveMoveRule
+	}
+
+	// insufficent material creates automatic draw
+	if !g.state.board.hasSufficientMaterial() {
+		g.outcome = Draw
+		g.method = InsufficientMaterial
 	}
 }
 
