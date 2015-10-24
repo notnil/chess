@@ -25,6 +25,11 @@ const (
 	Draw Outcome = "1/2-1/2"
 )
 
+// String implements the fmt.Stringer interface
+func (o Outcome) String() string {
+	return string(o)
+}
+
 // A Method is the way in which the outcome occured.
 type Method int
 
