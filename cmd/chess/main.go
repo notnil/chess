@@ -12,7 +12,7 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "chess"
 	app.Usage = "command line tool for chess functions"
-	app.Commands = []cli.Command{recordGame(), fen(), pgn()}
+	app.Commands = []cli.Command{recordGame(), fen(), pgnViewer()}
 	app.Run(os.Args)
 }
 
@@ -62,7 +62,7 @@ func fen() cli.Command {
 	}
 }
 
-func pgn() cli.Command {
+func pgnViewer() cli.Command {
 	return cli.Command{
 		Name:  "pgn",
 		Usage: "Enter file name of PGN.  Press enter to view next move, \"b\" to go back a move, or \"q\" to stop.",

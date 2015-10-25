@@ -73,7 +73,3 @@ The chess command line tool includes:
 - game recorder using algebraic notation
 - fen viewer
 - pgn viewer
-
-## TODO
-- HTML based tool w/ GopherJS
-- More robust cli tool..
