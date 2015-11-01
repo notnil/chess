@@ -1,4 +1,4 @@
-// Package chessimg provides ches image utilities
+// Package chessimg provides chess image utilities
 package chessimg
 
 import (
@@ -12,44 +12,51 @@ import (
 	"github.com/lucasb-eyer/go-colorful"
 )
 
-// Config is used to configure options for WriteBoardSVG
-type Config struct {
+// A Encoder encodes chess boards into images.
+type Encoder struct {
+	w     io.Writer
 	light color.Color
 	dark  color.Color
 }
 
-func defaultConfig() *Config {
-	return &Config{
+// SquareColors is designed to be used as an optional argument
+// to the New function.  It changes the default light and
+// dark square colors to the ones given.
+func SquareColors(light, dark color.Color) func(*Encoder) {
+	return func(e *Encoder) {
+		e.light = light
+		e.dark = dark
+	}
+}
+
+// New returns an encoder that writes to the given writer.
+// New also takes options which can customize the image
+// output.
+func New(w io.Writer, options ...func(*Encoder)) *Encoder {
+	e := &Encoder{
+		w:     w,
 		light: color.RGBA{235, 209, 166, 1},
 		dark:  color.RGBA{165, 117, 81, 1},
 	}
-}
-
-// SquareColors is designed to be used as an optional argument
-// to the WriteBoardSVG function.  It changes the default light and
-// dark square colors to the ones given.
-func SquareColors(light, dark color.Color) func(*Config) {
-	return func(c *Config) {
-		c.light = light
-		c.dark = dark
-	}
-}
-
-// WriteBoardSVG outputs an SVG of the board to the writer.
-func WriteBoardSVG(w io.Writer, board chess.Board, options ...func(*Config)) {
-	config := defaultConfig()
 	for _, op := range options {
-		op(config)
+		op(e)
 	}
+	return e
+}
+
+// EncodeSVG writes the board SVG representation into
+// the Encoder's writer.  An error is returned if there
+// is there is an error writing data.
+func (e *Encoder) EncodeSVG(board chess.Board) error {
 	sqSize := 45
-	canvas := svg.New(w)
+	canvas := svg.New(e.w)
 	width := 8 * sqSize
 	height := 8 * sqSize
 	ranks := []string{"8", "7", "6", "5", "4", "3", "2", "1"}
 	files := []string{"a", "b", "c", "d", "e", "f", "g", "h"}
 
-	lightHex := colorToHex(config.light)
-	darkHex := colorToHex(config.dark)
+	lightHex := colorToHex(e.light)
+	darkHex := colorToHex(e.dark)
 
 	canvas.Start(width, height)
 	canvas.Rect(0, 0, width, height)
@@ -69,7 +76,9 @@ func WriteBoardSVG(w io.Writer, board chess.Board, options ...func(*Config)) {
 				hasRank := int(sq.Rank()) == 9-rank
 				if hasFile && hasRank && p != nil {
 					xml := pieceXML(x1, y1, p)
-					io.WriteString(canvas.Writer, xml)
+					if _, err := io.WriteString(canvas.Writer, xml); err != nil {
+						return err
+					}
 				}
 			}
 			if file == 1 {
@@ -83,6 +92,7 @@ func WriteBoardSVG(w io.Writer, board chess.Board, options ...func(*Config)) {
 		}
 	}
 	canvas.End()
+	return nil
 }
 
 func colorToHex(c color.Color) string {

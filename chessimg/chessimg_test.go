@@ -7,9 +7,12 @@ import (
 	"github.com/loganjspears/chess"
 )
 
-func TestImg(t *testing.T) {
+func TestSVG(t *testing.T) {
 	game := chess.NewGame()
-	f, _ := os.Create("board.svg")
+	f, _ := os.Create("test.svg")
 	defer f.Close()
-	WriteBoardSVG(f, game.State().Board())
+
+	if err := New(f).EncodeSVG(game.State().Board()); err != nil {
+		t.Fatal(err)
+	}
 }
