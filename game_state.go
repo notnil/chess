@@ -53,6 +53,16 @@ func (gs *GameState) Board() Board {
 	return gs.board.copy()
 }
 
+// Turn returns the color to move next.
+func (gs *GameState) Turn() Color {
+	return gs.turn
+}
+
+// CastleRights returns the castling rights of the state.
+func (gs *GameState) CastleRights() CastleRights {
+	return gs.castleRights
+}
+
 // String implements the fmt.Stringer interface and returns a
 // string with the format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 func (gs *GameState) String() string {
