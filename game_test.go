@@ -187,3 +187,15 @@ func TestSufficentMaterial(t *testing.T) {
 		}
 	}
 }
+
+func TestSerializationCycle(t *testing.T) {
+	g := NewGame()
+	pgn, err := PGN(strings.NewReader(g.String()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	cp := NewGame(pgn)
+	if cp.String() != g.String() {
+		t.Fatalf("expected %s but got %s", g.String(), cp.String())
+	}
+}
