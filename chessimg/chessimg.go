@@ -9,6 +9,7 @@ import (
 
 	"github.com/ajstarks/svgo"
 	"github.com/loganjspears/chess"
+	"github.com/loganjspears/chess/chessimg/internal"
 	"github.com/lucasb-eyer/go-colorful"
 )
 
@@ -102,7 +103,7 @@ func colorToHex(c color.Color) string {
 
 func pieceXML(x, y int, p *chess.Piece) string {
 	fileName := fmt.Sprintf("pieces/%s%s.svg", p.Color().String(), pieceTypeMap[p.Type()])
-	svgStr := string(MustAsset(fileName))
+	svgStr := string(internal.MustAsset(fileName))
 	old := `<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="45" height="45">`
 	new := fmt.Sprintf(`<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="360" height="360" viewBox="%d %d 360 360">`, (-1 * x), (-1 * y))
 	return strings.Replace(svgStr, old, new, 1)

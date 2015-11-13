@@ -15,7 +15,7 @@
 // pieces/wR.svg
 // DO NOT EDIT!
 
-package chessimg
+package internal
 
 import (
 	"bytes"
