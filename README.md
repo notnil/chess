@@ -67,9 +67,3 @@ func main() {
     fmt.Println(game.String())    
 }
 ```
-
-## cmd/chess
-The chess command line tool includes:
-- game recorder using algebraic notation
-- fen viewer
-- pgn viewer

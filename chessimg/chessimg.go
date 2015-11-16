@@ -7,10 +7,10 @@ import (
 	"io"
 	"strings"
 
-	"github.com/ajstarks/svgo"
 	"github.com/loganjspears/chess"
+	"github.com/loganjspears/chess/Godeps/_workspace/src/github.com/ajstarks/svgo"
+	"github.com/loganjspears/chess/Godeps/_workspace/src/github.com/lucasb-eyer/go-colorful"
 	"github.com/loganjspears/chess/chessimg/internal"
-	"github.com/lucasb-eyer/go-colorful"
 )
 
 // A Encoder encodes chess boards into images.
@@ -22,7 +22,7 @@ type Encoder struct {
 
 // SquareColors is designed to be used as an optional argument
 // to the New function.  It changes the default light and
-// dark square colors to the ones given.
+// dark square colors to the colors given.
 func SquareColors(light, dark color.Color) func(*Encoder) {
 	return func(e *Encoder) {
 		e.light = light

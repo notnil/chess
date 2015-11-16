@@ -1,0 +1,18 @@
+{
+	"ImportPath": "github.com/loganjspears/chess",
+	"GoVersion": "go1.5.1",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/ajstarks/svgo",
+			"Comment": "go.weekly.2012-01-27-117-g99831a8",
+			"Rev": "99831a8cf95786bcee3956cbf3f181c91bc37c24"
+		},
+		{
+			"ImportPath": "github.com/lucasb-eyer/go-colorful",
+			"Rev": "e524a63fc3d334b573e6c1060c9b5866cf236626"
+		}
+	]
+}
