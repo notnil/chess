@@ -144,7 +144,7 @@ func NewGame(options ...func(*Game)) *Game {
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(m *Move) error {
 	if g.outcome != NoOutcome {
-		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method())
+		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method().String())
 	}
 	if !m.isValid() {
 		return fmt.Errorf("chess: invalid move %s", m)
@@ -182,7 +182,7 @@ func (g *Game) MoveAlg(alg string) error {
 // ValidMoves returns a list of valid moves in the
 // current position.
 func (g *Game) ValidMoves() []*Move {
-	return g.state.validMoves()
+	return g.state.ValidMoves()
 }
 
 // States returns the state history of the game.
@@ -285,7 +285,7 @@ func (g *Game) Draw(method Method) error {
 		}
 	case DrawOffer:
 	default:
-		return fmt.Errorf("chess: unsupported draw method %s", method)
+		return fmt.Errorf("chess: unsupported draw method %s", method.String())
 	}
 	g.outcome = Draw
 	g.method = method

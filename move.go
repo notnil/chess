@@ -11,6 +11,17 @@ type Move struct {
 	notation string
 }
 
+// NewMove creates a move from the given origin and destination
+// squares and promotion piece type.  The move isn't validated
+// and could return an error from the Game's Move function.
+func NewMove(s1, s2 *Square, promo PieceType) *Move {
+	return &Move{
+		s1:    s1,
+		s2:    s2,
+		promo: promo,
+	}
+}
+
 // S1 returns the origin square of the move.
 func (m *Move) S1() *Square {
 	return m.s1

@@ -104,7 +104,7 @@ func (gs *GameState) getOutcome() (Outcome, Method) {
 		return NoOutcome, NoMethod
 	}
 	inCheck := gs.board.inCheck(gs.turn)
-	hasMove := len(gs.validMoves()) > 0
+	hasMove := len(gs.ValidMoves()) > 0
 	if !inCheck && !hasMove {
 		return Draw, Stalemate
 	} else if inCheck && !hasMove {
@@ -118,7 +118,9 @@ func (gs *GameState) getOutcome() (Outcome, Method) {
 	return NoOutcome, NoMethod
 }
 
-func (gs *GameState) validMoves() []*Move {
+// ValidMoves returns a list of valid moves in the
+// current position.
+func (gs *GameState) ValidMoves() []*Move {
 	moves := []*Move{}
 	s2Squares := gs.board.squaresForColor(gs.turn.Other())
 	s2Squares = append(s2Squares, gs.board.squaresForColor(NoColor)...)
