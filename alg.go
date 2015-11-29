@@ -54,8 +54,8 @@ func encodeMove(move *Move) string {
 
 func getCheckChar(move *Move) string {
 	checkChar := ""
-	postState := move.postMoveState()
-	if _, method := postState.getOutcome(); method == Checkmate {
+	postState := move.PostMoveState()
+	if _, method := postState.Outcome(); method == Checkmate {
 		checkChar = "#"
 	} else if postState.board.inCheck(move.state.turn.Other()) {
 		checkChar = "+"

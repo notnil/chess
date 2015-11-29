@@ -1,17 +1,41 @@
 package main
 
-import "github.com/loganjspears/chess"
+import (
+	"fmt"
 
-type Player interface {
-	Move(gs *chess.GameState) *chess.Move
-}
+	"github.com/loganjspears/chess"
+	"github.com/loganjspears/chess/ai"
+)
 
-type InputPlayer struct{}
+type inputPlayer struct{}
 
-func (p InputPlayer) Move(gs *chess.GameState) *chess.Move {
-
+func (p inputPlayer) Move(gs *chess.GameState) string {
+	fmt.Println("Enter Move in Algebraic Notation (ex. 'e4'):")
+	input := ""
+	fmt.Scanln(&input)
+	return input
 }
 
 func main() {
-
+	g := chess.NewGame()
+	p := inputPlayer{}
+	cpu := ai.Athena{2}
+	count := 0
+	for g.Outcome() == chess.NoOutcome {
+		fmt.Println(g.State().Board().Draw())
+		fmt.Println(g.State().String())
+		if count%2 == 0 {
+			alg := p.Move(g.State())
+			if err := g.MoveAlg(alg); err != nil {
+				fmt.Println("invalid move")
+				continue
+			}
+		} else {
+			move := cpu.Move(g.State())
+			g.Move(move)
+		}
+		count++
+	}
+	fmt.Printf("Game completed. %s by %s.\n", g.Outcome(), g.Method())
+	fmt.Println(g.String())
 }

@@ -52,28 +52,8 @@ func (m *Move) String() string {
 	return m.notation
 }
 
-func (m *Move) isValid() bool {
-	return m.isValidWithCheck(true)
-}
-
-func (m *Move) isValidWithCheck(check bool) bool {
-	p := m.piece()
-	isValid := filterForPiece(p)(m)
-	if !isValid {
-		return false
-	}
-	if !check {
-		return true
-	}
-	inCheck := m.postMoveState().board.inCheck(m.state.turn)
-	return !inCheck
-}
-
-func (m *Move) isCapture() bool {
-	return (m.state.board.isOccupied(m.s2) && m.state.board.piece(m.s2).Color() != m.state.turn) || pawnEnPassantFilter(m)
-}
-
-func (m *Move) postMoveState() *GameState {
+// TODO
+func (m *Move) PostMoveState() *GameState {
 	moveCount := m.state.moveCount
 	if m.state.turn == Black {
 		moveCount++
@@ -92,6 +72,27 @@ func (m *Move) postMoveState() *GameState {
 		halfMoveClock:   halfMove,
 		moveCount:       moveCount,
 	}
+}
+
+func (m *Move) isValid() bool {
+	return m.isValidWithCheck(true)
+}
+
+func (m *Move) isValidWithCheck(check bool) bool {
+	p := m.piece()
+	isValid := filterForPiece(p)(m)
+	if !isValid {
+		return false
+	}
+	if !check {
+		return true
+	}
+	inCheck := m.PostMoveState().board.inCheck(m.state.turn)
+	return !inCheck
+}
+
+func (m *Move) isCapture() bool {
+	return (m.state.board.isOccupied(m.s2) && m.state.board.piece(m.s2).Color() != m.state.turn) || pawnEnPassantFilter(m)
 }
 
 func (m *Move) piece() *Piece {

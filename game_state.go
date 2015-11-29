@@ -98,7 +98,7 @@ func (gs *GameState) UnmarshalText(text []byte) error {
 	return nil
 }
 
-func (gs *GameState) getOutcome() (Outcome, Method) {
+func (gs *GameState) Outcome() (Outcome, Method) {
 	// should only happen in unit tests
 	if gs.board.kingSquare(gs.turn) == nil {
 		return NoOutcome, NoMethod

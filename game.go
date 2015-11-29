@@ -150,7 +150,7 @@ func (g *Game) Move(m *Move) error {
 		return fmt.Errorf("chess: invalid move %s", m)
 	}
 	g.moves = append(g.moves, m)
-	g.updateState(m.postMoveState())
+	g.updateState(m.PostMoveState())
 	return nil
 }
 
@@ -329,7 +329,7 @@ func (g *Game) copy(game *Game) {
 
 func (g *Game) updateState(state *GameState) {
 	g.state = state
-	outcome, method := state.getOutcome()
+	outcome, method := state.Outcome()
 	g.outcome = outcome
 	g.method = method
 
