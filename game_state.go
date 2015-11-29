@@ -135,7 +135,7 @@ func (gs *GameState) validMoves() []*Move {
 					}
 				}
 			} else {
-				m := &Move{s1: s1, s2: s2, state: &GameState{board: gs.board, turn: gs.turn}}
+				m := &Move{s1: s1, s2: s2, state: gs}
 				if m.isValid() {
 					moves = append(moves, m)
 				}

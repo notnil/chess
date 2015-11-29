@@ -199,3 +199,25 @@ func TestSerializationCycle(t *testing.T) {
 		t.Fatalf("expected %s but got %s", g.String(), cp.String())
 	}
 }
+
+func TestInitialNumOfValidMoves(t *testing.T) {
+	g := NewGame()
+	if len(g.ValidMoves()) != 20 {
+		t.Fatal("should find 20 valid moves from the initial position")
+	}
+}
+
+func TestCastlingInValidMoves(t *testing.T) {
+	pgn, err := PGN(strings.NewReader(`1. e4 e5 2. Nf3 Nf6 3. Bc4 Bc5`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := NewGame(pgn)
+	moves := map[string]bool{}
+	for _, m := range g.ValidMoves() {
+		moves[m.String()] = true
+	}
+	if !moves["O-O"] {
+		t.Fatal("valid moves didn't find castle")
+	}
+}
