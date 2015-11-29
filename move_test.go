@@ -103,6 +103,8 @@ var (
 		&Move{s1: E3, s2: F6, state: unsafeFEN("r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13")},
 		// can't move piece out of pin (even if checking enemy king) http://en.lichess.org/JCRBhXH7#62
 		&Move{s1: E1, s2: E7, state: unsafeFEN("4R3/1r1k2pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 w - - 5 32")},
+		// invalid pawn capture
+		&Move{s1: E6, s2: E5, state: unsafeFEN(`2b1r3/2k2p1B/p2np3/4B3/8/5N2/PP1K1PPP/3R4 b - - 2 1`)},
 	}
 
 	validMoveState = []moveState{

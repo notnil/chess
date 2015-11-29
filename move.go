@@ -273,7 +273,7 @@ var (
 		p := m.piece()
 		rankStep := rankStep(p.Color())
 		sameFile := m.s1.file == m.s2.file
-		upOne := int(m.s2.rank) == int(m.s1.rank)+rankStep
+		upOne := (int(m.s2.rank) == int(m.s1.rank)+rankStep) && !m.state.board.isOccupied(m.s2)
 		requiresPromo := m.s2.rank == backRank(p.Color().Other())
 		promotable := m.promo.isPromotable()
 		return (upOne && sameFile && !requiresPromo) || (upOne && sameFile && requiresPromo && promotable)
