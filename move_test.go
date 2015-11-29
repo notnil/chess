@@ -162,7 +162,7 @@ func TestValidMoveStates(t *testing.T) {
 			log.Println(ms.Move.state.board.Draw())
 			t.Fatalf("expected move %s to be valid", ms.Move)
 		}
-		postState := ms.Move.postMoveState()
+		postState := ms.Move.PostMoveState()
 		if postState.String() != ms.PostState.String() {
 			t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
 				ms.Move.state.board.Draw(), ms.Move.String(), ms.PostState.String(),

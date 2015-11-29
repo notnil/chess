@@ -38,7 +38,7 @@ func minMax(gs *chess.GameState, maxPly, ply int) *chess.Move {
 			plyMove := minMax(state, maxPly, ply+1)
 			state = plyMove.PostMoveState()
 		}
-		scr := score(state, gs.Turn()) + (rand.Float64() / 10)
+		scr := score(state, gs.Turn()) + (rand.Float64() / 100)
 		if scr > topScore {
 			topMove = m
 			topScore = scr

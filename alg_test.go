@@ -158,7 +158,7 @@ func TestValidAlgDecoding(t *testing.T) {
 		if err != nil || !move.isValid() {
 			t.Fatalf("starting from board\n%s\n expected move notation %s to be valid err - %s", test.PreState.board.Draw(), test.AlgText, err)
 		}
-		postState := move.postMoveState()
+		postState := move.PostMoveState()
 		if postState.String() != test.PostState.String() {
 			t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
 				move.state.board.Draw(), move.String(), test.PostState.String(),
@@ -182,7 +182,7 @@ func TestValidAlgEncoding(t *testing.T) {
 		}
 		actual := encodeMove(test.Move)
 		if actual != test.AlgText {
-			t.Fatalf("starting from board\n%s\n to board \n%s\nexpected move notation %s but got %s", test.Move.state.board.Draw(), test.Move.postMoveState().board.Draw(), test.AlgText, actual)
+			t.Fatalf("starting from board\n%s\n to board \n%s\nexpected move notation %s but got %s", test.Move.state.board.Draw(), test.Move.PostMoveState().board.Draw(), test.AlgText, actual)
 		}
 	}
 }
