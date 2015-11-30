@@ -285,7 +285,7 @@ var (
 		rankStep := rankStep(p.Color())
 		startRank := Rank(int(backRank(p.Color())) + rankStep)
 		sameFile := m.s1.file == m.s2.file
-		upTwoFirstMove := m.s1.rank == startRank && int(m.s2.rank) == int(m.s1.rank)+(2*rankStep)
+		upTwoFirstMove := (m.s1.rank == startRank && int(m.s2.rank) == int(m.s1.rank)+(2*rankStep)) && !m.state.board.isOccupied(m.s2)
 		return upTwoFirstMove && sameFile
 	}
 
