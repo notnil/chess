@@ -31,12 +31,13 @@ func (a Athena) Move(gs *chess.GameState) *chess.Move {
 func minMax(gs *chess.GameState, maxPly, ply int) *chess.Move {
 	var topMove *chess.Move
 	topScore := -1000.0
-
 	for _, m := range gs.ValidMoves() {
 		state := m.PostMoveState()
 		if maxPly != ply {
 			plyMove := minMax(state, maxPly, ply+1)
-			state = plyMove.PostMoveState()
+			if plyMove != nil {
+				state = plyMove.PostMoveState()
+			}
 		}
 		scr := score(state, gs.Turn()) + (rand.Float64() / 100)
 		if scr > topScore {
