@@ -168,35 +168,28 @@ func filterForPiece(p *Piece) moveFilter {
 	if p == nil {
 		return s1Filter
 	}
-	filters := []moveFilter{s1Filter, turnFilter, s2Filter}
 	switch p.Type() {
 	case King:
-		filters = append(filters, kingFilter)
+		return kingFilter
 	case Queen:
-		filters = append(filters, queenFilter)
+		return queenFilter
 	case Rook:
-		filters = append(filters, rookFilter)
+		return rookFilter
 	case Bishop:
-		filters = append(filters, bishopFilter)
+		return bishopFilter
 	case Knight:
-		filters = append(filters, knightFilter)
+		return knightFilter
 	case Pawn:
-		filters = append(filters, pawnFilter)
+		return pawnFilter
 	}
-	if p.Type() != Knight {
-		filters = append(filters, blockedFilter)
-	}
-	if p.Type() != Pawn {
-		filters = append(filters, promotionFilter)
-	}
-	return moveFilters(filters).chainAnd()
+	return nil
 }
 
 type moveFilter func(m *Move) bool
 
 type moveFilters []moveFilter
 
-func (a moveFilters) chainAnd() moveFilter {
+func (a moveFilters) chain() moveFilter {
 	return func(m *Move) bool {
 		for _, f := range a {
 			if !f(m) {
@@ -208,6 +201,13 @@ func (a moveFilters) chainAnd() moveFilter {
 }
 
 var (
+	kingFilter   = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, kingMoveFilter, promotionFilter}).chain()
+	queenFilter  = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, queenMoveFilter, blockedFilter, promotionFilter}).chain()
+	rookFilter   = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, rookMoveFilter, blockedFilter, promotionFilter}).chain()
+	bishopFilter = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, bishopMoveFilter, blockedFilter, promotionFilter}).chain()
+	knightFilter = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, knightMoveFilter, promotionFilter}).chain()
+	pawnFilter   = moveFilters([]moveFilter{s1Filter, turnFilter, s2Filter, pawnMoveFilter, blockedFilter}).chain()
+
 	// filters moves where s1 doesn't have a piece
 	s1Filter = func(m *Move) bool {
 		return m.state.board.isOccupied(m.s1)
@@ -234,7 +234,7 @@ var (
 	}
 
 	// filters invalid moves for the king
-	kingFilter = func(m *Move) bool {
+	kingMoveFilter = func(m *Move) bool {
 		kingMove := m.s1.fileDif(m.s2) <= 1 && m.s1.rankDif(m.s2) <= 1
 		return kingMove || castleFilter(m)
 	}
@@ -242,29 +242,29 @@ var (
 	castleFilter moveFilter
 
 	// filters invalid moves for the queen
-	queenFilter = func(m *Move) bool {
-		return rookFilter(m) || bishopFilter(m)
+	queenMoveFilter = func(m *Move) bool {
+		return rookMoveFilter(m) || bishopMoveFilter(m)
 	}
 
 	// filters invalid moves for the rook
-	rookFilter = func(m *Move) bool {
+	rookMoveFilter = func(m *Move) bool {
 		return (m.s1.file == m.s2.file || m.s1.rank == m.s2.rank)
 	}
 
 	// filters invalid moves for the bishop
-	bishopFilter = func(m *Move) bool {
+	bishopMoveFilter = func(m *Move) bool {
 		return m.s1.fileDif(m.s2) == m.s1.rankDif(m.s2)
 	}
 
 	// filters invalid moves for the knight
-	knightFilter = func(m *Move) bool {
+	knightMoveFilter = func(m *Move) bool {
 		fileDif := m.s1.fileDif(m.s2)
 		rankDif := m.s1.rankDif(m.s2)
 		return (fileDif == 1 && rankDif == 2) || (fileDif == 2 && rankDif == 1)
 	}
 
 	// filters invalid moves for the pawn
-	pawnFilter = func(m *Move) bool {
+	pawnMoveFilter = func(m *Move) bool {
 		return pawnUpOneFilter(m) || pawnUpTwoFilter(m) || pawnCaptureFilter(m) || pawnEnPassantFilter(m)
 	}
 

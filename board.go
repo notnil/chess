@@ -69,7 +69,10 @@ func (b Board) Draw() string {
 func (b Board) squaresForColor(c Color) []*Square {
 	squares := []*Square{}
 	for _, sq := range allSquares {
-		if b.isOccupied(sq) && b.piece(sq).Color() == c {
+		occupied := b.isOccupied(sq)
+		if !occupied && c == NoColor {
+			squares = append(squares, sq)
+		} else if occupied && b.piece(sq).Color() == c {
 			squares = append(squares, sq)
 		}
 	}

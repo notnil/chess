@@ -120,10 +120,11 @@ func (gs *GameState) getOutcome() (Outcome, Method) {
 
 func (gs *GameState) validMoves() []*Move {
 	moves := []*Move{}
+	s2Squares := gs.board.squaresForColor(gs.turn.Other())
+	s2Squares = append(s2Squares, gs.board.squaresForColor(NoColor)...)
 	for _, s1 := range gs.board.squaresForColor(gs.turn) {
 		p := gs.board.piece(s1)
-		// TODO s2 can only be an empty or enemy square
-		for _, s2 := range allSquares {
+		for _, s2 := range s2Squares {
 			couldPromo := p.Type() == Pawn && (s2.rank == R1 || s2.rank == R8)
 			if couldPromo {
 				for _, pt := range PieceTypes() {
@@ -134,13 +135,12 @@ func (gs *GameState) validMoves() []*Move {
 						}
 					}
 				}
-			} else {
-				m := &Move{s1: s1, s2: s2, state: gs}
-				if m.isValid() {
-					moves = append(moves, m)
-				}
+				continue
 			}
-
+			m := &Move{s1: s1, s2: s2, state: gs}
+			if m.isValid() {
+				moves = append(moves, m)
+			}
 		}
 	}
 	return moves
