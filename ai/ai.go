@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"log"
 	"math/rand"
 	"time"
 
@@ -20,46 +21,61 @@ func (r Random) Move(gs *chess.GameState) *chess.Move {
 }
 
 type Athena struct {
-	Ply int
+	Ply      int
+	scoreMap map[[16]byte]float64
 }
 
-func (a Athena) Move(gs *chess.GameState) *chess.Move {
+func New(ply int) *Athena {
+	return &Athena{
+		Ply:      ply,
+		scoreMap: map[[16]byte]float64{},
+	}
+}
+
+func (a *Athena) Move(gs *chess.GameState) *chess.Move {
 	rand.Seed(time.Now().UnixNano())
-	return minMax(gs, a.Ply, 0)
+	move, score := a.minMax(gs, gs.Turn(), a.Ply, 0)
+	log.Println(score)
+	return move
 }
 
-func minMax(gs *chess.GameState, maxPly, ply int) *chess.Move {
+func (a *Athena) PositionsEvaluated() int {
+	return len(a.scoreMap)
+}
+
+func (a *Athena) minMax(gs *chess.GameState, c chess.Color, maxPly, ply int) (*chess.Move, float64) {
 	var topMove *chess.Move
 	topScore := -1000.0
 	for _, m := range gs.ValidMoves() {
 		state := m.PostMoveState()
 		if maxPly != ply {
-			plyMove := minMax(state, maxPly, ply+1)
+			plyMove, _ := a.minMax(state, c.Other(), maxPly, ply+1)
 			if plyMove != nil {
 				state = plyMove.PostMoveState()
 			}
 		}
-		scr := score(state, gs.Turn()) + (rand.Float64() / 100)
+		scr := a.score(state) + (rand.Float64() / 100)
+		if c == chess.Black {
+			scr *= -1.0
+		}
 		if scr > topScore {
 			topMove = m
 			topScore = scr
 		}
 	}
-	return topMove
+	return topMove, topScore
 }
 
-func score(gs *chess.GameState, color chess.Color) float64 {
+func (a *Athena) score(gs *chess.GameState) float64 {
+	hash := gs.Hash()
+	if score, in := a.scoreMap[hash]; in {
+		return score
+	}
 	outcome, _ := gs.Outcome()
 	switch outcome {
 	case chess.WhiteWon:
-		if color == chess.White {
-			return 1000.0
-		}
-		return -1000.0
+		return 1000.0
 	case chess.BlackWon:
-		if color == chess.Black {
-			return 1000.0
-		}
 		return -1000.0
 	case chess.Draw:
 		return 0.0
@@ -68,12 +84,13 @@ func score(gs *chess.GameState, color chess.Color) float64 {
 	total := 0.0
 	for _, piece := range gs.Board() {
 		score := pieceScore(gs, piece)
-		if piece.Color() == color {
+		if piece.Color() == chess.White {
 			total += score
 		} else {
 			total -= score
 		}
 	}
+	a.scoreMap[hash] = total
 	return total
 }
 

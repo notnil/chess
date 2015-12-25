@@ -84,8 +84,9 @@ func (b Board) squaresForColor(c Color) []*Square {
 // of the first king it finds.  If no king is on the board it will
 // return nil.
 func (b Board) kingSquare(c Color) *Square {
-	for _, sq := range b.squaresForColor(c) {
-		if b.piece(sq).Type() == King {
+	for _, sq := range allSquares {
+		p := b.piece(sq)
+		if p != nil && p.Type() == King && p.Color() == c {
 			return sq
 		}
 	}
@@ -100,7 +101,7 @@ func (b Board) isSquareAttacked(c Color, squares ...*Square) bool {
 		for _, s2 := range squares {
 			m := &Move{s1: s1, s2: s2, state: &GameState{board: b, turn: c.Other()}}
 			pieceType := m.piece().Type()
-			if m.isValidWithCheck(false) && (pieceType != Pawn || (pieceType == Pawn && pawnCaptureFilter(m))) {
+			if (pieceType != Pawn || (pieceType == Pawn && pawnCaptureFilter(m))) && m.isValidWithCheck(false) {
 				return true
 			}
 		}

@@ -167,9 +167,9 @@ func (m *Move) isCastling() bool {
 	if p == nil {
 		return false
 	}
-	backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+	backRow := whiteBackRow
 	if m.state.turn == Black {
-		backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
+		backRow = blackBackRow
 	}
 	kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
 	queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]
@@ -277,6 +277,10 @@ var (
 
 	// filters invalid moves for the pawn
 	pawnMoveFilter = func(m *Move) bool {
+		// if moving more than 1 file invalid move
+		if abs(int(m.s2.file)-int(m.s1.file)) > 1 {
+			return false
+		}
 		return pawnUpOneFilter(m) || pawnUpTwoFilter(m) || pawnCaptureFilter(m) || pawnEnPassantFilter(m)
 	}
 
@@ -318,6 +322,9 @@ var (
 		capture := abs(int(m.s2.file)-int(m.s1.file)) == 1 && m.s2 == m.state.enPassantSquare
 		return upOne && capture
 	}
+
+	whiteBackRow = [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+	blackBackRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
 )
 
 func init() {
@@ -333,9 +340,9 @@ func init() {
 		if !(canCastleKingSide || canCastleQueenSide) {
 			return false
 		}
-		backRow := [8]*Square{A1, B1, C1, D1, E1, F1, G1, H1}
+		backRow := whiteBackRow
 		if c == Black {
-			backRow = [8]*Square{A8, B8, C8, D8, E8, F8, G8, H8}
+			backRow = blackBackRow
 		}
 		kingSide := m.s1 == backRow[4] && m.s2 == backRow[6]
 		queenSide := m.s1 == backRow[4] && m.s2 == backRow[2]

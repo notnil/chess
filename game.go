@@ -31,7 +31,7 @@ func (o Outcome) String() string {
 }
 
 // A Method is the way in which the outcome occured.
-type Method int
+type Method uint8
 
 const (
 	// NoMethod indicates that an outcome hasn't occured or that the method can't be determined.

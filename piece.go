@@ -1,7 +1,7 @@
 package chess
 
 // Color represents the color of a chess piece.
-type Color int
+type Color int8
 
 const (
 	// NoColor represents no color
@@ -36,7 +36,7 @@ func (c Color) String() string {
 }
 
 // PieceType is the type of a piece.
-type PieceType int
+type PieceType int8
 
 const (
 	// NoPiece represents a lack of piece type

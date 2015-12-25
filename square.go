@@ -2,7 +2,7 @@ package chess
 
 // File is a column of the chessboard.  Files are named after letters A through H
 // starting from the Queen's side of the board.
-type File int
+type File int8
 
 const (
 	NoFile File = iota
@@ -42,7 +42,7 @@ func fileFromStr(s string) File {
 
 // Rank is a row of the chessboard.  Ranks are named after numbers 1 through 8 starting
 // from White's side of the board.
-type Rank int
+type Rank int8
 
 const (
 	NoRank Rank = iota
@@ -112,14 +112,8 @@ func squareFromStr(s string) *Square {
 	return strToSquareMap[s]
 }
 
-// TODO should use direct access from the array
 func getSquare(f File, r Rank) *Square {
-	for _, s := range allSquares {
-		if s.file == f && s.rank == r {
-			return s
-		}
-	}
-	return nil
+	return allSquares[((int(f)-1)*8)+(int(r)-1)]
 }
 
 func (s *Square) fileDif(o *Square) int {
