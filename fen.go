@@ -49,12 +49,12 @@ func decodeFEN(fen string) (*GameState, error) {
 	}, nil
 }
 
-func fenBoard(boardStr string) (Board, error) {
+func fenBoard(boardStr string) (*Board, error) {
 	rankStrs := strings.Split(boardStr, "/")
 	if len(rankStrs) != 8 {
 		return nil, fmt.Errorf("chess: fen invalid board %s", boardStr)
 	}
-	b := map[*Square]*Piece{}
+	b := &Board{pieces: map[*Square]*Piece{}}
 	for i, rankStr := range rankStrs {
 		rank := Rank(8 - i)
 		fileMap, err := fenFormRank(rankStr)
@@ -62,7 +62,7 @@ func fenBoard(boardStr string) (Board, error) {
 			return nil, err
 		}
 		for file, piece := range fileMap {
-			b[getSquare(file, rank)] = piece
+			b.pieces[getSquare(file, rank)] = piece
 		}
 	}
 	return b, nil

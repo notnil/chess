@@ -99,7 +99,7 @@ func (m *Move) piece() *Piece {
 	return m.state.board.piece(m.s1)
 }
 
-func (m *Move) postBoard() Board {
+func (m *Move) postBoard() *Board {
 	b := m.state.board.copy()
 	if m.isCastling() {
 		var rookS1, rookS2 *Square
@@ -117,18 +117,18 @@ func (m *Move) postBoard() Board {
 			rookS1 = A8
 			rookS2 = D8
 		}
-		b[rookS2] = b[rookS1]
-		delete(b, rookS1)
+		b.pieces[rookS2] = b.pieces[rookS1]
+		delete(b.pieces, rookS1)
 	}
 	if m.piece().Type() == Pawn && pawnEnPassantFilter(m) {
 		rank := Rank(rankStep(m.state.turn.Other()) + int(m.state.enPassantSquare.rank))
 		capSq := getSquare(m.s2.file, rank)
-		delete(b, capSq)
+		delete(b.pieces, capSq)
 	}
-	b[m.s2] = b[m.s1]
-	delete(b, m.s1)
+	b.pieces[m.s2] = b.pieces[m.s1]
+	delete(b.pieces, m.s1)
 	if m.promo != NoPiece {
-		b[m.s2] = getPiece(m.promo, m.state.turn)
+		b.pieces[m.s2] = getPiece(m.promo, m.state.turn)
 	}
 	return b
 }

@@ -41,7 +41,7 @@ func (cr CastleRights) String() string {
 // GameState represents the state of the game without regaurd
 // to its outcome.  GameState is translatable to FEN notation.
 type GameState struct {
-	board                Board
+	board                *Board
 	turn                 Color
 	castleRights         CastleRights
 	enPassantSquare      *Square
@@ -52,7 +52,7 @@ type GameState struct {
 }
 
 // Board returns the gamestate's board.
-func (gs *GameState) Board() Board {
+func (gs *GameState) Board() *Board {
 	return gs.board.copy()
 }
 
@@ -105,7 +105,7 @@ func (gs *GameState) UnmarshalText(text []byte) error {
 // current position.
 func (gs *GameState) ValidMoves() []*Move {
 	if !gs.calculatedValidMoves {
-		gs.calcValidMoves()
+		gs.calcValidMoves(false)
 	}
 	return append([]*Move(nil), gs.validMoves...)
 }
@@ -131,18 +131,18 @@ func (gs *GameState) Outcome() (Outcome, Method) {
 }
 
 func (gs *GameState) Hash() [16]byte {
-	// b := gs.board.String()
-	// t := gs.turn.String()
-	// c := gs.castleRights.String()
-	// sq := "-"
-	// if gs.enPassantSquare != nil {
-	// 	sq = gs.enPassantSquare.String()
-	// }
-	// hash := fmt.Sprintf("%s %s %s %s", b, t, c, sq)
-	return md5.Sum([]byte(gs.String()))
+	b := gs.board.String()
+	t := gs.turn.String()
+	c := gs.castleRights.String()
+	sq := "-"
+	if gs.enPassantSquare != nil {
+		sq = gs.enPassantSquare.String()
+	}
+	hash := fmt.Sprintf("%s %s %s %s", b, t, c, sq)
+	return md5.Sum([]byte(hash))
 }
 
-func (gs *GameState) calcValidMoves() {
+func (gs *GameState) calcValidMoves(lookForOneMove bool) []*Move {
 	moves := []*Move{}
 	s2Squares := gs.board.squaresForColor(gs.turn.Other())
 	s2Squares = append(s2Squares, gs.board.squaresForColor(NoColor)...)
@@ -156,6 +156,9 @@ func (gs *GameState) calcValidMoves() {
 						m := &Move{s1: s1, s2: s2, state: gs, promo: pt}
 						if m.isValid() {
 							moves = append(moves, m)
+							if lookForOneMove {
+								return moves
+							}
 						}
 					}
 				}
@@ -164,11 +167,15 @@ func (gs *GameState) calcValidMoves() {
 			m := &Move{s1: s1, s2: s2, state: gs}
 			if m.isValid() {
 				moves = append(moves, m)
+				if lookForOneMove {
+					return moves
+				}
 			}
 		}
 	}
 	gs.validMoves = moves
 	gs.calculatedValidMoves = true
+	return moves
 }
 
 // TODO combine logic w/ calcValidMoves, added for performance
@@ -176,30 +183,7 @@ func (gs *GameState) hasValidMove() bool {
 	if gs.calculatedValidMoves {
 		return len(gs.validMoves) > 0
 	}
-	s2Squares := gs.board.squaresForColor(gs.turn.Other())
-	s2Squares = append(s2Squares, gs.board.squaresForColor(NoColor)...)
-	for _, s1 := range gs.board.squaresForColor(gs.turn) {
-		p := gs.board.piece(s1)
-		for _, s2 := range s2Squares {
-			couldPromo := p.Type() == Pawn && (s2.rank == R1 || s2.rank == R8)
-			if couldPromo {
-				for _, pt := range PieceTypes() {
-					if pt.isPromotable() {
-						m := &Move{s1: s1, s2: s2, state: gs, promo: pt}
-						if m.isValid() {
-							return true
-						}
-					}
-				}
-				continue
-			}
-			m := &Move{s1: s1, s2: s2, state: gs}
-			if m.isValid() {
-				return true
-			}
-		}
-	}
-	return false
+	return len(gs.calcValidMoves(true)) > 0
 }
 
 func (gs *GameState) samePosition(g *GameState) bool {

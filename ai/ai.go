@@ -1,7 +1,6 @@
 package ai
 
 import (
-	"log"
 	"math/rand"
 	"time"
 
@@ -34,8 +33,7 @@ func New(ply int) *Athena {
 
 func (a *Athena) Move(gs *chess.GameState) *chess.Move {
 	rand.Seed(time.Now().UnixNano())
-	move, score := a.minMax(gs, gs.Turn(), a.Ply, 0)
-	log.Println(score)
+	move, _ := a.minMax(gs, gs.Turn(), a.Ply, 0)
 	return move
 }
 
@@ -82,7 +80,7 @@ func (a *Athena) score(gs *chess.GameState) float64 {
 	}
 
 	total := 0.0
-	for _, piece := range gs.Board() {
+	for _, piece := range gs.Board().Pieces() {
 		score := pieceScore(gs, piece)
 		if piece.Color() == chess.White {
 			total += score
