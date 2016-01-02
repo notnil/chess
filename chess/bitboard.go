@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// bitboard is a board representation encoded in an unsigned 64-bit integer.  The
+// 64 board positions begin with A1 as the most significant bit and H8 as the least.
 type bitboard uint64
 
 func newBitboard(m map[Square]bool) bitboard {
@@ -21,6 +23,14 @@ func newBitboard(m map[Square]bool) bitboard {
 		panic(err)
 	}
 	return bitboard(bb)
+}
+
+func (b bitboard) MSB() int {
+	i := strings.Index(b.String(), "1")
+	if i == -1 {
+		return 0
+	}
+	return i
 }
 
 func (b bitboard) Mapping() map[Square]bool {

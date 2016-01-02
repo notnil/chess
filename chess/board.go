@@ -12,6 +12,34 @@ type Board struct {
 	emptySqs bitboard
 }
 
+// Draw returns visual representation of the board useful for debugging.  Ex.
+// A B C D E F G H
+// 8- - - - - - - -
+// 7- ♟ - - - - - ♝
+// 6- - - - ♘ - - -
+// 5- - - - ♟ - - -
+// 4- - - - - - - -
+// 3- - - - - - - -
+// 2- ♖ - - - - - -
+// 1- ♗ - - - - - -
+func (b *Board) Draw() string {
+	s := "\n A B C D E F G H\n"
+	for r := 7; r >= 0; r-- {
+		s += rank(r).String()
+		for f := 0; f < numOfSquaresInRow; f++ {
+			p := b.piece(getSquare(file(f), rank(r)))
+			if p == nil {
+				s += "-"
+			} else {
+				s += p.String()
+			}
+			s += " "
+		}
+		s += "\n"
+	}
+	return s
+}
+
 // String implements the fmt.Stringer interface and returns
 // a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 func (b *Board) String() string {
@@ -87,64 +115,64 @@ func (b *Board) squareMap() map[Square]*Piece {
 
 var (
 	// file bitboards
-	bbFileA uint64
-	bbFileB uint64
-	bbFileC uint64
-	bbFileD uint64
-	bbFileE uint64
-	bbFileF uint64
-	bbFileG uint64
-	bbFileH uint64
+	bbFileA bitboard
+	bbFileB bitboard
+	bbFileC bitboard
+	bbFileD bitboard
+	bbFileE bitboard
+	bbFileF bitboard
+	bbFileG bitboard
+	bbFileH bitboard
 
 	// rank bitboards
-	bbRank1 uint64
-	bbRank2 uint64
-	bbRank3 uint64
-	bbRank4 uint64
-	bbRank5 uint64
-	bbRank6 uint64
-	bbRank7 uint64
-	bbRank8 uint64
+	bbRank1 bitboard
+	bbRank2 bitboard
+	bbRank3 bitboard
+	bbRank4 bitboard
+	bbRank5 bitboard
+	bbRank6 bitboard
+	bbRank7 bitboard
+	bbRank8 bitboard
 )
 
 func init() {
-	fileBBFunc := func(sq, i int) bool {
-		return (sq % numOfSquaresInRow) == i
-	}
-	bbFileA = initBB(int(fileA), fileBBFunc)
-	bbFileB = initBB(int(fileB), fileBBFunc)
-	bbFileC = initBB(int(fileC), fileBBFunc)
-	bbFileD = initBB(int(fileD), fileBBFunc)
-	bbFileE = initBB(int(fileE), fileBBFunc)
-	bbFileF = initBB(int(fileF), fileBBFunc)
-	bbFileG = initBB(int(fileG), fileBBFunc)
-	bbFileH = initBB(int(fileH), fileBBFunc)
+	bbFileA = bbForFile(fileA)
+	bbFileB = bbForFile(fileB)
+	bbFileC = bbForFile(fileC)
+	bbFileD = bbForFile(fileD)
+	bbFileE = bbForFile(fileE)
+	bbFileF = bbForFile(fileF)
+	bbFileG = bbForFile(fileG)
+	bbFileH = bbForFile(fileH)
 
-	rankBBFunc := func(sq, i int) bool {
-		return (sq / numOfSquaresInRow) == i
-	}
-	bbRank1 = initBB(int(rank1), rankBBFunc)
-	bbRank2 = initBB(int(rank2), rankBBFunc)
-	bbRank3 = initBB(int(rank3), rankBBFunc)
-	bbRank4 = initBB(int(rank4), rankBBFunc)
-	bbRank5 = initBB(int(rank5), rankBBFunc)
-	bbRank6 = initBB(int(rank6), rankBBFunc)
-	bbRank7 = initBB(int(rank7), rankBBFunc)
-	bbRank8 = initBB(int(rank8), rankBBFunc)
+	bbRank1 = bbForRank(rank1)
+	bbRank2 = bbForRank(rank2)
+	bbRank3 = bbForRank(rank3)
+	bbRank4 = bbForRank(rank4)
+	bbRank5 = bbForRank(rank5)
+	bbRank6 = bbForRank(rank6)
+	bbRank7 = bbForRank(rank7)
+	bbRank8 = bbForRank(rank8)
 }
 
-func initBB(i int, f func(sq, i int) bool) uint64 {
-	s := ""
-	for sq := 0; sq < numOfSquaresInRow; sq++ {
-		if f(sq, i) {
-			s += "1"
-		} else {
-			s += "0"
+func bbForFile(f file) bitboard {
+	m := map[Square]bool{}
+	var sq Square
+	for ; sq < numOfSquaresInBoard; sq++ {
+		if sq.file() == f {
+			m[sq] = true
 		}
 	}
-	bb, err := strconv.ParseUint(s, 2, 64)
-	if err != nil {
-		panic(err)
+	return newBitboard(m)
+}
+
+func bbForRank(r rank) bitboard {
+	m := map[Square]bool{}
+	var sq Square
+	for ; sq < numOfSquaresInBoard; sq++ {
+		if sq.rank() == r {
+			m[sq] = true
+		}
 	}
-	return bb
+	return newBitboard(m)
 }

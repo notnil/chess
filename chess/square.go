@@ -8,15 +8,8 @@ const (
 type Square int8
 
 func (sq Square) String() string {
-	f := int(sq.file())
-	r := int(sq.rank())
-	return fileChars[f:f+1] + rankChars[r:r+1]
+	return sq.file().String() + sq.rank().String()
 }
-
-const (
-	fileChars = "abcdefgh"
-	rankChars = "12345678"
-)
 
 func (sq Square) file() file {
 	return file(int(sq) % numOfSquaresInRow)
@@ -98,6 +91,11 @@ const (
 	H8
 )
 
+const (
+	fileChars = "abcdefgh"
+	rankChars = "12345678"
+)
+
 type rank int8
 
 const (
@@ -111,6 +109,10 @@ const (
 	rank8
 )
 
+func (r rank) String() string {
+	return rankChars[r : r+1]
+}
+
 type file int8
 
 const (
@@ -123,6 +125,10 @@ const (
 	fileG
 	fileH
 )
+
+func (f file) String() string {
+	return fileChars[f : f+1]
+}
 
 var (
 	strToSquareMap = map[string]Square{

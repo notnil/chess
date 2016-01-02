@@ -7,8 +7,20 @@ import (
 
 // A Board represents a chess board with the relationships between squares and pieces.
 type Board struct {
-	pieces map[*Square]*Piece
-	fenStr string
+	// white bitboards
+	bbWhitePawns   uint64
+	bbWhiteKnights uint64
+	bbWhiteBishops uint64
+	bbWhiteRooks   uint64
+	bbWhiteQueens  uint64
+	bbWhiteKings   uint64
+	// black bitboards
+	bbBlackPawns   uint64
+	bbBlackKnights uint64
+	bbBlackBishops uint64
+	bbBlackRooks   uint64
+	bbBlackQueens  uint64
+	bbBlackKings   uint64
 }
 
 // Pieces returns the mapping of squares to pieces.
@@ -23,9 +35,6 @@ func (b *Board) Pieces() map[*Square]*Piece {
 // String implements the fmt.Stringer interface and returns
 // a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 func (b *Board) String() string {
-	if b.fenStr != "" {
-		return b.fenStr
-	}
 	rankStrs := []string{}
 	for _, r := range []Rank{R8, R7, R6, R5, R4, R3, R2, R1} {
 		s := ""
@@ -48,8 +57,7 @@ func (b *Board) String() string {
 		}
 		rankStrs = append(rankStrs, s)
 	}
-	b.fenStr = strings.Join(rankStrs, "/")
-	return b.fenStr
+	return strings.Join(rankStrs, "/")
 }
 
 // Draw returns visual representation of the board useful for debugging.  Ex.

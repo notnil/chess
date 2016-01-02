@@ -85,15 +85,88 @@ func (pos *Position) MarshalText() (text []byte, err error) {
 // UnmarshalText implements the encoding.TextUnarshaler interface and
 // assumes the data is in the FEN format.
 func (pos *Position) UnmarshalText(text []byte) error {
-	// cp, err := decodeFEN(string(text))
-	// if err != nil {
-	// 	return err
-	// }
-	// pos.board = cp.board
-	// pos.turn = cp.turn
-	// pos.castleRights = cp.castleRights
-	// pos.enPassantSquare = cp.enPassantSquare
-	// pos.halfMoveClock = cp.halfMoveClock
-	// pos.moveCount = cp.moveCount
+	cp, err := decodeFEN(string(text))
+	if err != nil {
+		return err
+	}
+	pos.board = cp.board
+	pos.turn = cp.turn
+	pos.castleRights = cp.castleRights
+	pos.enPassantSquare = cp.enPassantSquare
+	pos.halfMoveClock = cp.halfMoveClock
+	pos.moveCount = cp.moveCount
 	return nil
+}
+
+func (pos *Position) ValidMoves() []*Move {
+	moves := []*Move{}
+	moves = append(moves, pos.pawnMoves()...)
+	return moves
+}
+
+const (
+	bitShiftUpLeft    = 7
+	bitShiftUpRight   = 9
+	bitShiftUp        = 8
+	bitShiftDownLeft  = 9
+	bitShiftDownRight = 7
+	bitShiftDown      = 8
+)
+
+type pawnBB struct {
+	bb    bitboard
+	shift int
+}
+
+func (pos *Position) pawnMoves() []*Move {
+	moves := []*Move{}
+	bbs := []pawnBB{}
+	var bbEnPassant bitboard
+	if pos.enPassantSquare != NoSquare {
+		bbEnPassant = newBitboard(map[Square]bool{pos.enPassantSquare: true})
+	}
+	if pos.Turn() == White {
+		bbWhite := pos.board.bbs[WhitePawn]
+		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> bitShiftUpRight) & (pos.board.blackSqs | bbEnPassant)
+		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> bitShiftUpLeft) & (pos.board.blackSqs | bbEnPassant)
+		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> bitShiftUp) & pos.board.emptySqs
+		bbWhiteUpTwo := ((bbWhiteUpOne & bbRank3) >> bitShiftUp) & pos.board.emptySqs
+		bbs = append(bbs, pawnBB{bb: bbWhiteCapLeft, shift: bitShiftUpLeft})
+		bbs = append(bbs, pawnBB{bb: bbWhiteCapRight, shift: bitShiftUpRight})
+		bbs = append(bbs, pawnBB{bb: bbWhiteUpOne, shift: bitShiftUp})
+		bbs = append(bbs, pawnBB{bb: bbWhiteUpTwo, shift: bitShiftUp * 2})
+	} else {
+		bbBlack := pos.board.bbs[BlackPawn]
+		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << bitShiftDownRight) & (pos.board.whiteSqs | bbEnPassant)
+		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << bitShiftDownLeft) & (pos.board.whiteSqs | bbEnPassant)
+		bbBlackUpOne := ((bbBlack & ^bbRank1) << bitShiftUp) & pos.board.emptySqs
+		bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << bitShiftUp) & pos.board.emptySqs
+		bbs = append(bbs, pawnBB{bb: bbBlackCapRight, shift: bitShiftDownRight * -1})
+		bbs = append(bbs, pawnBB{bb: bbBlackCapLeft, shift: bitShiftDownLeft * -1})
+		bbs = append(bbs, pawnBB{bb: bbBlackUpOne, shift: bitShiftDown * -1})
+		bbs = append(bbs, pawnBB{bb: bbBlackUpTwo, shift: bitShiftDown * -2})
+	}
+
+	for _, pawnBB := range bbs {
+		if pawnBB.bb == 0 {
+			continue
+		}
+		// TODO reduce number of squares by range of LSB to MSB per bitboard
+		for sq := 0; sq < 64; sq++ {
+			if pawnBB.bb.Occupied(Square(sq)) {
+				s1 := Square(sq - pawnBB.shift)
+				s2 := Square(sq)
+				if s2.rank() == rank8 {
+					qm := &Move{s1: s1, s2: s2, promo: Queen}
+					rm := &Move{s1: s1, s2: s2, promo: Rook}
+					bm := &Move{s1: s1, s2: s2, promo: Bishop}
+					nm := &Move{s1: s1, s2: s2, promo: Knight}
+					moves = append(moves, qm, rm, bm, nm)
+				} else {
+					moves = append(moves, &Move{s1: s1, s2: s2})
+				}
+			}
+		}
+	}
+	return moves
 }
