@@ -8,7 +8,7 @@ type Move struct {
 }
 
 func (m *Move) String() string {
-	return m.s1.String() + m.s2.String()
+	return m.s1.String() + m.s2.String() + m.promo.String()
 }
 
 // S1 returns the origin square of the move.

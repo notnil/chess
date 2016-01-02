@@ -60,6 +60,21 @@ func PieceTypes() [6]PieceType {
 	return [6]PieceType{King, Queen, Rook, Bishop, Knight, Pawn}
 }
 
+func (p PieceType) String() string {
+	switch p {
+	case King:
+		return "k"
+	case Queen:
+		return "q"
+	case Rook:
+		return "r"
+	case Bishop:
+		return "b"
+	case Knight:
+		return "n"
+	}
+	return ""
+}
 func (p PieceType) promotableTo() bool {
 	switch p {
 	case Queen, Rook, Bishop, Knight:

@@ -125,7 +125,9 @@ func (pos *Position) pawnMoves() []*Move {
 	if pos.enPassantSquare != NoSquare {
 		bbEnPassant = newBitboard(map[Square]bool{pos.enPassantSquare: true})
 	}
+	var promoRank rank
 	if pos.Turn() == White {
+		promoRank = rank8
 		bbWhite := pos.board.bbs[WhitePawn]
 		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> bitShiftUpRight) & (pos.board.blackSqs | bbEnPassant)
 		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> bitShiftUpLeft) & (pos.board.blackSqs | bbEnPassant)
@@ -136,6 +138,7 @@ func (pos *Position) pawnMoves() []*Move {
 		bbs = append(bbs, pawnBB{bb: bbWhiteUpOne, shift: bitShiftUp})
 		bbs = append(bbs, pawnBB{bb: bbWhiteUpTwo, shift: bitShiftUp * 2})
 	} else {
+		promoRank = rank1
 		bbBlack := pos.board.bbs[BlackPawn]
 		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << bitShiftDownRight) & (pos.board.whiteSqs | bbEnPassant)
 		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << bitShiftDownLeft) & (pos.board.whiteSqs | bbEnPassant)
@@ -156,7 +159,7 @@ func (pos *Position) pawnMoves() []*Move {
 			if pawnBB.bb.Occupied(Square(sq)) {
 				s1 := Square(sq - pawnBB.shift)
 				s2 := Square(sq)
-				if s2.rank() == rank8 {
+				if s2.rank() == promoRank {
 					qm := &Move{s1: s1, s2: s2, promo: Queen}
 					rm := &Move{s1: s1, s2: s2, promo: Rook}
 					bm := &Move{s1: s1, s2: s2, promo: Bishop}
