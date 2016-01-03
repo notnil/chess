@@ -101,65 +101,93 @@ func (pos *Position) UnmarshalText(text []byte) error {
 func (pos *Position) ValidMoves() []*Move {
 	moves := []*Move{}
 	moves = append(moves, pos.pawnMoves()...)
+	moves = append(moves, pos.knightMoves()...)
 	return moves
 }
 
-const (
-	bitShiftUpLeft    = 7
-	bitShiftUpRight   = 9
-	bitShiftUp        = 8
-	bitShiftDownLeft  = 9
-	bitShiftDownRight = 7
-	bitShiftDown      = 8
-)
-
-type pawnBB struct {
+type validMoveBB struct {
 	bb    bitboard
 	shift int
 }
 
 func (pos *Position) pawnMoves() []*Move {
-	moves := []*Move{}
-	bbs := []pawnBB{}
+	var bbs []*validMoveBB
 	var bbEnPassant bitboard
 	if pos.enPassantSquare != NoSquare {
 		bbEnPassant = newBitboard(map[Square]bool{pos.enPassantSquare: true})
 	}
-	var promoRank rank
+	var p *Piece
 	if pos.Turn() == White {
-		promoRank = rank8
+		p = WhitePawn
 		bbWhite := pos.board.bbs[WhitePawn]
-		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> bitShiftUpRight) & (pos.board.blackSqs | bbEnPassant)
-		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> bitShiftUpLeft) & (pos.board.blackSqs | bbEnPassant)
-		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> bitShiftUp) & pos.board.emptySqs
-		bbWhiteUpTwo := ((bbWhiteUpOne & bbRank3) >> bitShiftUp) & pos.board.emptySqs
-		bbs = append(bbs, pawnBB{bb: bbWhiteCapLeft, shift: bitShiftUpLeft})
-		bbs = append(bbs, pawnBB{bb: bbWhiteCapRight, shift: bitShiftUpRight})
-		bbs = append(bbs, pawnBB{bb: bbWhiteUpOne, shift: bitShiftUp})
-		bbs = append(bbs, pawnBB{bb: bbWhiteUpTwo, shift: bitShiftUp * 2})
+		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> 9) & (pos.board.blackSqs | bbEnPassant)
+		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> 7) & (pos.board.blackSqs | bbEnPassant)
+		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> 8) & pos.board.emptySqs
+		bbWhiteUpTwo := ((bbWhiteUpOne & bbRank3) >> 8) & pos.board.emptySqs
+		bbs = []*validMoveBB{
+			{bb: bbWhiteCapRight, shift: 9},
+			{bb: bbWhiteCapLeft, shift: 7},
+			{bb: bbWhiteUpOne, shift: 8},
+			{bb: bbWhiteUpTwo, shift: 16},
+		}
 	} else {
-		promoRank = rank1
+		p = BlackPawn
 		bbBlack := pos.board.bbs[BlackPawn]
-		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << bitShiftDownRight) & (pos.board.whiteSqs | bbEnPassant)
-		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << bitShiftDownLeft) & (pos.board.whiteSqs | bbEnPassant)
-		bbBlackUpOne := ((bbBlack & ^bbRank1) << bitShiftUp) & pos.board.emptySqs
-		bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << bitShiftUp) & pos.board.emptySqs
-		bbs = append(bbs, pawnBB{bb: bbBlackCapRight, shift: bitShiftDownRight * -1})
-		bbs = append(bbs, pawnBB{bb: bbBlackCapLeft, shift: bitShiftDownLeft * -1})
-		bbs = append(bbs, pawnBB{bb: bbBlackUpOne, shift: bitShiftDown * -1})
-		bbs = append(bbs, pawnBB{bb: bbBlackUpTwo, shift: bitShiftDown * -2})
+		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << 7) & (pos.board.whiteSqs | bbEnPassant)
+		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << 9) & (pos.board.whiteSqs | bbEnPassant)
+		bbBlackUpOne := ((bbBlack & ^bbRank1) << 8) & pos.board.emptySqs
+		bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << 8) & pos.board.emptySqs
+		bbs = []*validMoveBB{
+			{bb: bbBlackCapRight, shift: -7},
+			{bb: bbBlackCapLeft, shift: -9},
+			{bb: bbBlackUpOne, shift: -8},
+			{bb: bbBlackUpTwo, shift: -16},
+		}
 	}
+	return movesFromValidBBs(p, bbs)
+}
 
-	for _, pawnBB := range bbs {
-		if pawnBB.bb == 0 {
+func (pos *Position) knightMoves() []*Move {
+	p := WhiteKnight
+	validBB := ^pos.board.whiteSqs
+	if pos.Turn() == Black {
+		p = BlackKnight
+		validBB = ^pos.board.blackSqs
+	}
+	bb := pos.board.bbs[p]
+	bbUpRight := ((bb & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & validBB
+	bbUpLeft := ((bb & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & validBB
+	bbRightUp := (bb & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & validBB
+	bbRightDown := (bb & ^bbRank1 & ^(bbFileG | bbFileH) << 10) & validBB
+	bbDownRight := ((bb & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & validBB
+	bbDownLeft := ((bb & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & validBB
+	bbLeftUp := (bb & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & validBB
+	bbLeftDown := (bb & ^bbRank1 & ^(bbFileA | bbFileB) << 6) & validBB
+	bbs := []*validMoveBB{
+		{bb: bbUpRight, shift: 17},
+		{bb: bbUpLeft, shift: 15},
+		{bb: bbRightUp, shift: 10},
+		{bb: bbRightDown, shift: -10},
+		{bb: bbDownRight, shift: -15},
+		{bb: bbDownLeft, shift: -17},
+		{bb: bbLeftUp, shift: 6},
+		{bb: bbLeftDown, shift: -6},
+	}
+	return movesFromValidBBs(p, bbs)
+}
+
+func movesFromValidBBs(p *Piece, bbs []*validMoveBB) []*Move {
+	moves := []*Move{}
+	for _, validBB := range bbs {
+		if validBB.bb == 0 {
 			continue
 		}
 		// TODO reduce number of squares by range of LSB to MSB per bitboard
 		for sq := 0; sq < 64; sq++ {
-			if pawnBB.bb.Occupied(Square(sq)) {
-				s1 := Square(sq - pawnBB.shift)
+			if validBB.bb.Occupied(Square(sq)) {
+				s1 := Square(sq - validBB.shift)
 				s2 := Square(sq)
-				if s2.rank() == promoRank {
+				if (p == WhitePawn && s2.rank() == rank8) || (p == BlackPawn && s2.rank() == rank1) {
 					qm := &Move{s1: s1, s2: s2, promo: Queen}
 					rm := &Move{s1: s1, s2: s2, promo: Rook}
 					bm := &Move{s1: s1, s2: s2, promo: Bishop}
