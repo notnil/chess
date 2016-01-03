@@ -38,6 +38,11 @@ var (
 		{m: &Move{s1: E4, s2: F6}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: D6}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: C3}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		// rook moves
+		{m: &Move{s1: B2, s2: B4}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: B7}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: A2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: H2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
 	}
 
 	invalidMoves = []moveTest{
@@ -54,6 +59,11 @@ var (
 		// knight moves
 		{m: &Move{s1: E4, s2: F2}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: F3}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
+		// rook moves
+		{m: &Move{s1: B2, s2: B1}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: C3}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: B8}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: B2, s2: G7}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
 	}
 )
 
@@ -84,6 +94,13 @@ func TestInvalidMoves(t *testing.T) {
 			t.Fatalf("expected move %s to be invalid", mt.m)
 		}
 	}
+}
+
+func TestBitboard(t *testing.T) {
+	log.Println(bbForDiagonal(B1).Draw())
+	log.Println(bbForAntiDiagonal(B1).Draw())
+	// log.Println(bbDiagonal[B5].Draw())
+	// log.Println(bbAntiDiagonal[B5].Draw())
 }
 
 func BenchmarkValidMoves(b *testing.B) {

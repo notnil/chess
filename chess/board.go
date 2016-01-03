@@ -133,6 +133,12 @@ var (
 	bbRank6 bitboard
 	bbRank7 bitboard
 	bbRank8 bitboard
+
+	bbFiles        [8]bitboard
+	bbRanks        [8]bitboard
+	bbSquares      [64]bitboard
+	bbDiagonal     [64]bitboard
+	bbAntiDiagonal [64]bitboard
 )
 
 func init() {
@@ -153,6 +159,22 @@ func init() {
 	bbRank6 = bbForRank(rank6)
 	bbRank7 = bbForRank(rank7)
 	bbRank8 = bbForRank(rank8)
+
+	bbFiles = [8]bitboard{bbFileA, bbFileB, bbFileC, bbFileD, bbFileE, bbFileF, bbFileG, bbFileH}
+	bbRanks = [8]bitboard{bbRank1, bbRank2, bbRank3, bbRank4, bbRank5, bbRank6, bbRank7, bbRank8}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		sqr := Square(sq)
+		bbSquares[sq] = bbRanks[sqr.rank()] & bbFiles[sqr.file()]
+	}
+
+	// init diagonal and anti-diagonal bitboards
+	bbDiagonal = [64]bitboard{}
+	bbAntiDiagonal = [64]bitboard{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		sqr := Square(sq)
+		bbDiagonal[sqr] = bbForDiagonal(sqr)
+		bbAntiDiagonal[sqr] = bbForAntiDiagonal(sqr)
+	}
 }
 
 func bbForFile(f file) bitboard {
@@ -172,6 +194,30 @@ func bbForRank(r rank) bitboard {
 	for ; sq < numOfSquaresInBoard; sq++ {
 		if sq.rank() == r {
 			m[sq] = true
+		}
+	}
+	return newBitboard(m)
+}
+
+func bbForDiagonal(sq Square) bitboard {
+	v := int(sq.file()) - int(sq.rank())
+	m := map[Square]bool{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		sqr := Square(sq)
+		if int(sqr.file())-int(sqr.rank()) == v {
+			m[sqr] = true
+		}
+	}
+	return newBitboard(m)
+}
+
+func bbForAntiDiagonal(sq Square) bitboard {
+	v := int(sq.rank()) + int(sq.file())
+	m := map[Square]bool{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		sqr := Square(sq)
+		if int(sqr.rank())+int(sqr.file()) == v {
+			m[sqr] = true
 		}
 	}
 	return newBitboard(m)

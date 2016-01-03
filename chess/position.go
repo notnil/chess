@@ -102,12 +102,22 @@ func (pos *Position) ValidMoves() []*Move {
 	moves := []*Move{}
 	moves = append(moves, pos.pawnMoves()...)
 	moves = append(moves, pos.knightMoves()...)
+	moves = append(moves, pos.rookMoves()...)
 	return moves
 }
 
 type validMoveBB struct {
 	bb    bitboard
 	shift int
+}
+
+func (pos *Position) pieceAndBaseBB(pt PieceType) (p *Piece, baseBB bitboard) {
+	p = getPiece(pt, pos.Turn())
+	baseBB = ^pos.board.whiteSqs
+	if pos.Turn() == Black {
+		baseBB = ^pos.board.blackSqs
+	}
+	return
 }
 
 func (pos *Position) pawnMoves() []*Move {
@@ -120,6 +130,9 @@ func (pos *Position) pawnMoves() []*Move {
 	if pos.Turn() == White {
 		p = WhitePawn
 		bbWhite := pos.board.bbs[WhitePawn]
+		if bbWhite == 0 {
+			return []*Move{}
+		}
 		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> 9) & (pos.board.blackSqs | bbEnPassant)
 		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> 7) & (pos.board.blackSqs | bbEnPassant)
 		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> 8) & pos.board.emptySqs
@@ -133,6 +146,9 @@ func (pos *Position) pawnMoves() []*Move {
 	} else {
 		p = BlackPawn
 		bbBlack := pos.board.bbs[BlackPawn]
+		if bbBlack == 0 {
+			return []*Move{}
+		}
 		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << 7) & (pos.board.whiteSqs | bbEnPassant)
 		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << 9) & (pos.board.whiteSqs | bbEnPassant)
 		bbBlackUpOne := ((bbBlack & ^bbRank1) << 8) & pos.board.emptySqs
@@ -148,13 +164,11 @@ func (pos *Position) pawnMoves() []*Move {
 }
 
 func (pos *Position) knightMoves() []*Move {
-	p := WhiteKnight
-	validBB := ^pos.board.whiteSqs
-	if pos.Turn() == Black {
-		p = BlackKnight
-		validBB = ^pos.board.blackSqs
-	}
+	p, validBB := pos.pieceAndBaseBB(Knight)
 	bb := pos.board.bbs[p]
+	if bb == 0 {
+		return []*Move{}
+	}
 	bbUpRight := ((bb & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & validBB
 	bbUpLeft := ((bb & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & validBB
 	bbRightUp := (bb & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & validBB
@@ -174,6 +188,47 @@ func (pos *Position) knightMoves() []*Move {
 		{bb: bbLeftDown, shift: -6},
 	}
 	return movesFromValidBBs(p, bbs)
+}
+
+type slidingBB struct {
+	s1 Square
+	bb bitboard
+}
+
+func (pos *Position) rookMoves() []*Move {
+	moves := []*Move{}
+	p, validBB := pos.pieceAndBaseBB(Rook)
+	bb := pos.board.bbs[p]
+	if bb == 0 {
+		return moves
+	}
+	bbs := []*slidingBB{}
+	for sq := 0; sq < 64; sq++ {
+		if bb.Occupied(Square(sq)) {
+			resultBB := hvAttack(^pos.board.emptySqs, Square(sq)) & validBB
+			bbs = append(bbs, &slidingBB{bb: resultBB, s1: Square(sq)})
+		}
+	}
+	for _, sBB := range bbs {
+		for sq := 0; sq < 64; sq++ {
+			if sBB.bb.Occupied(Square(sq)) {
+				moves = append(moves, &Move{s1: sBB.s1, s2: Square(sq)})
+			}
+		}
+	}
+	return moves
+}
+
+func hvAttack(occupied bitboard, sq Square) bitboard {
+	pos := bbSquares[sq]
+	rankMask := bbRanks[Square(sq).rank()]
+	fileMask := bbFiles[Square(sq).file()]
+	return linearAttack(occupied, pos, rankMask) | linearAttack(occupied, pos, fileMask)
+}
+
+func linearAttack(occupied, pos, mask bitboard) bitboard {
+	oInMask := occupied & mask
+	return ((oInMask - 2*pos) ^ (oInMask.Reverse() - 2*pos.Reverse()).Reverse()) & mask
 }
 
 func movesFromValidBBs(p *Piece, bbs []*validMoveBB) []*Move {
