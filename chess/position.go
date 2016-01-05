@@ -103,6 +103,8 @@ func (pos *Position) ValidMoves() []*Move {
 	moves = append(moves, pos.pawnMoves()...)
 	moves = append(moves, pos.knightMoves()...)
 	moves = append(moves, pos.rookMoves()...)
+	moves = append(moves, pos.bishopMoves()...)
+	moves = append(moves, pos.queenMoves()...)
 	return moves
 }
 
@@ -195,9 +197,39 @@ type slidingBB struct {
 	bb bitboard
 }
 
+var (
+	rookFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
+		bb := hvAttack(^pos.board.emptySqs, Square(sq)) & validBB
+		return &slidingBB{bb: bb, s1: Square(sq)}
+	}
+
+	bishopFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
+		bb := diaAttack(^pos.board.emptySqs, Square(sq)) & validBB
+		return &slidingBB{bb: bb, s1: Square(sq)}
+	}
+
+	queenFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
+		occ := ^pos.board.emptySqs
+		bb := (diaAttack(occ, Square(sq)) | hvAttack(occ, Square(sq))) & validBB
+		return &slidingBB{bb: bb, s1: Square(sq)}
+	}
+)
+
+func (pos *Position) queenMoves() []*Move {
+	return pos.slidingBB(Queen, queenFunc)
+}
+
 func (pos *Position) rookMoves() []*Move {
+	return pos.slidingBB(Rook, rookFunc)
+}
+
+func (pos *Position) bishopMoves() []*Move {
+	return pos.slidingBB(Bishop, bishopFunc)
+}
+
+func (pos *Position) slidingBB(pt PieceType, f func(*Position, Square, bitboard) *slidingBB) []*Move {
 	moves := []*Move{}
-	p, validBB := pos.pieceAndBaseBB(Rook)
+	p, validBB := pos.pieceAndBaseBB(pt)
 	bb := pos.board.bbs[p]
 	if bb == 0 {
 		return moves
@@ -205,8 +237,7 @@ func (pos *Position) rookMoves() []*Move {
 	bbs := []*slidingBB{}
 	for sq := 0; sq < 64; sq++ {
 		if bb.Occupied(Square(sq)) {
-			resultBB := hvAttack(^pos.board.emptySqs, Square(sq)) & validBB
-			bbs = append(bbs, &slidingBB{bb: resultBB, s1: Square(sq)})
+			bbs = append(bbs, f(pos, Square(sq), validBB))
 		}
 	}
 	for _, sBB := range bbs {
@@ -217,6 +248,13 @@ func (pos *Position) rookMoves() []*Move {
 		}
 	}
 	return moves
+}
+
+func diaAttack(occupied bitboard, sq Square) bitboard {
+	pos := bbSquares[sq]
+	dMask := bbDiagonal[sq]
+	adMask := bbAntiDiagonal[sq]
+	return linearAttack(occupied, pos, dMask) | linearAttack(occupied, pos, adMask)
 }
 
 func hvAttack(occupied bitboard, sq Square) bitboard {
