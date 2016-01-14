@@ -170,3 +170,11 @@ func TestValidMoveStates(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkValidMoves(b *testing.B) {
+	pos := unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		pos.validMoves()
+	}
+}
