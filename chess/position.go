@@ -48,6 +48,32 @@ type Position struct {
 	moveCount       int
 }
 
+func (pos *Position) Update(m *Move) *Position {
+	moveCount := pos.moveCount
+	if pos.turn == Black {
+		moveCount++
+	}
+	cr := pos.CastleRights()
+	ncr := pos.updateCastleRights(m)
+	p := pos.board.piece(m.s1)
+	halfMove := pos.halfMoveClock
+	if p.Type() == Pawn || m.HasTag(Capture) || cr != ncr {
+		halfMove = 0
+	} else {
+		halfMove++
+	}
+	b := pos.board.copy()
+	b.update(m)
+	return &Position{
+		board:           b,
+		turn:            pos.turn.Other(),
+		castleRights:    ncr,
+		enPassantSquare: pos.updateEnPassantSquare(m),
+		halfMoveClock:   halfMove,
+		moveCount:       moveCount,
+	}
+}
+
 // Board returns the position's board.
 func (pos *Position) Board() *Board {
 	return pos.board
@@ -98,199 +124,70 @@ func (pos *Position) UnmarshalText(text []byte) error {
 	return nil
 }
 
+func (pos *Position) copy() *Position {
+	return &Position{
+		board:           pos.board.copy(),
+		turn:            pos.turn,
+		castleRights:    pos.castleRights,
+		enPassantSquare: pos.enPassantSquare,
+		halfMoveClock:   pos.halfMoveClock,
+		moveCount:       pos.moveCount,
+	}
+}
+
 func (pos *Position) ValidMoves() []*Move {
-	moves := []*Move{}
-	moves = append(moves, pos.pawnMoves()...)
-	moves = append(moves, pos.knightMoves()...)
-	moves = append(moves, pos.rookMoves()...)
-	moves = append(moves, pos.bishopMoves()...)
-	moves = append(moves, pos.queenMoves()...)
-	return moves
-}
-
-type validMoveBB struct {
-	bb    bitboard
-	shift int
-}
-
-func (pos *Position) pieceAndBaseBB(pt PieceType) (p *Piece, baseBB bitboard) {
-	p = getPiece(pt, pos.Turn())
-	baseBB = ^pos.board.whiteSqs
+	s2BB := ^pos.board.whiteSqs
 	if pos.Turn() == Black {
-		baseBB = ^pos.board.blackSqs
+		s2BB = ^pos.board.blackSqs
 	}
-	return
+	return pos.getValidMoves(s2BB, getAll, false)
 }
 
-func (pos *Position) pawnMoves() []*Move {
-	var bbs []*validMoveBB
-	var bbEnPassant bitboard
-	if pos.enPassantSquare != NoSquare {
-		bbEnPassant = newBitboard(map[Square]bool{pos.enPassantSquare: true})
+func (pos *Position) status() Method {
+	inCheck := pos.inCheck()
+	hasMove := len(pos.ValidMoves()) > 0
+	if !inCheck && !hasMove {
+		return Stalemate
+	} else if inCheck && !hasMove {
+		return Checkmate
 	}
-	var p *Piece
-	if pos.Turn() == White {
-		p = WhitePawn
-		bbWhite := pos.board.bbs[WhitePawn]
-		if bbWhite == 0 {
-			return []*Move{}
-		}
-		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> 9) & (pos.board.blackSqs | bbEnPassant)
-		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> 7) & (pos.board.blackSqs | bbEnPassant)
-		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> 8) & pos.board.emptySqs
-		bbWhiteUpTwo := ((bbWhiteUpOne & bbRank3) >> 8) & pos.board.emptySqs
-		bbs = []*validMoveBB{
-			{bb: bbWhiteCapRight, shift: 9},
-			{bb: bbWhiteCapLeft, shift: 7},
-			{bb: bbWhiteUpOne, shift: 8},
-			{bb: bbWhiteUpTwo, shift: 16},
-		}
-	} else {
-		p = BlackPawn
-		bbBlack := pos.board.bbs[BlackPawn]
-		if bbBlack == 0 {
-			return []*Move{}
-		}
-		bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << 7) & (pos.board.whiteSqs | bbEnPassant)
-		bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << 9) & (pos.board.whiteSqs | bbEnPassant)
-		bbBlackUpOne := ((bbBlack & ^bbRank1) << 8) & pos.board.emptySqs
-		bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << 8) & pos.board.emptySqs
-		bbs = []*validMoveBB{
-			{bb: bbBlackCapRight, shift: -7},
-			{bb: bbBlackCapLeft, shift: -9},
-			{bb: bbBlackUpOne, shift: -8},
-			{bb: bbBlackUpTwo, shift: -16},
-		}
-	}
-	return movesFromValidBBs(p, bbs)
+	return NoMethod
 }
 
-func (pos *Position) knightMoves() []*Move {
-	p, validBB := pos.pieceAndBaseBB(Knight)
-	bb := pos.board.bbs[p]
-	if bb == 0 {
-		return []*Move{}
+func (pos *Position) updateCastleRights(m *Move) CastleRights {
+	cr := string(pos.castleRights)
+	p := pos.board.piece(m.s1)
+	if p == WhiteKing || m.s1 == H1 {
+		cr = strings.Replace(cr, "K", "", -1)
 	}
-	bbUpRight := ((bb & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & validBB
-	bbUpLeft := ((bb & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & validBB
-	bbRightUp := (bb & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & validBB
-	bbRightDown := (bb & ^bbRank1 & ^(bbFileG | bbFileH) << 10) & validBB
-	bbDownRight := ((bb & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & validBB
-	bbDownLeft := ((bb & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & validBB
-	bbLeftUp := (bb & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & validBB
-	bbLeftDown := (bb & ^bbRank1 & ^(bbFileA | bbFileB) << 6) & validBB
-	bbs := []*validMoveBB{
-		{bb: bbUpRight, shift: 17},
-		{bb: bbUpLeft, shift: 15},
-		{bb: bbRightUp, shift: 10},
-		{bb: bbRightDown, shift: -10},
-		{bb: bbDownRight, shift: -15},
-		{bb: bbDownLeft, shift: -17},
-		{bb: bbLeftUp, shift: 6},
-		{bb: bbLeftDown, shift: -6},
+	if p == WhiteKing || m.s1 == A1 {
+		cr = strings.Replace(cr, "Q", "", -1)
 	}
-	return movesFromValidBBs(p, bbs)
+	if p == BlackKing || m.s1 == H8 {
+		cr = strings.Replace(cr, "k", "", -1)
+	}
+	if p == BlackKing || m.s1 == A8 {
+		cr = strings.Replace(cr, "q", "", -1)
+	}
+	if cr == "" {
+		cr = "-"
+	}
+	return CastleRights(cr)
 }
 
-type slidingBB struct {
-	s1 Square
-	bb bitboard
-}
-
-var (
-	rookFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
-		bb := hvAttack(^pos.board.emptySqs, Square(sq)) & validBB
-		return &slidingBB{bb: bb, s1: Square(sq)}
+func (pos *Position) updateEnPassantSquare(m *Move) Square {
+	p := pos.board.piece(m.s1)
+	if p.Type() != Pawn {
+		return NoSquare
 	}
-
-	bishopFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
-		bb := diaAttack(^pos.board.emptySqs, Square(sq)) & validBB
-		return &slidingBB{bb: bb, s1: Square(sq)}
+	if pos.turn == White &&
+		(bbSquares[m.s1]&bbRank2) != 0 &&
+		(bbSquares[m.s2]&bbRank4) != 0 {
+		return Square(m.s2 - 8)
+	} else if pos.turn == Black &&
+		(bbSquares[m.s1]&bbRank7) != 0 &&
+		(bbSquares[m.s2]&bbRank5) != 0 {
+		return Square(m.s2 + 8)
 	}
-
-	queenFunc = func(pos *Position, sq Square, validBB bitboard) *slidingBB {
-		occ := ^pos.board.emptySqs
-		bb := (diaAttack(occ, Square(sq)) | hvAttack(occ, Square(sq))) & validBB
-		return &slidingBB{bb: bb, s1: Square(sq)}
-	}
-)
-
-func (pos *Position) queenMoves() []*Move {
-	return pos.slidingBB(Queen, queenFunc)
-}
-
-func (pos *Position) rookMoves() []*Move {
-	return pos.slidingBB(Rook, rookFunc)
-}
-
-func (pos *Position) bishopMoves() []*Move {
-	return pos.slidingBB(Bishop, bishopFunc)
-}
-
-func (pos *Position) slidingBB(pt PieceType, f func(*Position, Square, bitboard) *slidingBB) []*Move {
-	moves := []*Move{}
-	p, validBB := pos.pieceAndBaseBB(pt)
-	bb := pos.board.bbs[p]
-	if bb == 0 {
-		return moves
-	}
-	bbs := []*slidingBB{}
-	for sq := 0; sq < 64; sq++ {
-		if bb.Occupied(Square(sq)) {
-			bbs = append(bbs, f(pos, Square(sq), validBB))
-		}
-	}
-	for _, sBB := range bbs {
-		for sq := 0; sq < 64; sq++ {
-			if sBB.bb.Occupied(Square(sq)) {
-				moves = append(moves, &Move{s1: sBB.s1, s2: Square(sq)})
-			}
-		}
-	}
-	return moves
-}
-
-func diaAttack(occupied bitboard, sq Square) bitboard {
-	pos := bbSquares[sq]
-	dMask := bbDiagonal[sq]
-	adMask := bbAntiDiagonal[sq]
-	return linearAttack(occupied, pos, dMask) | linearAttack(occupied, pos, adMask)
-}
-
-func hvAttack(occupied bitboard, sq Square) bitboard {
-	pos := bbSquares[sq]
-	rankMask := bbRanks[Square(sq).rank()]
-	fileMask := bbFiles[Square(sq).file()]
-	return linearAttack(occupied, pos, rankMask) | linearAttack(occupied, pos, fileMask)
-}
-
-func linearAttack(occupied, pos, mask bitboard) bitboard {
-	oInMask := occupied & mask
-	return ((oInMask - 2*pos) ^ (oInMask.Reverse() - 2*pos.Reverse()).Reverse()) & mask
-}
-
-func movesFromValidBBs(p *Piece, bbs []*validMoveBB) []*Move {
-	moves := []*Move{}
-	for _, validBB := range bbs {
-		if validBB.bb == 0 {
-			continue
-		}
-		// TODO reduce number of squares by range of LSB to MSB per bitboard
-		for sq := 0; sq < 64; sq++ {
-			if validBB.bb.Occupied(Square(sq)) {
-				s1 := Square(sq - validBB.shift)
-				s2 := Square(sq)
-				if (p == WhitePawn && s2.rank() == rank8) || (p == BlackPawn && s2.rank() == rank1) {
-					qm := &Move{s1: s1, s2: s2, promo: Queen}
-					rm := &Move{s1: s1, s2: s2, promo: Rook}
-					bm := &Move{s1: s1, s2: s2, promo: Bishop}
-					nm := &Move{s1: s1, s2: s2, promo: Knight}
-					moves = append(moves, qm, rm, bm, nm)
-				} else {
-					moves = append(moves, &Move{s1: s1, s2: s2})
-				}
-			}
-		}
-	}
-	return moves
+	return NoSquare
 }

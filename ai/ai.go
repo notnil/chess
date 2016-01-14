@@ -4,19 +4,11 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/loganjspears/chess"
+	"github.com/loganjspears/chess/chess"
 )
 
 type AI interface {
-	Move(gs *chess.GameState) *chess.Move
-}
-
-type Random struct{}
-
-func (r Random) Move(gs *chess.GameState) *chess.Move {
-	moves := gs.ValidMoves()
-	rand.Seed(time.Now().UnixNano())
-	return moves[rand.Intn(len(moves))]
+	Move(pos *chess.Position) *chess.Move
 }
 
 type Athena struct {
@@ -41,18 +33,18 @@ func (a *Athena) PositionsEvaluated() int {
 	return len(a.scoreMap)
 }
 
-func (a *Athena) minMax(gs *chess.GameState, c chess.Color, maxPly, ply int) (*chess.Move, float64) {
+func (a *Athena) minMax(pos *chess.Position, c chess.Color, maxPly, ply int) (*chess.Move, float64) {
 	var topMove *chess.Move
 	topScore := -1000.0
-	for _, m := range gs.ValidMoves() {
-		state := m.PostMoveState()
+	for _, m := range pos.ValidMoves() {
+		postPos := pos.Update(m)
 		if maxPly != ply {
-			plyMove, _ := a.minMax(state, c.Other(), maxPly, ply+1)
+			plyMove, _ := a.minMax(postPos, c.Other(), maxPly, ply+1)
 			if plyMove != nil {
-				state = plyMove.PostMoveState()
+				postPos = postPos.Update(plyMove)
 			}
 		}
-		scr := a.score(state) + (rand.Float64() / 100)
+		scr := a.score(postPos) + (rand.Float64() / 100)
 		if c == chess.Black {
 			scr *= -1.0
 		}
@@ -64,20 +56,20 @@ func (a *Athena) minMax(gs *chess.GameState, c chess.Color, maxPly, ply int) (*c
 	return topMove, topScore
 }
 
-func (a *Athena) score(gs *chess.GameState) float64 {
-	hash := gs.Hash()
-	if score, in := a.scoreMap[hash]; in {
-		return score
-	}
-	outcome, _ := gs.Outcome()
-	switch outcome {
-	case chess.WhiteWon:
-		return 1000.0
-	case chess.BlackWon:
-		return -1000.0
-	case chess.Draw:
-		return 0.0
-	}
+func (a *Athena) score(pos *chess.Position) float64 {
+	// hash := pos.Hash()
+	// if score, in := a.scoreMap[hash]; in {
+	// 	return score
+	// }
+	// outcome, _ := pos.Outcome()
+	// switch outcome {
+	// case chess.WhiteWon:
+	// 	return 1000.0
+	// case chess.BlackWon:
+	// 	return -1000.0
+	// case chess.Draw:
+	// 	return 0.0
+	// }
 
 	total := 0.0
 	for _, piece := range gs.Board().Pieces() {

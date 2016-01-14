@@ -6,10 +6,12 @@ import (
 )
 
 type Board struct {
-	bbs      map[*Piece]bitboard
-	whiteSqs bitboard
-	blackSqs bitboard
-	emptySqs bitboard
+	bbs         map[*Piece]bitboard
+	whiteSqs    bitboard
+	blackSqs    bitboard
+	emptySqs    bitboard
+	whiteKingSq Square
+	blackKingSq Square
 }
 
 // Draw returns visual representation of the board useful for debugging.  Ex.
@@ -78,15 +80,82 @@ func newBoard(m map[Square]*Piece) *Board {
 		bb := newBitboard(bm)
 		bbs[p1] = bb
 	}
-	whiteSqs := bbs[WhiteKing] | bbs[WhiteQueen] | bbs[WhiteRook] | bbs[WhiteBishop] | bbs[WhiteKnight] | bbs[WhitePawn]
-	blackSqs := bbs[BlackKing] | bbs[BlackQueen] | bbs[BlackRook] | bbs[BlackBishop] | bbs[BlackKnight] | bbs[BlackPawn]
-	emptySqs := ^(whiteSqs | blackSqs)
-	return &Board{
-		bbs:      bbs,
-		whiteSqs: whiteSqs,
-		blackSqs: blackSqs,
-		emptySqs: emptySqs,
+	b := &Board{bbs: bbs}
+	b.calcConvienceBBs()
+	return b
+}
+
+func (b *Board) update(m *Move) {
+	p1 := b.piece(m.s1)
+	cp := map[*Piece]bitboard{}
+	s1BB := bbSquares[m.s1]
+	s2BB := bbSquares[m.s2]
+	// move s1 piece to s2
+	for p, bb := range b.bbs {
+		cp[p] = bb & ^s2BB
+		if bb.Occupied(m.s1) {
+			cp[p] = (cp[p] & ^s1BB) | s2BB
+		}
 	}
+	// remove captured en passant piece
+	if m.HasTag(EnPassant) {
+		otherP := getPiece(Pawn, p1.Color().Other())
+		if p1.Color() == White {
+			cp[otherP] = ^(bbSquares[m.s2] << 8) & cp[otherP]
+		} else {
+			cp[otherP] = ^(bbSquares[m.s2] >> 8) & cp[otherP]
+		}
+	}
+	// move rook for castle
+	if p1.Color() == White && m.HasTag(KingSideCastle) {
+		cp[WhiteRook] = (cp[WhiteRook] & ^bbSquares[H1]) | bbSquares[F1]
+	} else if p1.Color() == White && m.HasTag(QueenSideCastle) {
+		cp[WhiteRook] = (cp[WhiteRook] & ^bbSquares[A1]) | bbSquares[D1]
+	} else if p1.Color() == Black && m.HasTag(KingSideCastle) {
+		cp[BlackRook] = (cp[BlackRook] & ^bbSquares[H8]) | bbSquares[F8]
+	} else if p1.Color() == Black && m.HasTag(QueenSideCastle) {
+		cp[BlackRook] = (cp[BlackRook] & ^bbSquares[A8]) | bbSquares[D8]
+	}
+	b.bbs = cp
+	b.calcConvienceBBs()
+}
+
+func (b *Board) calcConvienceBBs() {
+	whiteSqs := b.bbs[WhiteKing] | b.bbs[WhiteQueen] | b.bbs[WhiteRook] | b.bbs[WhiteBishop] | b.bbs[WhiteKnight] | b.bbs[WhitePawn]
+	blackSqs := b.bbs[BlackKing] | b.bbs[BlackQueen] | b.bbs[BlackRook] | b.bbs[BlackBishop] | b.bbs[BlackKnight] | b.bbs[BlackPawn]
+	emptySqs := ^(whiteSqs | blackSqs)
+	b.whiteSqs = whiteSqs
+	b.blackSqs = blackSqs
+	b.emptySqs = emptySqs
+	b.whiteKingSq = NoSquare
+	b.blackKingSq = NoSquare
+
+	wkBB := b.bbs[WhiteKing]
+	bkBB := b.bbs[BlackKing]
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		sqr := Square(sq)
+		if wkBB.Occupied(sqr) {
+			b.whiteKingSq = sqr
+		} else if bkBB.Occupied(sqr) {
+			b.blackKingSq = sqr
+		}
+	}
+}
+
+func (b *Board) copy() *Board {
+	cp := &Board{
+		whiteSqs:    b.whiteSqs,
+		blackSqs:    b.blackSqs,
+		emptySqs:    b.emptySqs,
+		whiteKingSq: b.whiteKingSq,
+		blackKingSq: b.blackKingSq,
+	}
+	bbs := map[*Piece]bitboard{}
+	for p, bb := range b.bbs {
+		bbs[p] = bb
+	}
+	cp.bbs = bbs
+	return cp
 }
 
 func (b *Board) isOccupied(sq Square) bool {

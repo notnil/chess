@@ -25,14 +25,6 @@ func newBitboard(m map[Square]bool) bitboard {
 	return bitboard(bb)
 }
 
-func bbFromStr(s string) bitboard {
-	bb, err := strconv.ParseUint(s, 2, 64)
-	if err != nil {
-		panic(err)
-	}
-	return bitboard(bb)
-}
-
 func (b bitboard) MSB() int {
 	i := strings.Index(b.String(), "1")
 	if i == -1 {
@@ -62,8 +54,12 @@ func (b bitboard) String() string {
 }
 
 func (b bitboard) Reverse() bitboard {
-	s := reverseStr(b.String())
-	return bbFromStr(s)
+	var u uint64
+	for sq := 0; sq < 64; sq++ {
+		u = (u << 1) + (uint64(b) & 1)
+		b = b >> 1
+	}
+	return bitboard(u)
 }
 
 // Draw returns visual representation of the board useful for debugging.  Ex.
@@ -92,12 +88,4 @@ func (b bitboard) Draw() string {
 		s += "\n"
 	}
 	return s
-}
-
-func reverseStr(s string) string {
-	runes := []rune(s)
-	for i, j := 0, len(runes)-1; i < j; i, j = i+1, j-1 {
-		runes[i], runes[j] = runes[j], runes[i]
-	}
-	return string(runes)
 }

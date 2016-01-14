@@ -19,7 +19,7 @@ func (p inputPlayer) Move(gs *chess.GameState) string {
 func main() {
 	g := chess.NewGame()
 	p := inputPlayer{}
-	cpu := ai.New(2)
+	cpu := ai.New(3)
 	count := 0
 	for g.Outcome() == chess.NoOutcome {
 		fmt.Println(g.State().Board().Draw())
