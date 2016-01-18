@@ -19,6 +19,13 @@ func (sq Square) rank() rank {
 	return rank(int(sq) / numOfSquaresInRow)
 }
 
+func (sq Square) color() Color {
+	if ((sq / 8) % 2) == (sq % 2) {
+		return Black
+	}
+	return White
+}
+
 func getSquare(f file, r rank) Square {
 	return Square((int(r) * 8) + int(f))
 }

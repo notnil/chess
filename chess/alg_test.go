@@ -85,6 +85,11 @@ var (
 			AlgText: "Re7+",
 			PostPos: unsafeFEN("8/1r1kR1pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 b - - 6 32"),
 		},
+		{
+			Pos:     unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NbPN2/PP3PPP/R1BQK2R w KQkq - 0 7"),
+			AlgText: "Qxd3",
+			PostPos: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7"),
+		},
 	}
 
 	invalidAlgDecodeTests = []algDecodeTest{
@@ -115,54 +120,6 @@ var (
 			AlgText: "nf3",
 		},
 	}
-
-	algEncodeTests = []algEncodeTest{
-		{
-			Pos:     unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
-			Move:    &Move{s1: E2, s2: E4},
-			AlgText: "e4",
-		},
-		{
-			Pos:     unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NbPN2/PP3PPP/R1BQK2R w KQkq - 0 7"),
-			Move:    &Move{s1: D1, s2: D3},
-			AlgText: "Qxd3",
-		},
-		{
-			Pos:     unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7"),
-			Move:    &Move{s1: B8, s2: D7},
-			AlgText: "Nbd7",
-		},
-		{
-			Pos:     unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9"),
-			Move:    &Move{s1: E1, s2: G1},
-			AlgText: "O-O",
-		},
-		{
-			Pos:     unsafeFEN("r4rk1/pp1nqppp/2pbpn2/3p4/2PP4/1PNQPN2/PB3PPP/R4RK1 w - - 2 11"),
-			Move:    &Move{s1: A1, s2: D1},
-			AlgText: "Rad1",
-		},
-		{
-			Pos:     unsafeFEN("3q2k1/pp3ppp/2p2n2/4b3/2P5/2N1P3/PB3PPP/3Q2K1 b - - 1 19"),
-			Move:    &Move{s1: D8, s2: D1},
-			AlgText: "Qxd1+",
-		},
-		{
-			Pos:     unsafeFEN("rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10"),
-			Move:    &Move{s1: E1, s2: C1},
-			AlgText: "O-O-O+",
-		},
-		{
-			Pos:     unsafeFEN("8/8/8/4p3/3P4/8/8/8 w - - 0 10"),
-			Move:    &Move{s1: D4, s2: E5},
-			AlgText: "dxe5",
-		},
-		{
-			Pos:     unsafeFEN("8/8/8/4p3/3P1P2/8/8/8 w - - 0 10"),
-			Move:    &Move{s1: F4, s2: E5},
-			AlgText: "fxe5",
-		},
-	}
 )
 
 func TestValidAlgDecoding(t *testing.T) {
@@ -184,23 +141,10 @@ func TestValidAlgDecoding(t *testing.T) {
 	}
 }
 
-//
-// func TestInvalidAlgDecoding(t *testing.T) {
-// 	for _, test := range invalidAlgDecodeTests {
-// 		if _, err := decodeMove(test.PreState, test.AlgText); err == nil {
-// 			t.Fatalf("starting from board\n%s\n expected move notation %s to be invalid", test.PreState.board.Draw(), test.AlgText)
-// 		}
-// 	}
-// }
-//
-// func TestValidAlgEncoding(t *testing.T) {
-// 	for _, test := range algEncodeTests {
-// 		if !test.Move.isValid() {
-// 			t.Fatalf("starting from board\n%s\n invalid move %s", test.Move.state.board.Draw(), test.Move.String())
-// 		}
-// 		actual := encodeMove(test.Move)
-// 		if actual != test.AlgText {
-// 			t.Fatalf("starting from board\n%s\n to board \n%s\nexpected move notation %s but got %s", test.Move.state.board.Draw(), test.Move.PostMoveState().board.Draw(), test.AlgText, actual)
-// 		}
-// 	}
-// }
+func TestInvalidAlgDecoding(t *testing.T) {
+	for _, test := range invalidAlgDecodeTests {
+		if _, err := decodeMove(test.Pos, test.AlgText); err == nil {
+			t.Fatalf("starting from board\n%s\n expected move notation %s to be invalid", test.Pos.board.Draw(), test.AlgText)
+		}
+	}
+}

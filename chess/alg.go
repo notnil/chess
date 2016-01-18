@@ -26,12 +26,13 @@ func encodeMove(pos *Position, move *Move) string {
 	if move.HasTag(EnPassant) {
 		epText = "e.p."
 	}
-	promoText := charFromPromo(move.promo)
+	promoText := charForPromo(move.promo)
 	return fmt.Sprint(pChar, s1Str, capChar, move.s2, epText, promoText, checkChar)
 }
 
 func decodeMove(pos *Position, s string) (*Move, error) {
 	s = strings.Replace(s, "?", "", -1)
+	s = strings.Replace(s, "!", "", -1)
 	moves := pos.ValidMoves()
 	for _, move := range moves {
 		str := encodeMove(pos, move)
@@ -39,7 +40,7 @@ func decodeMove(pos *Position, s string) (*Move, error) {
 			return move, nil
 		}
 	}
-	return nil, fmt.Errorf("chess: could not decode algebraic notation %s for position %s", s, pos.String())
+	return nil, fmt.Errorf("chess: could not decode algebraic notation %s for position %s %s", s, pos.String(), moves)
 }
 
 func getCheckChar(pos *Position, move *Move) string {
@@ -47,8 +48,7 @@ func getCheckChar(pos *Position, move *Move) string {
 		return ""
 	}
 	nextPos := pos.Update(move)
-	status := nextPos.status()
-	if status == Checkmate {
+	if nextPos.status() == Checkmate {
 		return "#"
 	}
 	return "+"
@@ -61,6 +61,9 @@ func formS1(pos *Position, m *Move) string {
 	files := map[file]int{}
 	ranks := map[rank]int{}
 	p := pos.board.piece(m.s1)
+	if p.Type() == Pawn {
+		return ""
+	}
 	for _, mv := range moves {
 		if mv.s2 == m.s2 && p == pos.board.piece(mv.s1) {
 			pMoves = append(pMoves, mv)
@@ -78,45 +81,26 @@ func formS1(pos *Position, m *Move) string {
 	return m.s1.String()
 }
 
-var (
-	algPieceMap = map[string]PieceType{
-		"K": King,
-		"Q": Queen,
-		"R": Rook,
-		"B": Bishop,
-		"N": Knight,
-		"":  Pawn,
+func charForPromo(p PieceType) string {
+	c := charFromPieceType(p)
+	if c != "" {
+		c = "=" + c
 	}
-	algPromoMap = map[string]PieceType{
-		"Q": Queen,
-		"R": Rook,
-		"B": Bishop,
-		"N": Knight,
-	}
-)
-
-func peiceTypeFromChar(c string) PieceType {
-	return algPieceMap[c]
-}
-
-func promoFromChar(c string) PieceType {
-	return algPromoMap[c]
+	return c
 }
 
 func charFromPieceType(p PieceType) string {
-	for c, pt := range algPieceMap {
-		if pt == p {
-			return c
-		}
-	}
-	return ""
-}
-
-func charFromPromo(p PieceType) string {
-	for c, pt := range algPromoMap {
-		if pt == p {
-			return c
-		}
+	switch p {
+	case King:
+		return "K"
+	case Queen:
+		return "Q"
+	case Rook:
+		return "R"
+	case Bishop:
+		return "B"
+	case Knight:
+		return "N"
 	}
 	return ""
 }

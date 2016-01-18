@@ -1,5 +1,16 @@
 package chess
 
+import (
+	"errors"
+	"fmt"
+	"io"
+	"io/ioutil"
+)
+
+const (
+	startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+)
+
 // A Outcome is the result of a game.
 type Outcome string
 
@@ -49,3 +60,274 @@ const (
 	// because there was insufficent material for checkmate.
 	InsufficientMaterial
 )
+
+// TagPair represents metadata in a key value pairing.
+type TagPair struct {
+	Key   string
+	Value string
+}
+
+// A Game represents a single chess game.
+type Game struct {
+	tagPairs  []*TagPair
+	moves     []*Move
+	positions []*Position
+	pos       *Position
+	outcome   Outcome
+	method    Method
+}
+
+// PGN takes a reader and returns a function that updates
+// the game to reflect the PGN data.  The returned function
+// is designed to be used in the NewGame constructor.  An
+// error is returned if there is a problem parsing the PGN
+// data.
+func PGN(r io.Reader) (func(*Game), error) {
+	b, err := ioutil.ReadAll(r)
+	if err != nil {
+		return nil, err
+	}
+	game, err := decodePGN(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return func(g *Game) {
+		g.copy(game)
+	}, nil
+}
+
+// FEN takes a string and returns a function that updates
+// the game to reflect the FEN data.  Since FEN doesn't include
+// prior moves, the move list will be empty.  The returned
+// function is designed to be used in the NewGame constructor.
+// An error is returned if there is a problem parsing the FEN data.
+func FEN(fenStr string) (func(*Game), error) {
+	pos, err := decodeFEN(fenStr)
+	if err != nil {
+		return nil, err
+	}
+	return func(g *Game) {
+		g.pos = pos
+		g.positions = []*Position{pos}
+		g.updatePosition()
+	}, nil
+}
+
+// TagPairs returns a function that sets the tag pairs
+// to the given value.  The returned function is designed
+// to be used in the NewGame constructor.
+func TagPairs(tagPairs []*TagPair) func(*Game) {
+	return func(g *Game) {
+		g.tagPairs = append([]*TagPair(nil), tagPairs...)
+	}
+}
+
+// NewGame defaults to returning a game in the standard
+// opening position.  Options can be given to change
+// the game's initial state.
+func NewGame(options ...func(*Game)) *Game {
+	pos, _ := decodeFEN(startFEN)
+	game := &Game{
+		moves:     []*Move{},
+		pos:       pos,
+		positions: []*Position{pos},
+		outcome:   NoOutcome,
+		method:    NoMethod,
+	}
+	for _, f := range options {
+		f(game)
+	}
+	return game
+}
+
+// Move updates the game with the given move.  An error is returned
+// if the move is invalid or the game has already been completed.
+func (g *Game) Move(m *Move) error {
+	if g.outcome != NoOutcome {
+		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method().String())
+	}
+	g.moves = append(g.moves, m)
+	g.pos = g.pos.Update(m)
+	g.positions = append(g.positions, g.pos)
+	g.updatePosition()
+	return nil
+}
+
+func (g *Game) updatePosition() {
+	method := g.pos.status()
+	if method == Stalemate {
+		g.method = Stalemate
+		g.outcome = Draw
+	} else if method == Checkmate {
+		g.method = Checkmate
+		g.outcome = WhiteWon
+		if g.pos.Turn() == White {
+			g.outcome = BlackWon
+		}
+	}
+	if g.outcome != NoOutcome {
+		return
+	}
+
+	// five fold rep creates automatic draw
+	if g.numOfRepitions() >= 5 {
+		g.outcome = Draw
+		g.method = FivefoldRepetition
+	}
+
+	// 75 move rule creates automatic draw
+	if g.pos.halfMoveClock >= 75 && g.method != Checkmate {
+		g.outcome = Draw
+		g.method = SeventyFiveMoveRule
+	}
+
+	// insufficent material creates automatic draw
+	if !g.pos.board.hasSufficientMaterial() {
+		g.outcome = Draw
+		g.method = InsufficientMaterial
+	}
+}
+
+// MoveAlg decodes the given string in algebraic notation
+// and calls the Move function.  An error is returned if
+// the move can't be decoded, the move is invalid, or the
+// game has already been completed.
+func (g *Game) MoveAlg(alg string) error {
+	m, err := decodeMove(g.pos, alg)
+	if err != nil {
+		return err
+	}
+	return g.Move(m)
+}
+
+// ValidMoves returns a list of valid moves in the
+// current position.
+func (g *Game) ValidMoves() []*Move {
+	return g.pos.ValidMoves()
+}
+
+// Positions returns the position history of the game.
+func (g *Game) Positions() []*Position {
+	return append([]*Position(nil), g.positions...)
+}
+
+// Moves returns the move history of the game.
+func (g *Game) Moves() []*Move {
+	return append([]*Move(nil), g.moves...)
+}
+
+// TagPairs returns the game's tag pairs.
+func (g *Game) TagPairs() []*TagPair {
+	return append([]*TagPair(nil), g.tagPairs...)
+}
+
+// Position returns the game's current position.
+func (g *Game) Position() *Position {
+	return g.pos
+}
+
+// Outcome returns the game outcome.
+func (g *Game) Outcome() Outcome {
+	return g.outcome
+}
+
+// Method returns the method in which the outcome occured.
+func (g *Game) Method() Method {
+	return g.method
+}
+
+// FEN returns the FEN notation of the current position.
+func (g *Game) FEN() string {
+	return g.pos.String()
+}
+
+// String implements the fmt.Stringer interface and returns
+// the game's PGN.
+func (g *Game) String() string {
+	return encodePGN(g)
+}
+
+// MarshalText implements the encoding.TextMarshaler interface and
+// encodes the game's PGN.
+func (g *Game) MarshalText() (text []byte, err error) {
+	return []byte(encodePGN(g)), nil
+}
+
+// UnmarshalText implements the encoding.TextUnarshaler interface and
+// assumes the data is in the PGN format.
+func (g *Game) UnmarshalText(text []byte) error {
+	game, err := decodePGN(string(text))
+	if err != nil {
+		return err
+	}
+	g.copy(game)
+	return nil
+}
+
+// Draw attempts to draw the game by the given method.  If the
+// method is valid, then the game is updated to a draw by that
+// method.  If the method isn't valid then an error is returned.
+func (g *Game) Draw(method Method) error {
+	switch method {
+	case ThreefoldRepetition:
+		if g.numOfRepitions() < 3 {
+			return errors.New("chess: draw by ThreefoldRepetition requires at least three repetitions of the current board state")
+		}
+	case FiftyMoveRule:
+		if g.pos.halfMoveClock < 50 {
+			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.pos.halfMoveClock)
+		}
+	case DrawOffer:
+	default:
+		return fmt.Errorf("chess: unsupported draw method %s", method.String())
+	}
+	g.outcome = Draw
+	g.method = method
+	return nil
+}
+
+// Resign resigns the game for the given color.  If the game has
+// already been completed then the game is not updated.
+func (g *Game) Resign(color Color) {
+	if g.outcome != NoOutcome || color == NoColor {
+		return
+	}
+	if color == White {
+		g.outcome = BlackWon
+	} else {
+		g.outcome = WhiteWon
+	}
+	g.method = Resignation
+}
+
+// EligibleDraws returns the draw methods that eligible for game's
+// Draw method.
+func (g *Game) EligibleDraws() []Method {
+	draws := []Method{DrawOffer}
+	if g.numOfRepitions() >= 3 {
+		draws = append(draws, ThreefoldRepetition)
+	}
+	if g.pos.halfMoveClock < 50 {
+		draws = append(draws, FiftyMoveRule)
+	}
+	return draws
+}
+
+func (g *Game) copy(game *Game) {
+	g.tagPairs = game.TagPairs()
+	g.moves = game.Moves()
+	g.positions = game.Positions()
+	g.pos = game.pos
+	g.outcome = game.outcome
+	g.method = game.method
+}
+
+func (g *Game) numOfRepitions() int {
+	count := 0
+	for _, pos := range g.Positions() {
+		if g.pos.samePosition(pos) {
+			count++
+		}
+	}
+	return count
+}

@@ -46,6 +46,7 @@ type Position struct {
 	enPassantSquare Square
 	halfMoveClock   int
 	moveCount       int
+	validMoves      []*Move
 }
 
 func (pos *Position) Update(m *Move) *Position {
@@ -90,7 +91,7 @@ func (pos *Position) CastleRights() CastleRights {
 }
 
 // String implements the fmt.Stringer interface and returns a
-// string with the format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+// string with the FEN format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
 func (pos *Position) String() string {
 	b := pos.board.String()
 	t := pos.turn.String()
@@ -136,11 +137,15 @@ func (pos *Position) copy() *Position {
 }
 
 func (pos *Position) ValidMoves() []*Move {
+	if pos.validMoves != nil {
+		return append([]*Move(nil), pos.validMoves...)
+	}
 	s2BB := ^pos.board.whiteSqs
 	if pos.Turn() == Black {
 		s2BB = ^pos.board.blackSqs
 	}
-	return pos.getValidMoves(s2BB, getAll, false)
+	pos.validMoves = pos.getValidMoves(s2BB, getAll, false)
+	return append([]*Move(nil), pos.validMoves...)
 }
 
 func (pos *Position) status() Method {
@@ -190,4 +195,11 @@ func (pos *Position) updateEnPassantSquare(m *Move) Square {
 		return Square(m.s2 + 8)
 	}
 	return NoSquare
+}
+
+func (pos *Position) samePosition(pos2 *Position) bool {
+	return pos.board.String() == pos2.board.String() &&
+		pos.turn == pos2.turn &&
+		pos.castleRights.String() == pos2.castleRights.String() &&
+		pos.enPassantSquare == pos2.enPassantSquare
 }

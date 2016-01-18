@@ -97,6 +97,13 @@ func (b *Board) update(m *Move) {
 			cp[p] = (cp[p] & ^s1BB) | s2BB
 		}
 	}
+	// check promotion
+	if m.promo != NoPieceType {
+		newPiece := getPiece(m.promo, p1.Color())
+		cp[p1] = cp[p1] & ^s2BB
+		cp[newPiece] = cp[newPiece] | s2BB
+	}
+
 	// remove captured en passant piece
 	if m.HasTag(EnPassant) {
 		otherP := getPiece(Pawn, p1.Color().Other())
@@ -180,6 +187,54 @@ func (b *Board) squareMap() map[Square]*Piece {
 		}
 	}
 	return m
+}
+
+func (b *Board) hasSufficientMaterial() bool {
+	// queen, rook, or pawn exist
+	if (b.bbs[WhiteQueen] | b.bbs[WhiteRook] | b.bbs[WhitePawn] |
+		b.bbs[BlackQueen] | b.bbs[BlackRook] | b.bbs[BlackPawn]) > 0 {
+		return true
+	}
+	// if king is missing then it is a test
+	if b.bbs[WhiteKing] == 0 || b.bbs[BlackKing] == 0 {
+		return true
+	}
+	count := map[PieceType]int{}
+	pieceMap := b.squareMap()
+	for _, p := range pieceMap {
+		count[p.Type()]++
+	}
+	// 	king versus king
+	if count[Bishop] == 0 && count[Knight] == 0 {
+		return false
+	}
+	// king and bishop versus king
+	if count[Bishop] == 1 && count[Knight] == 0 {
+		return false
+	}
+	// king and knight versus king
+	if count[Bishop] == 0 && count[Knight] == 1 {
+		return false
+	}
+	// king and bishop(s) versus king and bishop(s) with the bishops on the same colour.
+	if count[Knight] == 0 {
+		whiteCount := 0
+		blackCount := 0
+		for sq, p := range pieceMap {
+			if p.Type() == Bishop {
+				switch sq.color() {
+				case White:
+					whiteCount++
+				case Black:
+					blackCount++
+				}
+			}
+		}
+		if whiteCount == 0 || blackCount == 0 {
+			return false
+		}
+	}
+	return true
 }
 
 var (

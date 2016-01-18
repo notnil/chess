@@ -26,6 +26,7 @@ var (
 		{m: &Move{s1: C5, s2: C4}, pos: unsafeFEN("8/8/8/2p5/1P1P4/8/8/8 b - - 0 1")},
 		{m: &Move{s1: A4, s2: B3}, pos: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23")},
 		{m: &Move{s1: A2, s2: A1, promo: Queen}, pos: unsafeFEN("8/8/8/8/8/8/p7/8 b - - 0 1")},
+		{m: &Move{s1: E7, s2: E6}, pos: unsafeFEN("r2qkbnr/pppnpppp/8/3p4/6b1/1P3NP1/PBPPPP1P/RN1QKB1R b KQkq - 2 4")},
 		// knight moves
 		{m: &Move{s1: E4, s2: F6}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: D6}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
@@ -35,7 +36,6 @@ var (
 		{m: &Move{s1: E4, s2: C3}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: C5}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: B8, s2: D7}, pos: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
-
 		// bishop moves
 		{m: &Move{s1: E4, s2: H7}, pos: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: D5}, pos: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
@@ -45,6 +45,7 @@ var (
 		{m: &Move{s1: B2, s2: B7}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
 		{m: &Move{s1: B2, s2: A2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
 		{m: &Move{s1: B2, s2: H2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1R6/1B6 w - - 0 1")},
+		{m: &Move{s1: E1, s2: E8}, pos: unsafeFEN("r3r1k1/p4p1p/3p4/1p4p1/2pP4/2P2P2/PP3P1P/R3RK2 w - g6 0 22")},
 		// queen moves
 		{m: &Move{s1: B2, s2: E5}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		{m: &Move{s1: B2, s2: A1}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
@@ -157,6 +158,11 @@ func TestValidMoves(t *testing.T) {
 			log.Println(mt.pos.String())
 			log.Println(mt.pos.board.Draw())
 			log.Println(mt.pos.ValidMoves())
+			// log.Println("In Check:", mt.pos.inCheck())
+			log.Println("In Check:", mt.pos.squaresAreAttacked(mt.pos.board.whiteKingSq))
+			mt.pos.turn = mt.pos.turn.Other()
+			log.Println("OTHER MOVES", mt.pos.ValidMoves())
+			mt.pos.turn = mt.pos.turn.Other()
 			t.Fatalf("expected move %s to be valid", mt.m)
 		}
 	}
@@ -201,6 +207,7 @@ func BenchmarkValidMoves(b *testing.B) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		pos.ValidMoves()
+		pos.validMoves = nil
 	}
 }
 

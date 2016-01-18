@@ -1,43 +1,53 @@
 package chess
 
+type moveFunc func(*Position, bitboard, searchType) []*Move
+
+var (
+	moveFuncs []moveFunc
+)
+
+func init() {
+	moveFuncs = []moveFunc{
+		kingMoves, pawnMoves, knightMoves, rookMoves, bishopMoves, queenMoves,
+	}
+}
+
 func (pos *Position) getValidMoves(s2BB bitboard, st searchType, allowChecks bool) []*Move {
 	moves := []*Move{}
-	moves = append(moves, pos.pawnMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	moves = append(moves, pos.knightMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	moves = append(moves, pos.rookMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	moves = append(moves, pos.bishopMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	moves = append(moves, pos.queenMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	moves = append(moves, pos.kingMoves(s2BB, st)...)
-	if st == getFirst && len(moves) > 0 {
-		return moves
-	}
-	if !allowChecks {
-		moves = append(moves, pos.castleMoves()...)
-		validMoves := []*Move{}
-		for _, m := range moves {
-			pos.addTags(m)
-			if !m.HasTag(inCheck) {
-				validMoves = append(validMoves, m)
+	for _, f := range moveFuncs {
+		result := f(pos, s2BB, st)
+		for _, m := range result {
+			if addMove(pos, m, allowChecks) {
+				moves = append(moves, m)
+			}
+			if st == getFirst {
+				return moves
 			}
 		}
-		moves = validMoves
+	}
+	// have to seperate castle moves because of callback loop
+	if !allowChecks {
+		result := castleMoves(pos, s2BB, st)
+		for _, m := range result {
+			if addMove(pos, m, allowChecks) {
+				moves = append(moves, m)
+			}
+			if st == getFirst {
+				return moves
+			}
+		}
 	}
 	return moves
+}
+
+func addMove(pos *Position, m *Move, allowChecks bool) bool {
+	if !allowChecks {
+		pos.addTags(m)
+		if m.HasTag(inCheck) {
+			return false
+		}
+	}
+	return true
 }
 
 type validMoveBB struct {
@@ -76,31 +86,31 @@ func (pos *Position) inCheck() bool {
 	if kingSq == NoSquare {
 		return false
 	}
-	// if no piece is on a attacking square, there can't be a check
-	kingBB := bbSquares[kingSq]
-	s2BB := pos.board.blackSqs
-	if pos.Turn() == Black {
-		s2BB = pos.board.whiteSqs
-	}
-	occ := ^pos.board.emptySqs
-	// check queen attack vector
-	bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
-	if bb != 0 {
-		return pos.squaresAreAttacked(kingSq)
-	}
-	// check knight attack vector
-	bb = ((kingBB & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & s2BB
-	bb = (((kingBB & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & s2BB) | bb
-	bb = ((kingBB & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & s2BB) | bb
-	bb = ((kingBB & ^bbRank1 & ^(bbFileG | bbFileH) << 6) & s2BB) | bb
-	bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & s2BB) | bb
-	bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & s2BB) | bb
-	bb = ((kingBB & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & s2BB) | bb
-	bb = ((kingBB & ^bbRank1 & ^(bbFileA | bbFileB) << 10) & s2BB) | bb
-	if bb != 0 {
-		return pos.squaresAreAttacked(kingSq)
-	}
-	return false
+	// // if no piece is on a attacking square, there can't be a check
+	// kingBB := bbSquares[kingSq]
+	// s2BB := pos.board.blackSqs
+	// if pos.Turn() == Black {
+	// 	s2BB = pos.board.whiteSqs
+	// }
+	// occ := ^pos.board.emptySqs
+	// // check queen attack vector
+	// bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
+	// if bb != 0 {
+	// 	return pos.squaresAreAttacked(kingSq)
+	// }
+	// // check knight attack vector
+	// bb = ((kingBB & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & s2BB
+	// bb = (((kingBB & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & s2BB) | bb
+	// bb = ((kingBB & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & s2BB) | bb
+	// bb = ((kingBB & ^bbRank1 & ^(bbFileG | bbFileH) << 6) & s2BB) | bb
+	// bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & s2BB) | bb
+	// bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & s2BB) | bb
+	// bb = ((kingBB & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & s2BB) | bb
+	// bb = ((kingBB & ^bbRank1 & ^(bbFileA | bbFileB) << 10) & s2BB) | bb
+	// if bb != 0 {
+	// 	return pos.squaresAreAttacked(kingSq)
+	// }
+	return pos.squaresAreAttacked(kingSq)
 }
 
 func (pos *Position) squaresAreAttacked(sqs ...Square) bool {
@@ -116,7 +126,7 @@ func (pos *Position) squaresAreAttacked(sqs ...Square) bool {
 	return len(moves) > 0
 }
 
-func (pos *Position) castleMoves() []*Move {
+func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	moves := []*Move{}
 	kingSide := pos.castleRights.CanCastle(pos.Turn(), KingSide)
 	queenSide := pos.castleRights.CanCastle(pos.Turn(), QueenSide)
@@ -155,7 +165,7 @@ func (pos *Position) castleMoves() []*Move {
 	return moves
 }
 
-func (pos *Position) pawnMoves(s2BB bitboard, st searchType) []*Move {
+func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	var bbs []*validMoveBB
 	var bbEnPassant bitboard
 	if pos.enPassantSquare != NoSquare {
@@ -190,15 +200,15 @@ func (pos *Position) pawnMoves(s2BB bitboard, st searchType) []*Move {
 		bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << 8) & (pos.board.emptySqs & s2BB)
 		bbs = []*validMoveBB{
 			{bb: bbBlackCapRight, shift: -7, lsb: 1, msb: 47},
-			{bb: bbBlackCapLeft, shift: -9, lsb: 0, msb: 40},
-			{bb: bbBlackUpOne, shift: -8, lsb: 0, msb: 40},
+			{bb: bbBlackCapLeft, shift: -9, lsb: 0, msb: 46},
+			{bb: bbBlackUpOne, shift: -8, lsb: 0, msb: 47},
 			{bb: bbBlackUpTwo, shift: -16, lsb: 32, msb: 39},
 		}
 	}
 	return steppingMoves(p, bbs, st)
 }
 
-func (pos *Position) knightMoves(s2BB bitboard, st searchType) []*Move {
+func knightMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	p := getPiece(Knight, pos.Turn())
 	bb := pos.board.bbs[p]
 	if bb == 0 {
@@ -225,7 +235,7 @@ func (pos *Position) knightMoves(s2BB bitboard, st searchType) []*Move {
 	return steppingMoves(p, bbs, st)
 }
 
-func (pos *Position) kingMoves(s2BB bitboard, st searchType) []*Move {
+func kingMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	p := getPiece(King, pos.Turn())
 	bb := pos.board.bbs[p]
 	if bb == 0 {
@@ -276,15 +286,15 @@ var (
 	}
 )
 
-func (pos *Position) queenMoves(s2BB bitboard, st searchType) []*Move {
+func queenMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	return pos.slidingMoves(Queen, s2BB, st, queenFunc)
 }
 
-func (pos *Position) rookMoves(s2BB bitboard, st searchType) []*Move {
+func rookMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	return pos.slidingMoves(Rook, s2BB, st, rookFunc)
 }
 
-func (pos *Position) bishopMoves(s2BB bitboard, st searchType) []*Move {
+func bishopMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	return pos.slidingMoves(Bishop, s2BB, st, bishopFunc)
 }
 
