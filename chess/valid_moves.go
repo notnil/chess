@@ -58,9 +58,10 @@ type validMoveBB struct {
 }
 
 func (pos *Position) addTags(m *Move) {
+	p := pos.board.piece(m.s1)
 	if pos.board.isOccupied(m.s2) {
 		m.tags = append(m.tags, Capture)
-	} else if m.s2 == pos.enPassantSquare {
+	} else if m.s2 == pos.enPassantSquare && p.Type() == Pawn {
 		m.tags = append(m.tags, EnPassant)
 	}
 	// determine if in check after move (makes move invalid)
@@ -86,30 +87,30 @@ func (pos *Position) inCheck() bool {
 	if kingSq == NoSquare {
 		return false
 	}
-	// // if no piece is on a attacking square, there can't be a check
-	// kingBB := bbSquares[kingSq]
-	// s2BB := pos.board.blackSqs
-	// if pos.Turn() == Black {
-	// 	s2BB = pos.board.whiteSqs
-	// }
-	// occ := ^pos.board.emptySqs
-	// // check queen attack vector
-	// bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
-	// if bb != 0 {
-	// 	return pos.squaresAreAttacked(kingSq)
-	// }
-	// // check knight attack vector
-	// bb = ((kingBB & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & s2BB
-	// bb = (((kingBB & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & s2BB) | bb
-	// bb = ((kingBB & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & s2BB) | bb
-	// bb = ((kingBB & ^bbRank1 & ^(bbFileG | bbFileH) << 6) & s2BB) | bb
-	// bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & s2BB) | bb
-	// bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & s2BB) | bb
-	// bb = ((kingBB & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & s2BB) | bb
-	// bb = ((kingBB & ^bbRank1 & ^(bbFileA | bbFileB) << 10) & s2BB) | bb
-	// if bb != 0 {
-	// 	return pos.squaresAreAttacked(kingSq)
-	// }
+	// if no piece is on a attacking square, there can't be a check
+	kingBB := bbSquares[kingSq]
+	s2BB := pos.board.blackSqs
+	if pos.Turn() == Black {
+		s2BB = pos.board.whiteSqs
+	}
+	occ := ^pos.board.emptySqs
+	// check queen attack vector
+	bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
+	if bb != 0 {
+		return pos.squaresAreAttacked(kingSq)
+	}
+	// check knight attack vector
+	bb = ((kingBB & ^(bbRank7 | bbRank8) & ^bbFileH) >> 17) & s2BB
+	bb = (((kingBB & ^(bbRank7 | bbRank8) & ^bbFileA) >> 15) & s2BB) | bb
+	bb = ((kingBB & ^bbRank8 & ^(bbFileG | bbFileH) >> 10) & s2BB) | bb
+	bb = ((kingBB & ^bbRank1 & ^(bbFileG | bbFileH) << 6) & s2BB) | bb
+	bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileH) << 15) & s2BB) | bb
+	bb = (((kingBB & ^(bbRank1 | bbRank2) & ^bbFileA) << 17) & s2BB) | bb
+	bb = ((kingBB & ^bbRank8 & ^(bbFileA | bbFileB) >> 6) & s2BB) | bb
+	bb = ((kingBB & ^bbRank1 & ^(bbFileA | bbFileB) << 10) & s2BB) | bb
+	if bb != 0 {
+		return pos.squaresAreAttacked(kingSq)
+	}
 	return pos.squaresAreAttacked(kingSq)
 }
 
@@ -120,9 +121,10 @@ func (pos *Position) squaresAreAttacked(sqs ...Square) bool {
 		s2BB = s2BB | bbSquares[sq]
 	}
 	// toggle turn to get other colors moves
-	pos.turn = pos.turn.Other()
-	moves := pos.getValidMoves(s2BB, getFirst, true)
-	pos.turn = pos.turn.Other()
+	cp := pos.copy()
+	cp.turn = cp.turn.Other()
+	cp.enPassantSquare = NoSquare
+	moves := cp.getValidMoves(s2BB, getFirst, true)
 	return len(moves) > 0
 }
 

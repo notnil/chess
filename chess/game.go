@@ -69,12 +69,13 @@ type TagPair struct {
 
 // A Game represents a single chess game.
 type Game struct {
-	tagPairs  []*TagPair
-	moves     []*Move
-	positions []*Position
-	pos       *Position
-	outcome   Outcome
-	method    Method
+	tagPairs             []*TagPair
+	moves                []*Move
+	positions            []*Position
+	pos                  *Position
+	outcome              Outcome
+	method               Method
+	ignoreAutomaticDraws bool
 }
 
 // PGN takes a reader and returns a function that updates
@@ -170,19 +171,19 @@ func (g *Game) updatePosition() {
 	}
 
 	// five fold rep creates automatic draw
-	if g.numOfRepitions() >= 5 {
+	if !g.ignoreAutomaticDraws && g.numOfRepitions() >= 5 {
 		g.outcome = Draw
 		g.method = FivefoldRepetition
 	}
 
 	// 75 move rule creates automatic draw
-	if g.pos.halfMoveClock >= 75 && g.method != Checkmate {
+	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 75 && g.method != Checkmate {
 		g.outcome = Draw
 		g.method = SeventyFiveMoveRule
 	}
 
 	// insufficent material creates automatic draw
-	if !g.pos.board.hasSufficientMaterial() {
+	if !g.ignoreAutomaticDraws && !g.pos.board.hasSufficientMaterial() {
 		g.outcome = Draw
 		g.method = InsufficientMaterial
 	}

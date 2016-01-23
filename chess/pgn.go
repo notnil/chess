@@ -50,9 +50,10 @@ func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)
 	g := NewGame(TagPairs(tagPairs))
+	g.ignoreAutomaticDraws = true
 	for _, alg := range moveStrs {
 		if err := g.MoveAlg(alg); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s on move %d - Tag Pairs: %s", err.Error(), g.Position().moveCount, g.TagPairs())
 		}
 	}
 	g.outcome = outcome

@@ -90,6 +90,21 @@ var (
 			AlgText: "Qxd3",
 			PostPos: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7"),
 		},
+		{
+			Pos:     unsafeFEN("7k/pBp2Rb1/4Q2p/4p3/1P4p1/2P4q/P2r1P2/6K1 b - - 1 38"),
+			AlgText: "Rd1#",
+			PostPos: unsafeFEN("7k/pBp2Rb1/4Q2p/4p3/1P4p1/2P4q/P4P2/3r2K1 w - - 2 39"),
+		},
+		{
+			Pos:     unsafeFEN("r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13"),
+			AlgText: "exf6",
+			PostPos: unsafeFEN("r1b2rk1/pp2b1pp/1qn1pP2/3p4/1P1P4/P2BPN2/6PP/RN1Q1RK1 b - - 0 13"),
+		},
+		{
+			Pos:     unsafeFEN("3r2k1/b4p2/p1p4p/6p1/4pNb1/1P2P2P/PB3PP1/R5K1 w - g6 0 27"),
+			AlgText: "Ng6",
+			PostPos: unsafeFEN("3r2k1/b4p2/p1p3Np/6p1/4p1b1/1P2P2P/PB3PP1/R5K1 b - - 1 27"),
+		},
 	}
 
 	invalidAlgDecodeTests = []algDecodeTest{

@@ -16,7 +16,7 @@ func encodeMove(pos *Position, move *Move) string {
 	pChar := charFromPieceType(p.Type())
 	s1Str := formS1(pos, move)
 	capChar := ""
-	if move.HasTag(Capture) {
+	if move.HasTag(Capture) || move.HasTag(EnPassant) {
 		capChar = "x"
 		if p.Type() == Pawn && s1Str == "" {
 			capChar = move.s1.file().String() + "x"
@@ -33,9 +33,15 @@ func encodeMove(pos *Position, move *Move) string {
 func decodeMove(pos *Position, s string) (*Move, error) {
 	s = strings.Replace(s, "?", "", -1)
 	s = strings.Replace(s, "!", "", -1)
+	s = strings.Replace(s, "+", "", -1)
+	s = strings.Replace(s, "#", "", -1)
+	s = strings.Replace(s, "e.p.", "", -1)
 	moves := pos.ValidMoves()
 	for _, move := range moves {
 		str := encodeMove(pos, move)
+		str = strings.Replace(str, "+", "", -1)
+		str = strings.Replace(str, "#", "", -1)
+		str = strings.Replace(str, "e.p.", "", -1)
 		if str == s {
 			return move, nil
 		}

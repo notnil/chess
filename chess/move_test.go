@@ -211,6 +211,13 @@ func BenchmarkValidMoves(b *testing.B) {
 	}
 }
 
+// func TestSquaresAreAttacked(t *testing.T) {
+// 	pos := unsafeFEN("r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13")
+// 	log.Println(pos.String())
+// 	log.Println(pos.Board().Draw())
+// 	log.Println(pos.squaresAreAttacked(F1))
+// }
+
 func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 	for _, move := range pos.ValidMoves() {
 		if move.s1 == m.s1 && move.s2 == m.s2 && move.promo == m.promo {
