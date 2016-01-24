@@ -19,9 +19,9 @@ func (pos *Position) getValidMoves(s2BB bitboard, st searchType, allowChecks boo
 		for _, m := range result {
 			if addMove(pos, m, allowChecks) {
 				moves = append(moves, m)
-			}
-			if st == getFirst {
-				return moves
+				if st == getFirst {
+					return moves
+				}
 			}
 		}
 	}
@@ -31,9 +31,9 @@ func (pos *Position) getValidMoves(s2BB bitboard, st searchType, allowChecks boo
 		for _, m := range result {
 			if addMove(pos, m, allowChecks) {
 				moves = append(moves, m)
-			}
-			if st == getFirst {
-				return moves
+				if st == getFirst {
+					return moves
+				}
 			}
 		}
 	}
@@ -65,7 +65,6 @@ func (pos *Position) addTags(m *Move) {
 		m.tags = append(m.tags, EnPassant)
 	}
 	// determine if in check after move (makes move invalid)
-	// p := pos.board.piece(m.s1)
 	cp := pos.copy()
 	cp.board.update(m)
 	if cp.inCheck() {
@@ -176,7 +175,7 @@ func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	var p *Piece
 	if pos.Turn() == White {
 		p = WhitePawn
-		bbWhite := pos.board.bbs[WhitePawn]
+		bbWhite := pos.board.bbWhitePawn
 		if bbWhite == 0 {
 			return []*Move{}
 		}
@@ -192,7 +191,7 @@ func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 		}
 	} else {
 		p = BlackPawn
-		bbBlack := pos.board.bbs[BlackPawn]
+		bbBlack := pos.board.bbBlackPawn
 		if bbBlack == 0 {
 			return []*Move{}
 		}
@@ -211,8 +210,12 @@ func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 }
 
 func knightMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
-	p := getPiece(Knight, pos.Turn())
-	bb := pos.board.bbs[p]
+	bb := pos.board.bbWhiteKnight
+	p := WhiteKnight
+	if pos.Turn() == Black {
+		bb = pos.board.bbBlackKnight
+		p = BlackKnight
+	}
 	if bb == 0 {
 		return []*Move{}
 	}
@@ -238,8 +241,12 @@ func knightMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 }
 
 func kingMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
-	p := getPiece(King, pos.Turn())
-	bb := pos.board.bbs[p]
+	bb := pos.board.bbWhiteKing
+	p := WhiteKing
+	if pos.Turn() == Black {
+		bb = pos.board.bbBlackKing
+		p = BlackKing
+	}
 	if bb == 0 {
 		return []*Move{}
 	}
@@ -303,7 +310,7 @@ func bishopMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 func (pos *Position) slidingMoves(pt PieceType, s2BB bitboard, st searchType, f func(*Position, Square, bitboard) *slidingBB) []*Move {
 	moves := []*Move{}
 	p := getPiece(pt, pos.Turn())
-	bb := pos.board.bbs[p]
+	bb := pos.board.bbForPiece(p)
 	if bb == 0 {
 		return moves
 	}

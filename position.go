@@ -148,7 +148,17 @@ func (pos *Position) ValidMoves() []*Move {
 	return append([]*Move(nil), pos.validMoves...)
 }
 
-func (pos *Position) status() Method {
+// TODO isn't working correctly, use in status method
+func (pos *Position) hasValidMove() bool {
+	s2BB := ^pos.board.whiteSqs
+	if pos.Turn() == Black {
+		s2BB = ^pos.board.blackSqs
+	}
+	moves := pos.getValidMoves(s2BB, getFirst, false)
+	return len(moves) > 0
+}
+
+func (pos *Position) Status() Method {
 	inCheck := pos.inCheck()
 	hasMove := len(pos.ValidMoves()) > 0
 	if !inCheck && !hasMove {

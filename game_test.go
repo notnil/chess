@@ -1,18 +1,19 @@
 package chess
 
 import (
+	"log"
 	"strings"
 	"testing"
 )
 
 func TestCheckmate(t *testing.T) {
 	fenStr := "rn1qkbnr/pbpp1ppp/1p6/4p3/2B1P3/5Q2/PPPP1PPP/RNB1K1NR w KQkq - 0 1"
-	fen, err := FEN(strings.NewReader(fenStr))
+	fen, err := FEN(fenStr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveSq(F3, F7, NoPiece); err != nil {
+	if err := g.MoveAlg("Qxf7#"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Checkmate {
@@ -24,13 +25,13 @@ func TestCheckmate(t *testing.T) {
 }
 
 func TestStalemate(t *testing.T) {
-	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w KQkq - 0 1"
-	fen, err := FEN(strings.NewReader(fenStr))
+	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w - - 0 1"
+	fen, err := FEN(fenStr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveSq(B1, B6, NoPiece); err != nil {
+	if err := g.MoveAlg("Qb6"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Stalemate {
@@ -44,30 +45,16 @@ func TestStalemate(t *testing.T) {
 // position shouldn't result in stalemate because pawn can move http://en.lichess.org/Pc6mJDZN#138
 func TestInvalidStalemate(t *testing.T) {
 	fenStr := "8/3P4/8/8/8/7k/7p/7K w - - 2 70"
-	fen, err := FEN(strings.NewReader(fenStr))
+	fen, err := FEN(fenStr)
 	if err != nil {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveSq(D7, D8, Queen); err != nil {
+	if err := g.MoveAlg("d8=Q"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Outcome() != NoOutcome {
 		t.Fatalf("expected outcome %s but got %s", NoOutcome, g.Outcome())
-	}
-}
-
-func TestTakeBack(t *testing.T) {
-	g := NewGame()
-	if err := g.MoveAlg("e4"); err != nil {
-		t.Fatal(err)
-	}
-	g = g.TakeBack(1)
-	if startFEN != g.FEN() {
-		t.Fatalf("take back expected fen %s but got %s", startFEN, g.FEN())
-	}
-	if len(NewGame().moves) != len(g.moves) {
-		t.Fatalf("take back expected %d move but got %d", len(NewGame().moves), len(g.moves))
 	}
 }
 
@@ -83,7 +70,10 @@ func TestThreeFoldRepition(t *testing.T) {
 		}
 	}
 	if err := g.Draw(ThreefoldRepetition); err != nil {
-		t.Fatal(err)
+		for _, pos := range g.Positions() {
+			log.Println(pos.String())
+		}
+		t.Fatalf("%s - %d reps", err.Error(), g.numOfRepitions())
 	}
 }
 
@@ -121,7 +111,7 @@ func TestFiveFoldRepition(t *testing.T) {
 }
 
 func TestFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN(strings.NewReader("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 50 23"))
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 50 23")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err != nil {
 		t.Fatal(err)
@@ -129,7 +119,7 @@ func TestFiftyMoveRule(t *testing.T) {
 }
 
 func TestInvalidFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN(strings.NewReader("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 49 23"))
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 49 23")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err == nil {
 		t.Fatal("should require fifty moves")
@@ -137,7 +127,7 @@ func TestInvalidFiftyMoveRule(t *testing.T) {
 }
 
 func TestSeventyFiveMoveRule(t *testing.T) {
-	fen, _ := FEN(strings.NewReader("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23"))
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23")
 	g := NewGame(fen)
 	if err := g.MoveAlg("Kf8"); err != nil {
 		t.Fatal(err)
@@ -156,13 +146,14 @@ func TestInsufficentMaterial(t *testing.T) {
 		"4b3/2k5/2b5/8/8/3K1B2/8/8 w - - 1 1",
 	}
 	for _, f := range fens {
-		fen, err := FEN(strings.NewReader(f))
+		fen, err := FEN(f)
 		if err != nil {
 			t.Fatal(err)
 		}
 		g := NewGame(fen)
 		if g.Outcome() != Draw || g.Method() != InsufficientMaterial {
-			t.Fatal("should automatically draw by insufficent material")
+			log.Println(g.Position().Board().Draw())
+			t.Fatalf("%s should automatically draw by insufficent material", f)
 		}
 	}
 }
@@ -177,13 +168,14 @@ func TestSufficentMaterial(t *testing.T) {
 		"8/2k5/8/8/8/3KR3/8/8 w - - 1 1",
 	}
 	for _, f := range fens {
-		fen, err := FEN(strings.NewReader(f))
+		fen, err := FEN(f)
 		if err != nil {
 			t.Fatal(err)
 		}
 		g := NewGame(fen)
 		if g.Outcome() != NoOutcome {
-			t.Fatal("should not find insufficent material")
+			log.Println(g.Position().Board().Draw())
+			t.Fatalf("%s should not find insufficent material", f)
 		}
 	}
 }
@@ -204,20 +196,5 @@ func TestInitialNumOfValidMoves(t *testing.T) {
 	g := NewGame()
 	if len(g.ValidMoves()) != 20 {
 		t.Fatal("should find 20 valid moves from the initial position")
-	}
-}
-
-func TestCastlingInValidMoves(t *testing.T) {
-	pgn, err := PGN(strings.NewReader(`1. e4 e5 2. Nf3 Nf6 3. Bc4 Bc5`))
-	if err != nil {
-		t.Fatal(err)
-	}
-	g := NewGame(pgn)
-	moves := map[string]bool{}
-	for _, m := range g.ValidMoves() {
-		moves[m.String()] = true
-	}
-	if !moves["O-O"] {
-		t.Fatal("valid moves didn't find castle")
 	}
 }

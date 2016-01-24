@@ -4,7 +4,7 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/loganjspears/chess/chess"
+	"github.com/loganjspears/chess"
 )
 
 type AI interface {
@@ -23,9 +23,9 @@ func New(ply int) *Athena {
 	}
 }
 
-func (a *Athena) Move(gs *chess.GameState) *chess.Move {
+func (a *Athena) Move(pos *chess.Position) *chess.Move {
 	rand.Seed(time.Now().UnixNano())
-	move, _ := a.minMax(gs, gs.Turn(), a.Ply, 0)
+	move, _ := a.minMax(pos, pos.Turn(), a.Ply, 0)
 	return move
 }
 
@@ -57,34 +57,30 @@ func (a *Athena) minMax(pos *chess.Position, c chess.Color, maxPly, ply int) (*c
 }
 
 func (a *Athena) score(pos *chess.Position) float64 {
-	// hash := pos.Hash()
-	// if score, in := a.scoreMap[hash]; in {
-	// 	return score
-	// }
-	// outcome, _ := pos.Outcome()
-	// switch outcome {
-	// case chess.WhiteWon:
-	// 	return 1000.0
-	// case chess.BlackWon:
-	// 	return -1000.0
-	// case chess.Draw:
-	// 	return 0.0
-	// }
+	turn := pos.Turn()
+	status := pos.Status()
+	if status == chess.Stalemate {
+		return 0.0
+	} else if status == chess.Checkmate {
+		if turn == chess.White {
+			return 1000.0
+		}
+		return -1000.0
+	}
 
 	total := 0.0
-	for _, piece := range gs.Board().Pieces() {
-		score := pieceScore(gs, piece)
+	for _, piece := range pos.Board().SquareMap() {
+		score := pieceScore(pos, piece)
 		if piece.Color() == chess.White {
 			total += score
 		} else {
 			total -= score
 		}
 	}
-	a.scoreMap[hash] = total
 	return total
 }
 
-func pieceScore(gs *chess.GameState, piece *chess.Piece) float64 {
+func pieceScore(pos *chess.Position, piece *chess.Piece) float64 {
 	switch piece.Type() {
 	case chess.King:
 		return 200.0
