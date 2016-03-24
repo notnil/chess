@@ -27,34 +27,25 @@ type Board struct {
 }
 
 // SquareMap returns a mapping of squares to pieces.  A square is only added to the map if it is occupied.
-func (b *Board) SquareMap() map[Square]*Piece {
-	m := map[Square]*Piece{}
+func (b *Board) SquareMap() map[Square]Piece {
+	m := map[Square]Piece{}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
 		p := b.piece(Square(sq))
-		if p != nil {
+		if p != NoPiece {
 			m[Square(sq)] = p
 		}
 	}
 	return m
 }
 
-// Draw returns visual representation of the board useful for debugging.  Ex.
-// A B C D E F G H
-// 8- - - - - - - -
-// 7- ♟ - - - - - ♝
-// 6- - - - ♘ - - -
-// 5- - - - ♟ - - -
-// 4- - - - - - - -
-// 3- - - - - - - -
-// 2- ♖ - - - - - -
-// 1- ♗ - - - - - -
+// Draw returns visual representation of the board useful for debugging.
 func (b *Board) Draw() string {
 	s := "\n A B C D E F G H\n"
 	for r := 7; r >= 0; r-- {
 		s += rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
 			p := b.piece(getSquare(file(f), rank(r)))
-			if p == nil {
+			if p == NoPiece {
 				s += "-"
 			} else {
 				s += p.String()
@@ -74,7 +65,7 @@ func (b *Board) String() string {
 		for f := 0; f < numOfSquaresInRow; f++ {
 			sq := getSquare(file(f), rank(r))
 			p := b.piece(sq)
-			if p != nil {
+			if p != NoPiece {
 				fen += p.getFENChar()
 			} else {
 				fen += "1"
@@ -92,7 +83,7 @@ func (b *Board) String() string {
 	return fen
 }
 
-func newBoard(m map[Square]*Piece) *Board {
+func newBoard(m map[Square]Piece) *Board {
 	b := &Board{}
 	for _, p1 := range allPieces {
 		bm := map[Square]bool{}
@@ -200,14 +191,14 @@ func (b *Board) isOccupied(sq Square) bool {
 	return !b.emptySqs.Occupied(sq)
 }
 
-func (b *Board) piece(sq Square) *Piece {
+func (b *Board) piece(sq Square) Piece {
 	for _, p := range allPieces {
 		bb := b.bbForPiece(p)
 		if bb.Occupied(sq) {
 			return p
 		}
 	}
-	return nil
+	return NoPiece
 }
 
 func (b *Board) hasSufficientMaterial() bool {
@@ -258,7 +249,7 @@ func (b *Board) hasSufficientMaterial() bool {
 	return true
 }
 
-func (b *Board) bbForPiece(p *Piece) bitboard {
+func (b *Board) bbForPiece(p Piece) bitboard {
 	switch p {
 	case WhiteKing:
 		return b.bbWhiteKing
@@ -288,7 +279,7 @@ func (b *Board) bbForPiece(p *Piece) bitboard {
 	return bitboard(0)
 }
 
-func (b *Board) setBBForPiece(p *Piece, bb bitboard) {
+func (b *Board) setBBForPiece(p Piece, bb bitboard) {
 	switch p {
 	case WhiteKing:
 		b.bbWhiteKing = bb

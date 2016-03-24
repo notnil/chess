@@ -266,8 +266,7 @@ func (g *Game) Resign(color Color) {
 	g.method = Resignation
 }
 
-// EligibleDraws returns the draw methods that eligible for game's
-// Draw method.
+// EligibleDraws returns valid inputs for the Draw() method.
 func (g *Game) EligibleDraws() []Method {
 	draws := []Method{DrawOffer}
 	if g.numOfRepitions() >= 3 {

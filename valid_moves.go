@@ -176,7 +176,7 @@ func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	if pos.enPassantSquare != NoSquare {
 		bbEnPassant = bbSquares[pos.enPassantSquare]
 	}
-	var p *Piece
+	p := NoPiece
 	if pos.Turn() == White {
 		p = WhitePawn
 		bbWhite := pos.board.bbWhitePawn
@@ -363,7 +363,7 @@ const (
 	getFirst
 )
 
-func steppingMoves(p *Piece, bbs []*validMoveBB, st searchType) []*Move {
+func steppingMoves(p Piece, bbs []*validMoveBB, st searchType) []*Move {
 	moves := []*Move{}
 	for _, validBB := range bbs {
 		if validBB.bb == 0 {

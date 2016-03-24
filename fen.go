@@ -55,7 +55,7 @@ func fenBoard(boardStr string) (*Board, error) {
 	if len(rankStrs) != 8 {
 		return nil, fmt.Errorf("chess: fen invalid board %s", boardStr)
 	}
-	m := map[Square]*Piece{}
+	m := map[Square]Piece{}
 	for i, rankStr := range rankStrs {
 		rank := rank(7 - i)
 		fileMap, err := fenFormRank(rankStr)
@@ -69,14 +69,14 @@ func fenBoard(boardStr string) (*Board, error) {
 	return newBoard(m), nil
 }
 
-func fenFormRank(rankStr string) (map[file]*Piece, error) {
+func fenFormRank(rankStr string) (map[file]Piece, error) {
 	count := 0
-	m := map[file]*Piece{}
+	m := map[file]Piece{}
 	err := fmt.Errorf("chess: fen invalid rank %s", rankStr)
 	for _, r := range rankStr {
 		c := fmt.Sprintf("%c", r)
 		piece := fenPieceMap[c]
-		if piece == nil {
+		if piece == NoPiece {
 			skip, err := strconv.Atoi(c)
 			if err != nil {
 				return nil, err
@@ -133,7 +133,7 @@ var (
 		7: "7",
 		8: "8",
 	}
-	fenPieceMap = map[string]*Piece{
+	fenPieceMap = map[string]Piece{
 		"K": WhiteKing,
 		"Q": WhiteQueen,
 		"R": WhiteRook,

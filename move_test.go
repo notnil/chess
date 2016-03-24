@@ -229,11 +229,3 @@ func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 	}
 	return false
 }
-
-func BenchmarkValidMoves(b *testing.B) {
-	pos := unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-	b.ResetTimer()
-	for n := 0; n < b.N; n++ {
-		pos.validMoves()
-	}
-}

@@ -84,71 +84,93 @@ func (p PieceType) promotableTo() bool {
 }
 
 // Piece is a piece type with a color.
-type Piece struct {
-	t   PieceType
-	c   Color
-	uni string
-}
+type Piece int8
 
-var (
+const (
+	// NoPiece represents no piece
+	NoPiece Piece = iota
 	// WhiteKing is a white king
-	WhiteKing = &Piece{t: King, c: White, uni: "♔"}
+	WhiteKing
 	// WhiteQueen is a white queen
-	WhiteQueen = &Piece{t: Queen, c: White, uni: "♕"}
+	WhiteQueen
 	// WhiteRook is a white rook
-	WhiteRook = &Piece{t: Rook, c: White, uni: "♖"}
+	WhiteRook
 	// WhiteBishop is a white bishop
-	WhiteBishop = &Piece{t: Bishop, c: White, uni: "♗"}
+	WhiteBishop
 	// WhiteKnight is a white knight
-	WhiteKnight = &Piece{t: Knight, c: White, uni: "♘"}
+	WhiteKnight
 	// WhitePawn is a white pawn
-	WhitePawn = &Piece{t: Pawn, c: White, uni: "♙"}
+	WhitePawn
 	// BlackKing is a black king
-	BlackKing = &Piece{t: King, c: Black, uni: "♚"}
+	BlackKing
 	// BlackQueen is a black queen
-	BlackQueen = &Piece{t: Queen, c: Black, uni: "♛"}
+	BlackQueen
 	// BlackRook is a black rook
-	BlackRook = &Piece{t: Rook, c: Black, uni: "♜"}
+	BlackRook
 	// BlackBishop is a black bishop
-	BlackBishop = &Piece{t: Bishop, c: Black, uni: "♝"}
+	BlackBishop
 	// BlackKnight is a black knight
-	BlackKnight = &Piece{t: Knight, c: Black, uni: "♞"}
+	BlackKnight
 	// BlackPawn is a black pawn
-	BlackPawn = &Piece{t: Pawn, c: Black, uni: "♟"}
+	BlackPawn
 )
 
 var (
-	allPieces = []*Piece{
+	allPieces = []Piece{
 		WhiteKing, WhiteQueen, WhiteRook, WhiteBishop, WhiteKnight, WhitePawn,
 		BlackKing, BlackQueen, BlackRook, BlackBishop, BlackKnight, BlackPawn,
 	}
 )
 
-func getPiece(t PieceType, c Color) *Piece {
+func getPiece(t PieceType, c Color) Piece {
 	for _, p := range allPieces {
 		if p.Color() == c && p.Type() == t {
 			return p
 		}
 	}
-	return nil
+	return NoPiece
 }
 
 // Type returns the type of the piece.
-func (p *Piece) Type() PieceType {
-	return p.t
+func (p Piece) Type() PieceType {
+	switch p {
+	case WhiteKing, BlackKing:
+		return King
+	case WhiteQueen, BlackQueen:
+		return Queen
+	case WhiteRook, BlackRook:
+		return Rook
+	case WhiteBishop, BlackBishop:
+		return Bishop
+	case WhiteKnight, BlackKnight:
+		return Knight
+	case WhitePawn, BlackPawn:
+		return Pawn
+	}
+	return NoPieceType
 }
 
 // Color returns the color of the piece.
-func (p *Piece) Color() Color {
-	return p.c
+func (p Piece) Color() Color {
+	switch p {
+	case WhiteKing, WhiteQueen, WhiteRook, WhiteBishop, WhiteKnight, WhitePawn:
+		return White
+	case BlackKing, BlackQueen, BlackRook, BlackBishop, BlackKnight, BlackPawn:
+		return Black
+	}
+	return NoColor
 }
 
 // String implements the fmt.Stringer interface
-func (p *Piece) String() string {
-	return p.uni
+func (p Piece) String() string {
+	return pieceUnicodes[int(p)]
 }
 
-func (p *Piece) getFENChar() string {
+var (
+	pieceUnicodes = []string{" ", "♔", "♕", "♖", "♗", "♘", "♙", "♚", "♛", "♜", "♝", "♞", "♟"}
+)
+
+func (p Piece) getFENChar() string {
 	for key, piece := range fenPieceMap {
 		if piece == p {
 			return key
