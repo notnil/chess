@@ -346,8 +346,8 @@ func diaAttack(occupied bitboard, sq Square) bitboard {
 
 func hvAttack(occupied bitboard, sq Square) bitboard {
 	pos := bbSquares[sq]
-	rankMask := bbRanks[Square(sq).rank()]
-	fileMask := bbFiles[Square(sq).file()]
+	rankMask := bbRanks[Square(sq).Rank()]
+	fileMask := bbFiles[Square(sq).File()]
 	return linearAttack(occupied, pos, rankMask) | linearAttack(occupied, pos, fileMask)
 }
 
@@ -374,7 +374,7 @@ func steppingMoves(p Piece, bbs []*validMoveBB, st searchType) []*Move {
 			if validBB.bb.Occupied(Square(sq)) {
 				s1 := Square(int(sq) - validBB.shift)
 				s2 := Square(sq)
-				if (p == WhitePawn && s2.rank() == rank8) || (p == BlackPawn && s2.rank() == rank1) {
+				if (p == WhitePawn && s2.Rank() == Rank8) || (p == BlackPawn && s2.Rank() == Rank1) {
 					qm := &Move{s1: s1, s2: s2, promo: Queen}
 					rm := &Move{s1: s1, s2: s2, promo: Rook}
 					bm := &Move{s1: s1, s2: s2, promo: Bishop}

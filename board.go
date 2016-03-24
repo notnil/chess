@@ -42,9 +42,9 @@ func (b *Board) SquareMap() map[Square]Piece {
 func (b *Board) Draw() string {
 	s := "\n A B C D E F G H\n"
 	for r := 7; r >= 0; r-- {
-		s += rank(r).String()
+		s += Rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
-			p := b.piece(getSquare(file(f), rank(r)))
+			p := b.piece(getSquare(File(f), Rank(r)))
 			if p == NoPiece {
 				s += "-"
 			} else {
@@ -63,7 +63,7 @@ func (b *Board) String() string {
 	fen := ""
 	for r := 7; r >= 0; r-- {
 		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := getSquare(file(f), rank(r))
+			sq := getSquare(File(f), Rank(r))
 			p := b.piece(sq)
 			if p != NoPiece {
 				fen += p.getFENChar()
@@ -339,29 +339,29 @@ var (
 )
 
 func init() {
-	bbFileA = bbForFile(fileA)
-	bbFileB = bbForFile(fileB)
-	bbFileC = bbForFile(fileC)
-	bbFileD = bbForFile(fileD)
-	bbFileE = bbForFile(fileE)
-	bbFileF = bbForFile(fileF)
-	bbFileG = bbForFile(fileG)
-	bbFileH = bbForFile(fileH)
+	bbFileA = bbForFile(FileA)
+	bbFileB = bbForFile(FileB)
+	bbFileC = bbForFile(FileC)
+	bbFileD = bbForFile(FileD)
+	bbFileE = bbForFile(FileE)
+	bbFileF = bbForFile(FileF)
+	bbFileG = bbForFile(FileG)
+	bbFileH = bbForFile(FileH)
 
-	bbRank1 = bbForRank(rank1)
-	bbRank2 = bbForRank(rank2)
-	bbRank3 = bbForRank(rank3)
-	bbRank4 = bbForRank(rank4)
-	bbRank5 = bbForRank(rank5)
-	bbRank6 = bbForRank(rank6)
-	bbRank7 = bbForRank(rank7)
-	bbRank8 = bbForRank(rank8)
+	bbRank1 = bbForRank(Rank1)
+	bbRank2 = bbForRank(Rank2)
+	bbRank3 = bbForRank(Rank3)
+	bbRank4 = bbForRank(Rank4)
+	bbRank5 = bbForRank(Rank5)
+	bbRank6 = bbForRank(Rank6)
+	bbRank7 = bbForRank(Rank7)
+	bbRank8 = bbForRank(Rank8)
 
 	bbFiles = [8]bitboard{bbFileA, bbFileB, bbFileC, bbFileD, bbFileE, bbFileF, bbFileG, bbFileH}
 	bbRanks = [8]bitboard{bbRank1, bbRank2, bbRank3, bbRank4, bbRank5, bbRank6, bbRank7, bbRank8}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
 		sqr := Square(sq)
-		bbSquares[sq] = bbRanks[sqr.rank()] & bbFiles[sqr.file()]
+		bbSquares[sq] = bbRanks[sqr.Rank()] & bbFiles[sqr.File()]
 	}
 
 	// init diagonal and anti-diagonal bitboards
@@ -374,22 +374,22 @@ func init() {
 	}
 }
 
-func bbForFile(f file) bitboard {
+func bbForFile(f File) bitboard {
 	m := map[Square]bool{}
 	var sq Square
 	for ; sq < numOfSquaresInBoard; sq++ {
-		if sq.file() == f {
+		if sq.File() == f {
 			m[sq] = true
 		}
 	}
 	return newBitboard(m)
 }
 
-func bbForRank(r rank) bitboard {
+func bbForRank(r Rank) bitboard {
 	m := map[Square]bool{}
 	var sq Square
 	for ; sq < numOfSquaresInBoard; sq++ {
-		if sq.rank() == r {
+		if sq.Rank() == r {
 			m[sq] = true
 		}
 	}
@@ -397,11 +397,11 @@ func bbForRank(r rank) bitboard {
 }
 
 func bbForDiagonal(sq Square) bitboard {
-	v := int(sq.file()) - int(sq.rank())
+	v := int(sq.File()) - int(sq.Rank())
 	m := map[Square]bool{}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
 		sqr := Square(sq)
-		if int(sqr.file())-int(sqr.rank()) == v {
+		if int(sqr.File())-int(sqr.Rank()) == v {
 			m[sqr] = true
 		}
 	}
@@ -409,11 +409,11 @@ func bbForDiagonal(sq Square) bitboard {
 }
 
 func bbForAntiDiagonal(sq Square) bitboard {
-	v := int(sq.rank()) + int(sq.file())
+	v := int(sq.Rank()) + int(sq.File())
 	m := map[Square]bool{}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
 		sqr := Square(sq)
-		if int(sqr.rank())+int(sqr.file()) == v {
+		if int(sqr.Rank())+int(sqr.File()) == v {
 			m[sqr] = true
 		}
 	}

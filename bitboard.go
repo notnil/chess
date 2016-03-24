@@ -61,9 +61,9 @@ func (b bitboard) Reverse() bitboard {
 func (b bitboard) Draw() string {
 	s := "\n A B C D E F G H\n"
 	for r := 7; r >= 0; r-- {
-		s += rank(r).String()
+		s += Rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := getSquare(file(f), rank(r))
+			sq := getSquare(File(f), Rank(r))
 			if b.Occupied(sq) {
 				s += "1"
 			} else {

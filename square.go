@@ -8,16 +8,18 @@ const (
 // A Square is one of the 64 rank and file combinations that make up a chess board.
 type Square int8
 
+// File returns the square's file.
+func (sq Square) File() File {
+	return File(int(sq) % numOfSquaresInRow)
+}
+
+// Rank returns the square's rank.
+func (sq Square) Rank() Rank {
+	return Rank(int(sq) / numOfSquaresInRow)
+}
+
 func (sq Square) String() string {
-	return sq.file().String() + sq.rank().String()
-}
-
-func (sq Square) file() file {
-	return file(int(sq) % numOfSquaresInRow)
-}
-
-func (sq Square) rank() rank {
-	return rank(int(sq) / numOfSquaresInRow)
+	return sq.File().String() + sq.Rank().String()
 }
 
 func (sq Square) color() Color {
@@ -27,7 +29,7 @@ func (sq Square) color() Color {
 	return White
 }
 
-func getSquare(f file, r rank) Square {
+func getSquare(f File, r Rank) Square {
 	return Square((int(r) * 8) + int(f))
 }
 
@@ -104,37 +106,39 @@ const (
 	rankChars = "12345678"
 )
 
-type rank int8
+// A Rank is the rank of a square.
+type Rank int8
 
 const (
-	rank1 rank = iota
-	rank2
-	rank3
-	rank4
-	rank5
-	rank6
-	rank7
-	rank8
+	Rank1 Rank = iota
+	Rank2
+	Rank3
+	Rank4
+	Rank5
+	Rank6
+	Rank7
+	Rank8
 )
 
-func (r rank) String() string {
+func (r Rank) String() string {
 	return rankChars[r : r+1]
 }
 
-type file int8
+// A File is the file of a square.
+type File int8
 
 const (
-	fileA file = iota
-	fileB
-	fileC
-	fileD
-	fileE
-	fileF
-	fileG
-	fileH
+	FileA File = iota
+	FileB
+	FileC
+	FileD
+	FileE
+	FileF
+	FileG
+	FileH
 )
 
-func (f file) String() string {
+func (f File) String() string {
 	return fileChars[f : f+1]
 }
 

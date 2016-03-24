@@ -19,7 +19,7 @@ func encodeMove(pos *Position, move *Move) string {
 	if move.HasTag(Capture) || move.HasTag(EnPassant) {
 		capChar = "x"
 		if p.Type() == Pawn && s1Str == "" {
-			capChar = move.s1.file().String() + "x"
+			capChar = move.s1.File().String() + "x"
 		}
 	}
 	epText := ""
@@ -64,8 +64,8 @@ func formS1(pos *Position, m *Move) string {
 	moves := pos.ValidMoves()
 	// find moves for piece type
 	pMoves := []*Move{}
-	files := map[file]int{}
-	ranks := map[rank]int{}
+	files := map[File]int{}
+	ranks := map[Rank]int{}
 	p := pos.board.piece(m.s1)
 	if p.Type() == Pawn {
 		return ""
@@ -73,16 +73,16 @@ func formS1(pos *Position, m *Move) string {
 	for _, mv := range moves {
 		if mv.s2 == m.s2 && p == pos.board.piece(mv.s1) {
 			pMoves = append(pMoves, mv)
-			files[mv.s1.file()] = files[mv.s1.file()] + 1
-			ranks[mv.s1.rank()] = ranks[mv.s1.rank()] + 1
+			files[mv.s1.File()] = files[mv.s1.File()] + 1
+			ranks[mv.s1.Rank()] = ranks[mv.s1.Rank()] + 1
 		}
 	}
 	if len(pMoves) == 1 {
 		return ""
 	} else if len(files) == len(pMoves) {
-		return m.s1.file().String()
+		return m.s1.File().String()
 	} else if len(ranks) == len(pMoves) {
-		return m.s1.rank().String()
+		return m.s1.Rank().String()
 	}
 	return m.s1.String()
 }

@@ -57,7 +57,7 @@ func fenBoard(boardStr string) (*Board, error) {
 	}
 	m := map[Square]Piece{}
 	for i, rankStr := range rankStrs {
-		rank := rank(7 - i)
+		rank := Rank(7 - i)
 		fileMap, err := fenFormRank(rankStr)
 		if err != nil {
 			return nil, err
@@ -69,9 +69,9 @@ func fenBoard(boardStr string) (*Board, error) {
 	return newBoard(m), nil
 }
 
-func fenFormRank(rankStr string) (map[file]Piece, error) {
+func fenFormRank(rankStr string) (map[File]Piece, error) {
 	count := 0
-	m := map[file]Piece{}
+	m := map[File]Piece{}
 	err := fmt.Errorf("chess: fen invalid rank %s", rankStr)
 	for _, r := range rankStr {
 		c := fmt.Sprintf("%c", r)
@@ -84,7 +84,7 @@ func fenFormRank(rankStr string) (map[file]Piece, error) {
 			count += skip
 			continue
 		}
-		m[file(count)] = piece
+		m[File(count)] = piece
 		count++
 	}
 	if count != 8 {
@@ -116,7 +116,7 @@ func formEnPassant(enPassant string) (Square, error) {
 		return NoSquare, nil
 	}
 	sq := strToSquareMap[enPassant]
-	if sq == NoSquare || !(sq.rank() == rank3 || sq.rank() == rank6) {
+	if sq == NoSquare || !(sq.Rank() == Rank3 || sq.Rank() == Rank6) {
 		return NoSquare, fmt.Errorf("chess: fen invalid En Passant square %s", enPassant)
 	}
 	return sq, nil
