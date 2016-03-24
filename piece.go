@@ -1,7 +1,7 @@
 package chess
 
 // Color represents the color of a chess piece.
-type Color int
+type Color int8
 
 const (
 	// NoColor represents no color
@@ -36,11 +36,11 @@ func (c Color) String() string {
 }
 
 // PieceType is the type of a piece.
-type PieceType int
+type PieceType int8
 
 const (
-	// NoPiece represents a lack of piece type
-	NoPiece PieceType = iota
+	// NoPieceType represents a lack of piece type
+	NoPieceType PieceType = iota
 	// King represents a king
 	King
 	// Queen represents a queen
@@ -56,11 +56,26 @@ const (
 )
 
 // PieceTypes returns a slice of all piece types.
-func PieceTypes() []PieceType {
-	return []PieceType{King, Queen, Rook, Bishop, Knight, Pawn}
+func PieceTypes() [6]PieceType {
+	return [6]PieceType{King, Queen, Rook, Bishop, Knight, Pawn}
 }
 
-func (p PieceType) isPromotable() bool {
+func (p PieceType) String() string {
+	switch p {
+	case King:
+		return "k"
+	case Queen:
+		return "q"
+	case Rook:
+		return "r"
+	case Bishop:
+		return "b"
+	case Knight:
+		return "n"
+	}
+	return ""
+}
+func (p PieceType) promotableTo() bool {
 	switch p {
 	case Queen, Rook, Bishop, Knight:
 		return true

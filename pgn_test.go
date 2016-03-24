@@ -6,14 +6,14 @@ import (
 )
 
 type pgnTest struct {
-	PostState *GameState
-	PGN       string
+	PostPos *Position
+	PGN     string
 }
 
 var (
 	validPGNs = []pgnTest{
 		{
-			PostState: unsafeFEN("4r3/6P1/2p2P1k/1p6/pP2p1R1/P1B5/2P2K2/3r4 b - - 0 45"),
+			PostPos: unsafeFEN("4r3/6P1/2p2P1k/1p6/pP2p1R1/P1B5/2P2K2/3r4 b - - 0 45"),
 			PGN: `[Event "?"]
             [Site "?"]
             [Date "1997.05.03"]
@@ -34,7 +34,7 @@ var (
             Rd5 44. f6 Rd1 45. g7 1-0`,
 		},
 		{
-			PostState: unsafeFEN("4r3/6P1/2p2P1k/1p6/pP2p1R1/P1B5/2P2K2/3r4 b - - 0 45"),
+			PostPos: unsafeFEN("4r3/6P1/2p2P1k/1p6/pP2p1R1/P1B5/2P2K2/3r4 b - - 0 45"),
 			PGN: `[Event "?"]
 [Site "http://lichess.org/4HXJOtpN"]
 [Date "1997.05.03"]
@@ -62,10 +62,10 @@ func TestValidPGNs(t *testing.T) {
 		if err != nil {
 			t.Fatalf("recieved unexpected pgn error %s", err.Error())
 		}
-		if game.State().String() != test.PostState.String() {
+		if game.Position().String() != test.PostPos.String() {
 			t.Fatalf("expected board to be \n%s\nFEN:%s\n but got \n%s\n\nFEN:%s\n",
-				test.PostState.board.Draw(), test.PostState.String(),
-				game.State().board.Draw(), game.State().String())
+				test.PostPos.board.Draw(), test.PostPos.String(),
+				game.Position().board.Draw(), game.Position().String())
 		}
 	}
 }

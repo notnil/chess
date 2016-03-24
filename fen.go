@@ -9,7 +9,7 @@ import (
 // Decodes FEN notation into a GameState.  An error is returned
 // if there is a parsing error.  FEN notation format:
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-func decodeFEN(fen string) (*GameState, error) {
+func decodeFEN(fen string) (*Position, error) {
 	fen = strings.TrimSpace(fen)
 	parts := strings.Split(fen, " ")
 	if len(parts) != 6 {
@@ -39,7 +39,7 @@ func decodeFEN(fen string) (*GameState, error) {
 	if err != nil || moveCount < 1 {
 		return nil, fmt.Errorf("chess: fen invalid move count %s", parts[5])
 	}
-	return &GameState{
+	return &Position{
 		board:           b,
 		turn:            turn,
 		castleRights:    rights,
@@ -49,28 +49,29 @@ func decodeFEN(fen string) (*GameState, error) {
 	}, nil
 }
 
-func fenBoard(boardStr string) (Board, error) {
+// generates board from fen format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+func fenBoard(boardStr string) (*Board, error) {
 	rankStrs := strings.Split(boardStr, "/")
 	if len(rankStrs) != 8 {
 		return nil, fmt.Errorf("chess: fen invalid board %s", boardStr)
 	}
-	b := map[*Square]*Piece{}
+	m := map[Square]*Piece{}
 	for i, rankStr := range rankStrs {
-		rank := Rank(8 - i)
+		rank := rank(7 - i)
 		fileMap, err := fenFormRank(rankStr)
 		if err != nil {
 			return nil, err
 		}
 		for file, piece := range fileMap {
-			b[getSquare(file, rank)] = piece
+			m[getSquare(file, rank)] = piece
 		}
 	}
-	return b, nil
+	return newBoard(m), nil
 }
 
-func fenFormRank(rankStr string) (map[File]*Piece, error) {
+func fenFormRank(rankStr string) (map[file]*Piece, error) {
 	count := 0
-	m := map[File]*Piece{}
+	m := map[file]*Piece{}
 	err := fmt.Errorf("chess: fen invalid rank %s", rankStr)
 	for _, r := range rankStr {
 		c := fmt.Sprintf("%c", r)
@@ -83,8 +84,8 @@ func fenFormRank(rankStr string) (map[File]*Piece, error) {
 			count += skip
 			continue
 		}
+		m[file(count)] = piece
 		count++
-		m[File(count)] = piece
 	}
 	if count != 8 {
 		return nil, err
@@ -110,18 +111,28 @@ func formCastleRights(castleStr string) (CastleRights, error) {
 	return CastleRights(castleStr), nil
 }
 
-func formEnPassant(enPassant string) (*Square, error) {
+func formEnPassant(enPassant string) (Square, error) {
 	if enPassant == "-" {
-		return nil, nil
+		return NoSquare, nil
 	}
-	sq := squareFromStr(enPassant)
-	if sq == nil || !(sq.rank == R3 || sq.rank == R6) {
-		return nil, fmt.Errorf("chess: fen invalid En Passant square %s", enPassant)
+	sq := strToSquareMap[enPassant]
+	if sq == NoSquare || !(sq.rank() == rank3 || sq.rank() == rank6) {
+		return NoSquare, fmt.Errorf("chess: fen invalid En Passant square %s", enPassant)
 	}
 	return sq, nil
 }
 
 var (
+	fenSkipMap = map[int]string{
+		1: "1",
+		2: "2",
+		3: "3",
+		4: "4",
+		5: "5",
+		6: "6",
+		7: "7",
+		8: "8",
+	}
 	fenPieceMap = map[string]*Piece{
 		"K": WhiteKing,
 		"Q": WhiteQueen,

@@ -1,8 +1,6 @@
 package chess
 
-import (
-	"testing"
-)
+import "testing"
 
 var (
 	validFENs = []string{

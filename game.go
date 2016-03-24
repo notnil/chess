@@ -30,19 +30,19 @@ func (o Outcome) String() string {
 	return string(o)
 }
 
-// A Method is the way in which the outcome occured.
-type Method int
+// A Method is the method that generated the outcome.
+type Method uint8
 
 const (
 	// NoMethod indicates that an outcome hasn't occured or that the method can't be determined.
 	NoMethod Method = iota
-	// Checkmate indicates that the game was won by a playing being checkmated.
+	// Checkmate indicates that the game was won checkmate.
 	Checkmate
-	// Resignation indicates that the game was won by player resigning.
+	// Resignation indicates that the game was won by resignation.
 	Resignation
-	// DrawOffer indicates that the game was drawn by player agreeing to a draw offer.
+	// DrawOffer indicates that the game was drawn by a draw offer.
 	DrawOffer
-	// Stalemate indicates that the game was drawn by player being stalemated.
+	// Stalemate indicates that the game was drawn by stalemate.
 	Stalemate
 	// ThreefoldRepetition indicates that the game was drawn when the game
 	// state was repeated three times and a player requested a draw.
@@ -61,7 +61,7 @@ const (
 	InsufficientMaterial
 )
 
-// TagPair represents metadata in a key value pairing.
+// TagPair represents metadata in a key value pairing used in PGN notation.
 type TagPair struct {
 	Key   string
 	Value string
@@ -69,11 +69,13 @@ type TagPair struct {
 
 // A Game represents a single chess game.
 type Game struct {
-	tagPairs []*TagPair
-	moves    []*Move
-	state    *GameState
-	outcome  Outcome
-	method   Method
+	tagPairs             []*TagPair
+	moves                []*Move
+	positions            []*Position
+	pos                  *Position
+	outcome              Outcome
+	method               Method
+	ignoreAutomaticDraws bool
 }
 
 // PGN takes a reader and returns a function that updates
@@ -95,22 +97,20 @@ func PGN(r io.Reader) (func(*Game), error) {
 	}, nil
 }
 
-// FEN takes a reader and returns a function that updates
+// FEN takes a string and returns a function that updates
 // the game to reflect the FEN data.  Since FEN doesn't include
 // prior moves, the move list will be empty.  The returned
 // function is designed to be used in the NewGame constructor.
 // An error is returned if there is a problem parsing the FEN data.
-func FEN(r io.Reader) (func(*Game), error) {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return nil, err
-	}
-	state, err := decodeFEN(string(b))
+func FEN(fenStr string) (func(*Game), error) {
+	pos, err := decodeFEN(fenStr)
 	if err != nil {
 		return nil, err
 	}
 	return func(g *Game) {
-		g.updateState(state)
+		g.pos = pos
+		g.positions = []*Position{pos}
+		g.updatePosition()
 	}, nil
 }
 
@@ -124,15 +124,16 @@ func TagPairs(tagPairs []*TagPair) func(*Game) {
 }
 
 // NewGame defaults to returning a game in the standard
-// opening position.  Options can be given to change
+// opening position.  Options can be given to configure
 // the game's initial state.
 func NewGame(options ...func(*Game)) *Game {
-	state, _ := decodeFEN(startFEN)
+	pos, _ := decodeFEN(startFEN)
 	game := &Game{
-		moves:   []*Move{},
-		state:   state,
-		outcome: NoOutcome,
-		method:  NoMethod,
+		moves:     []*Move{},
+		pos:       pos,
+		positions: []*Position{pos},
+		outcome:   NoOutcome,
+		method:    NoMethod,
 	}
 	for _, f := range options {
 		f(game)
@@ -143,28 +144,14 @@ func NewGame(options ...func(*Game)) *Game {
 // Move updates the game with the given move.  An error is returned
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(m *Move) error {
-	if g.outcome != NoOutcome {
-		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method())
-	}
-	if !m.isValid() {
+	if !moveSlice(g.ValidMoves()).contains(m) {
 		return fmt.Errorf("chess: invalid move %s", m)
 	}
 	g.moves = append(g.moves, m)
-	g.updateState(m.postMoveState())
+	g.pos = g.pos.Update(m)
+	g.positions = append(g.positions, g.pos)
+	g.updatePosition()
 	return nil
-}
-
-// MoveSq moves the piece at s1 to s2, applies the given
-// promotion, and updates the game.  An error is returned
-// if the move is invalid or the game has already been completed.
-func (g *Game) MoveSq(s1, s2 *Square, promo PieceType) error {
-	move := &Move{
-		s1:    s1,
-		s2:    s2,
-		promo: promo,
-		state: g.state,
-	}
-	return g.Move(move)
 }
 
 // MoveAlg decodes the given string in algebraic notation
@@ -172,27 +159,22 @@ func (g *Game) MoveSq(s1, s2 *Square, promo PieceType) error {
 // the move can't be decoded, the move is invalid, or the
 // game has already been completed.
 func (g *Game) MoveAlg(alg string) error {
-	move, err := decodeMove(g.State(), alg)
+	m, err := decodeMove(g.pos, alg)
 	if err != nil {
 		return err
 	}
-	return g.MoveSq(move.S1(), move.S2(), move.Promo())
+	return g.Move(m)
 }
 
 // ValidMoves returns a list of valid moves in the
 // current position.
 func (g *Game) ValidMoves() []*Move {
-	return g.state.validMoves()
+	return g.pos.ValidMoves()
 }
 
-// States returns the state history of the game.
-func (g *Game) States() []*GameState {
-	states := []*GameState{}
-	for _, m := range g.moves {
-		states = append(states, m.PreMoveState())
-	}
-	states = append(states, g.state)
-	return states
+// Positions returns the position history of the game.
+func (g *Game) Positions() []*Position {
+	return append([]*Position(nil), g.positions...)
 }
 
 // Moves returns the move history of the game.
@@ -205,9 +187,9 @@ func (g *Game) TagPairs() []*TagPair {
 	return append([]*TagPair(nil), g.tagPairs...)
 }
 
-// State returns the game's current state.
-func (g *Game) State() *GameState {
-	return g.state
+// Position returns the game's current position.
+func (g *Game) Position() *Position {
+	return g.pos
 }
 
 // Outcome returns the game outcome.
@@ -220,31 +202,9 @@ func (g *Game) Method() Method {
 	return g.method
 }
 
-// TakeBack returns a copy of the game with the most recent
-// n moves removed.  If n is greater than the number of moves
-// or is negative then the game is set back to its initial state.
-func (g *Game) TakeBack(n int) *Game {
-	cp := &Game{}
-	cp.copy(g)
-	if len(cp.moves) == 0 {
-		return cp
-	}
-	var state *GameState
-	if len(cp.moves) < n || n < 0 {
-		state = cp.moves[0].PreMoveState()
-		cp.moves = []*Move{}
-	} else {
-		i := len(cp.moves) - n
-		state = cp.moves[i].PreMoveState()
-		cp.moves = g.moves[:i]
-	}
-	cp.updateState(state)
-	return cp
-}
-
-// FEN returns the FEN notation of the current state.
+// FEN returns the FEN notation of the current position.
 func (g *Game) FEN() string {
-	return g.State().String()
+	return g.pos.String()
 }
 
 // String implements the fmt.Stringer interface and returns
@@ -280,12 +240,12 @@ func (g *Game) Draw(method Method) error {
 			return errors.New("chess: draw by ThreefoldRepetition requires at least three repetitions of the current board state")
 		}
 	case FiftyMoveRule:
-		if g.state.halfMoveClock < 50 {
-			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.state.halfMoveClock)
+		if g.pos.halfMoveClock < 50 {
+			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.pos.halfMoveClock)
 		}
 	case DrawOffer:
 	default:
-		return fmt.Errorf("chess: unsupported draw method %s", method)
+		return fmt.Errorf("chess: unsupported draw method %s", method.String())
 	}
 	g.outcome = Draw
 	g.method = method
@@ -313,49 +273,60 @@ func (g *Game) EligibleDraws() []Method {
 	if g.numOfRepitions() >= 3 {
 		draws = append(draws, ThreefoldRepetition)
 	}
-	if g.state.halfMoveClock < 50 {
+	if g.pos.halfMoveClock < 50 {
 		draws = append(draws, FiftyMoveRule)
 	}
 	return draws
 }
 
-func (g *Game) copy(game *Game) {
-	g.tagPairs = game.tagPairs
-	g.moves = game.moves
-	g.state = game.state
-	g.outcome = game.outcome
-	g.method = game.method
-}
-
-func (g *Game) updateState(state *GameState) {
-	g.state = state
-	outcome, method := state.getOutcome()
-	g.outcome = outcome
-	g.method = method
+func (g *Game) updatePosition() {
+	method := g.pos.Status()
+	if method == Stalemate {
+		g.method = Stalemate
+		g.outcome = Draw
+	} else if method == Checkmate {
+		g.method = Checkmate
+		g.outcome = WhiteWon
+		if g.pos.Turn() == White {
+			g.outcome = BlackWon
+		}
+	}
+	if g.outcome != NoOutcome {
+		return
+	}
 
 	// five fold rep creates automatic draw
-	if g.numOfRepitions() >= 5 {
+	if !g.ignoreAutomaticDraws && g.numOfRepitions() >= 5 {
 		g.outcome = Draw
 		g.method = FivefoldRepetition
 	}
 
 	// 75 move rule creates automatic draw
-	if g.state.halfMoveClock >= 75 && g.method != Checkmate {
+	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 75 && g.method != Checkmate {
 		g.outcome = Draw
 		g.method = SeventyFiveMoveRule
 	}
 
 	// insufficent material creates automatic draw
-	if !g.state.board.hasSufficientMaterial() {
+	if !g.ignoreAutomaticDraws && !g.pos.board.hasSufficientMaterial() {
 		g.outcome = Draw
 		g.method = InsufficientMaterial
 	}
 }
 
+func (g *Game) copy(game *Game) {
+	g.tagPairs = game.TagPairs()
+	g.moves = game.Moves()
+	g.positions = game.Positions()
+	g.pos = game.pos
+	g.outcome = game.outcome
+	g.method = game.method
+}
+
 func (g *Game) numOfRepitions() int {
 	count := 0
-	for _, gs := range g.States() {
-		if g.state.samePosition(gs) {
+	for _, pos := range g.Positions() {
+		if g.pos.samePosition(pos) {
 			count++
 		}
 	}

@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strings"
 )
@@ -16,6 +17,7 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 	games := []*Game{}
 	current := ""
 	count := 0
+	totalCount := 0
 	br := bufio.NewReader(r)
 	for {
 		line, err := br.ReadString('\n')
@@ -37,6 +39,8 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 			games = append(games, game)
 			count = 0
 			current = ""
+			totalCount++
+			log.Println("Processed game", totalCount)
 		}
 	}
 	return games, nil
@@ -46,9 +50,10 @@ func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)
 	g := NewGame(TagPairs(tagPairs))
+	g.ignoreAutomaticDraws = true
 	for _, alg := range moveStrs {
 		if err := g.MoveAlg(alg); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("%s on move %d - Tag Pairs: %s", err.Error(), g.Position().moveCount, g.TagPairs())
 		}
 	}
 	g.outcome = outcome
@@ -62,10 +67,12 @@ func encodePGN(g *Game) string {
 	}
 	s += "\n"
 	for i, move := range g.moves {
+		pos := g.positions[i]
+		alg := encodeMove(pos, move)
 		if i%2 == 0 {
-			s += fmt.Sprintf("%d.%s", (i/2)+1, move)
+			s += fmt.Sprintf("%d.%s", (i/2)+1, alg)
 		} else {
-			s += fmt.Sprintf(" %s ", move)
+			s += fmt.Sprintf(" %s ", alg)
 		}
 	}
 	s += " " + string(g.outcome)

@@ -18,12 +18,6 @@ moves := game.ValidMoves()
 game.Move(moves[0])
 ```
 
-Using Squares
-```go
-game := chess.NewGame()
-game.MoveSq(chess.E2,chess.E4,chess.NoPromo)
-```
-
 Using Algebraic Notation
 ```go
 game := chess.NewGame()
@@ -38,7 +32,7 @@ game := chess.NewGame(pgn)
 
 Using FEN
 ```go
-fen, _ := chess.FEN(fenReader)
+fen, _ := chess.FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 game := chess.NewGame(fen)
 ```
 
@@ -62,7 +56,7 @@ func main() {
 		game.Move(move)
     }
 	// print outcome and game PGN
-	fmt.Println(game.State().Board().Draw())
+	fmt.Println(game.Position().Board().Draw())
 	fmt.Printf("Game completed. %s by %s.\n", game.Outcome(), game.Method())
     fmt.Println(game.String())    
 }
