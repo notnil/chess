@@ -127,17 +127,17 @@ var (
 			postPos: unsafeFEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"),
 		},
 		{
-			m:       &Move{s1: E1, s2: G1, tags: []MoveTag{KingSideCastle}},
+			m:       &Move{s1: E1, s2: G1, tags: map[MoveTag]bool{KingSideCastle: true}},
 			pos:     unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"),
 			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 0 1"),
 		},
 		{
-			m:       &Move{s1: A4, s2: B3, tags: []MoveTag{EnPassant}},
+			m:       &Move{s1: A4, s2: B3, tags: map[MoveTag]bool{EnPassant: true}},
 			pos:     unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 0 23"),
 			postPos: unsafeFEN("2r3k1/1q1nbppp/r3p3/3pP3/11pP4/PpQ2N2/2RN1PPP/2R4K w - - 0 24"),
 		},
 		{
-			m:       &Move{s1: E1, s2: G1, tags: []MoveTag{KingSideCastle}},
+			m:       &Move{s1: E1, s2: G1, tags: map[MoveTag]bool{KingSideCastle: true}},
 			pos:     unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9"),
 			postPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
 		},
@@ -211,13 +211,6 @@ func BenchmarkValidMoves(b *testing.B) {
 	}
 }
 
-// func TestSquaresAreAttacked(t *testing.T) {
-// 	pos := unsafeFEN("r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13")
-// 	log.Println(pos.String())
-// 	log.Println(pos.Board().Draw())
-// 	log.Println(pos.squaresAreAttacked(F1))
-// }
-
 func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 	for _, move := range pos.ValidMoves() {
 		if move.s1 == m.s1 && move.s2 == m.s2 && move.promo == m.promo {
@@ -225,7 +218,7 @@ func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 				if len(m.tags) != len(move.tags) {
 					return false
 				}
-				for _, tag := range move.tags {
+				for tag := range move.tags {
 					if !m.HasTag(tag) {
 						return false
 					}

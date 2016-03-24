@@ -95,15 +95,3 @@ func BenchmarkPGN(b *testing.B) {
 		NewGame(opt)
 	}
 }
-
-// func TestCarlsenPGNs(t *testing.T) {
-// 	f, err := os.Open("./Carlsen.pgn")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	games, err := GamesFromPGN(f)
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	log.Printf("imported %d games", len(games))
-// }

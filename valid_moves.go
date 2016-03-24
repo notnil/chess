@@ -60,20 +60,20 @@ type validMoveBB struct {
 func (pos *Position) addTags(m *Move) {
 	p := pos.board.piece(m.s1)
 	if pos.board.isOccupied(m.s2) {
-		m.tags = append(m.tags, Capture)
+		m.addTag(Capture)
 	} else if m.s2 == pos.enPassantSquare && p.Type() == Pawn {
-		m.tags = append(m.tags, EnPassant)
+		m.addTag(EnPassant)
 	}
 	// determine if in check after move (makes move invalid)
 	cp := pos.copy()
 	cp.board.update(m)
 	if cp.inCheck() {
-		m.tags = append(m.tags, inCheck)
+		m.addTag(inCheck)
 	}
 	// determine if opponent in check after move
 	cp.turn = cp.turn.Other()
 	if cp.inCheck() {
-		m.tags = append(m.tags, Check)
+		m.addTag(Check)
 	}
 }
 
@@ -136,7 +136,8 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 		(^pos.board.emptySqs&(bbSquares[F1]|bbSquares[G1])) == 0 &&
 		!pos.squaresAreAttacked(F1, G1) &&
 		!pos.inCheck() {
-		m := &Move{s1: E1, s2: G1, tags: []MoveTag{KingSideCastle}}
+		m := &Move{s1: E1, s2: G1}
+		m.addTag(KingSideCastle)
 		moves = append(moves, m)
 	}
 	// white queen side
@@ -144,7 +145,8 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 		(^pos.board.emptySqs&(bbSquares[B1]|bbSquares[C1]|bbSquares[D1])) == 0 &&
 		!pos.squaresAreAttacked(C1, D1) &&
 		!pos.inCheck() {
-		m := &Move{s1: E1, s2: C1, tags: []MoveTag{QueenSideCastle}}
+		m := &Move{s1: E1, s2: C1}
+		m.addTag(QueenSideCastle)
 		moves = append(moves, m)
 	}
 	// black king side
@@ -152,7 +154,8 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 		(^pos.board.emptySqs&(bbSquares[F8]|bbSquares[G8])) == 0 &&
 		!pos.squaresAreAttacked(F8, G8) &&
 		!pos.inCheck() {
-		m := &Move{s1: E8, s2: G8, tags: []MoveTag{KingSideCastle}}
+		m := &Move{s1: E8, s2: G8}
+		m.addTag(KingSideCastle)
 		moves = append(moves, m)
 	}
 	// black queen side
@@ -160,7 +163,8 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 		(^pos.board.emptySqs&(bbSquares[B8]|bbSquares[C8]|bbSquares[D8])) == 0 &&
 		!pos.squaresAreAttacked(C8, D8) &&
 		!pos.inCheck() {
-		m := &Move{s1: E8, s2: C8, tags: []MoveTag{QueenSideCastle}}
+		m := &Move{s1: E8, s2: C8}
+		m.addTag(QueenSideCastle)
 		moves = append(moves, m)
 	}
 	return moves

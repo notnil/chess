@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// A Board represents a chess board and its relationship between squares and pieces.
 type Board struct {
 	bbWhiteKing   bitboard
 	bbWhiteQueen  bitboard
@@ -23,6 +24,18 @@ type Board struct {
 	emptySqs      bitboard
 	whiteKingSq   Square
 	blackKingSq   Square
+}
+
+// SquareMap returns a mapping of squares to pieces.  A square is only added to the map if it is occupied.
+func (b *Board) SquareMap() map[Square]*Piece {
+	m := map[Square]*Piece{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		p := b.piece(Square(sq))
+		if p != nil {
+			m[Square(sq)] = p
+		}
+	}
+	return m
 }
 
 // Draw returns visual representation of the board useful for debugging.  Ex.
@@ -195,17 +208,6 @@ func (b *Board) piece(sq Square) *Piece {
 		}
 	}
 	return nil
-}
-
-func (b *Board) SquareMap() map[Square]*Piece {
-	m := map[Square]*Piece{}
-	for sq := 0; sq < numOfSquaresInBoard; sq++ {
-		p := b.piece(Square(sq))
-		if p != nil {
-			m[Square(sq)] = p
-		}
-	}
-	return m
 }
 
 func (b *Board) hasSufficientMaterial() bool {

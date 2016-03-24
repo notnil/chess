@@ -49,6 +49,10 @@ type Position struct {
 	validMoves      []*Move
 }
 
+// Update returns a new position resulting from the given move.
+// The move itself isn't validated, if validation is needed use
+// Game's Move method.  This method is more performant for bots that
+// rely on the ValidMoves because it skips redundant validation.
 func (pos *Position) Update(m *Move) *Position {
 	moveCount := pos.moveCount
 	if pos.turn == Black {
@@ -73,6 +77,32 @@ func (pos *Position) Update(m *Move) *Position {
 		halfMoveClock:   halfMove,
 		moveCount:       moveCount,
 	}
+}
+
+// ValidMoves returns a list of valid moves for the position.
+func (pos *Position) ValidMoves() []*Move {
+	if pos.validMoves != nil {
+		return append([]*Move(nil), pos.validMoves...)
+	}
+	s2BB := ^pos.board.whiteSqs
+	if pos.Turn() == Black {
+		s2BB = ^pos.board.blackSqs
+	}
+	pos.validMoves = pos.getValidMoves(s2BB, getAll, false)
+	return append([]*Move(nil), pos.validMoves...)
+}
+
+// Status returns the position's status as one of the outcome methods.
+// Possible returns values include Checkmate, Stalemate, and NoMethod.
+func (pos *Position) Status() Method {
+	inCheck := pos.inCheck()
+	hasMove := len(pos.ValidMoves()) > 0
+	if !inCheck && !hasMove {
+		return Stalemate
+	} else if inCheck && !hasMove {
+		return Checkmate
+	}
+	return NoMethod
 }
 
 // Board returns the position's board.
@@ -136,18 +166,6 @@ func (pos *Position) copy() *Position {
 	}
 }
 
-func (pos *Position) ValidMoves() []*Move {
-	if pos.validMoves != nil {
-		return append([]*Move(nil), pos.validMoves...)
-	}
-	s2BB := ^pos.board.whiteSqs
-	if pos.Turn() == Black {
-		s2BB = ^pos.board.blackSqs
-	}
-	pos.validMoves = pos.getValidMoves(s2BB, getAll, false)
-	return append([]*Move(nil), pos.validMoves...)
-}
-
 // TODO isn't working correctly, use in status method
 func (pos *Position) hasValidMove() bool {
 	s2BB := ^pos.board.whiteSqs
@@ -156,17 +174,6 @@ func (pos *Position) hasValidMove() bool {
 	}
 	moves := pos.getValidMoves(s2BB, getFirst, false)
 	return len(moves) > 0
-}
-
-func (pos *Position) Status() Method {
-	inCheck := pos.inCheck()
-	hasMove := len(pos.ValidMoves()) > 0
-	if !inCheck && !hasMove {
-		return Stalemate
-	} else if inCheck && !hasMove {
-		return Checkmate
-	}
-	return NoMethod
 }
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {

@@ -5,6 +5,7 @@ const (
 	numOfSquaresInRow   = 8
 )
 
+// A Square is one of the 64 rank and file combinations that make up a chess board.
 type Square int8
 
 func (sq Square) String() string {

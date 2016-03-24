@@ -30,19 +30,19 @@ func (o Outcome) String() string {
 	return string(o)
 }
 
-// A Method is the way in which the outcome occured.
+// A Method is the method that generated the outcome.
 type Method uint8
 
 const (
 	// NoMethod indicates that an outcome hasn't occured or that the method can't be determined.
 	NoMethod Method = iota
-	// Checkmate indicates that the game was won by a playing being checkmated.
+	// Checkmate indicates that the game was won checkmate.
 	Checkmate
-	// Resignation indicates that the game was won by player resigning.
+	// Resignation indicates that the game was won by resignation.
 	Resignation
-	// DrawOffer indicates that the game was drawn by player agreeing to a draw offer.
+	// DrawOffer indicates that the game was drawn by a draw offer.
 	DrawOffer
-	// Stalemate indicates that the game was drawn by player being stalemated.
+	// Stalemate indicates that the game was drawn by stalemate.
 	Stalemate
 	// ThreefoldRepetition indicates that the game was drawn when the game
 	// state was repeated three times and a player requested a draw.
@@ -61,7 +61,7 @@ const (
 	InsufficientMaterial
 )
 
-// TagPair represents metadata in a key value pairing.
+// TagPair represents metadata in a key value pairing used in PGN notation.
 type TagPair struct {
 	Key   string
 	Value string
@@ -124,7 +124,7 @@ func TagPairs(tagPairs []*TagPair) func(*Game) {
 }
 
 // NewGame defaults to returning a game in the standard
-// opening position.  Options can be given to change
+// opening position.  Options can be given to configure
 // the game's initial state.
 func NewGame(options ...func(*Game)) *Game {
 	pos, _ := decodeFEN(startFEN)
@@ -144,49 +144,14 @@ func NewGame(options ...func(*Game)) *Game {
 // Move updates the game with the given move.  An error is returned
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(m *Move) error {
-	if g.outcome != NoOutcome {
-		return fmt.Errorf("chess: invalid move %s game %s by %s", m, g.Outcome(), g.Method().String())
+	if !moveSlice(g.ValidMoves()).contains(m) {
+		return fmt.Errorf("chess: invalid move %s", m)
 	}
 	g.moves = append(g.moves, m)
 	g.pos = g.pos.Update(m)
 	g.positions = append(g.positions, g.pos)
 	g.updatePosition()
 	return nil
-}
-
-func (g *Game) updatePosition() {
-	method := g.pos.Status()
-	if method == Stalemate {
-		g.method = Stalemate
-		g.outcome = Draw
-	} else if method == Checkmate {
-		g.method = Checkmate
-		g.outcome = WhiteWon
-		if g.pos.Turn() == White {
-			g.outcome = BlackWon
-		}
-	}
-	if g.outcome != NoOutcome {
-		return
-	}
-
-	// five fold rep creates automatic draw
-	if !g.ignoreAutomaticDraws && g.numOfRepitions() >= 5 {
-		g.outcome = Draw
-		g.method = FivefoldRepetition
-	}
-
-	// 75 move rule creates automatic draw
-	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 75 && g.method != Checkmate {
-		g.outcome = Draw
-		g.method = SeventyFiveMoveRule
-	}
-
-	// insufficent material creates automatic draw
-	if !g.ignoreAutomaticDraws && !g.pos.board.hasSufficientMaterial() {
-		g.outcome = Draw
-		g.method = InsufficientMaterial
-	}
 }
 
 // MoveAlg decodes the given string in algebraic notation
@@ -312,6 +277,41 @@ func (g *Game) EligibleDraws() []Method {
 		draws = append(draws, FiftyMoveRule)
 	}
 	return draws
+}
+
+func (g *Game) updatePosition() {
+	method := g.pos.Status()
+	if method == Stalemate {
+		g.method = Stalemate
+		g.outcome = Draw
+	} else if method == Checkmate {
+		g.method = Checkmate
+		g.outcome = WhiteWon
+		if g.pos.Turn() == White {
+			g.outcome = BlackWon
+		}
+	}
+	if g.outcome != NoOutcome {
+		return
+	}
+
+	// five fold rep creates automatic draw
+	if !g.ignoreAutomaticDraws && g.numOfRepitions() >= 5 {
+		g.outcome = Draw
+		g.method = FivefoldRepetition
+	}
+
+	// 75 move rule creates automatic draw
+	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 75 && g.method != Checkmate {
+		g.outcome = Draw
+		g.method = SeventyFiveMoveRule
+	}
+
+	// insufficent material creates automatic draw
+	if !g.ignoreAutomaticDraws && !g.pos.board.hasSufficientMaterial() {
+		g.outcome = Draw
+		g.method = InsufficientMaterial
+	}
 }
 
 func (g *Game) copy(game *Game) {

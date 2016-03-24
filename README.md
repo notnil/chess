@@ -18,7 +18,6 @@ moves := game.ValidMoves()
 game.Move(moves[0])
 ```
 
-
 Using Algebraic Notation
 ```go
 game := chess.NewGame()

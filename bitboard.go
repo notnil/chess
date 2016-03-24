@@ -25,14 +25,6 @@ func newBitboard(m map[Square]bool) bitboard {
 	return bitboard(bb)
 }
 
-func (b bitboard) MSB() int {
-	i := strings.Index(b.String(), "1")
-	if i == -1 {
-		return 0
-	}
-	return i
-}
-
 func (b bitboard) Mapping() map[Square]bool {
 	s := b.String()
 	m := map[Square]bool{}
@@ -44,15 +36,18 @@ func (b bitboard) Mapping() map[Square]bool {
 	return m
 }
 
+// Occupied returns true if the square's bitboard position is 1.
 func (b bitboard) Occupied(sq Square) bool {
 	return (uint64(b) >> uint64(63-sq) & 1) == 1
 }
 
+// String returns a 64 character string of 1s and 0s starting with the most significant bit.
 func (b bitboard) String() string {
 	s := strconv.FormatUint(uint64(b), 2)
 	return strings.Repeat("0", numOfSquaresInBoard-len(s)) + s
 }
 
+// Reverse returns a bitboard where the bit order is reversed.
 func (b bitboard) Reverse() bitboard {
 	var u uint64
 	for sq := 0; sq < 64; sq++ {
@@ -62,16 +57,7 @@ func (b bitboard) Reverse() bitboard {
 	return bitboard(u)
 }
 
-// Draw returns visual representation of the board useful for debugging.  Ex.
-// A B C D E F G H
-// 8- - - - - - - -
-// 7- ♟ - - - - - ♝
-// 6- - - - ♘ - - -
-// 5- - - - ♟ - - -
-// 4- - - - - - - -
-// 3- - - - - - - -
-// 2- ♖ - - - - - -
-// 1- ♗ - - - - - -
+// Draw returns visual representation of the bitboard useful for debugging.
 func (b bitboard) Draw() string {
 	s := "\n A B C D E F G H\n"
 	for r := 7; r >= 0; r-- {

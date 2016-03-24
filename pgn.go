@@ -67,10 +67,12 @@ func encodePGN(g *Game) string {
 	}
 	s += "\n"
 	for i, move := range g.moves {
+		pos := g.positions[i]
+		alg := encodeMove(pos, move)
 		if i%2 == 0 {
-			s += fmt.Sprintf("%d.%s", (i/2)+1, move)
+			s += fmt.Sprintf("%d.%s", (i/2)+1, alg)
 		} else {
-			s += fmt.Sprintf(" %s ", move)
+			s += fmt.Sprintf(" %s ", alg)
 		}
 	}
 	s += " " + string(g.outcome)

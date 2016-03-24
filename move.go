@@ -19,14 +19,16 @@ const (
 	inCheck
 )
 
-// A Move is the moving of a piece from one square to another.
+// A Move is the movement of a piece from one square to another.
 type Move struct {
 	s1    Square
 	s2    Square
 	promo PieceType
-	tags  []MoveTag
+	tags  map[MoveTag]bool
 }
 
+// String returns a string useful for debugging.  String doesn't return
+// algebraic notation.
 func (m *Move) String() string {
 	return m.s1.String() + m.s2.String() + m.promo.String()
 }
@@ -48,11 +50,21 @@ func (m *Move) Promo() PieceType {
 
 // HasTag returns true if the move contains the MoveTag given.
 func (m *Move) HasTag(tag MoveTag) bool {
+	return m.tags[tag]
+}
+
+func (m *Move) addTag(tag MoveTag) {
 	if m.tags == nil {
-		return false
+		m.tags = map[MoveTag]bool{}
 	}
-	for _, t := range m.tags {
-		if t == tag {
+	m.tags[tag] = true
+}
+
+type moveSlice []*Move
+
+func (a moveSlice) contains(m *Move) bool {
+	for _, move := range a {
+		if move.String() == m.String() {
 			return true
 		}
 	}
