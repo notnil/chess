@@ -34,7 +34,7 @@ func (o Outcome) String() string {
 type Method uint8
 
 const (
-	// NoMethod indicates that an outcome hasn't occured or that the method can't be determined.
+	// NoMethod indicates that an outcome hasn't occurred or that the method can't be determined.
 	NoMethod Method = iota
 	// Checkmate indicates that the game was won checkmate.
 	Checkmate
@@ -57,7 +57,7 @@ const (
 	// when the half move clock was seventy five or greater.
 	SeventyFiveMoveRule
 	// InsufficientMaterial indicates that the game was automatically drawn
-	// because there was insufficent material for checkmate.
+	// because there was insufficient material for checkmate.
 	InsufficientMaterial
 )
 
@@ -197,7 +197,7 @@ func (g *Game) Outcome() Outcome {
 	return g.outcome
 }
 
-// Method returns the method in which the outcome occured.
+// Method returns the method in which the outcome occurred.
 func (g *Game) Method() Method {
 	return g.method
 }
@@ -306,7 +306,7 @@ func (g *Game) updatePosition() {
 		g.method = SeventyFiveMoveRule
 	}
 
-	// insufficent material creates automatic draw
+	// insufficient material creates automatic draw
 	if !g.ignoreAutomaticDraws && !g.pos.board.hasSufficientMaterial() {
 		g.outcome = Draw
 		g.method = InsufficientMaterial

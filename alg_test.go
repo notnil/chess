@@ -130,7 +130,7 @@ var (
 			AlgText: "dx4",
 		},
 		{
-			// should not assume pawn for unknown peice type "n"
+			// should not assume pawn for unknown piece type "n"
 			Pos:     unsafeFEN("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"),
 			AlgText: "nf3",
 		},

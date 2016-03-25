@@ -141,5 +141,4 @@ func removeSection(leftChar, rightChar, s string) string {
 		}
 		s = s[0:i[0]] + s[i[1]:len(s)]
 	}
-	return s
 }

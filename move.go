@@ -43,7 +43,7 @@ func (m *Move) S2() Square {
 	return m.s2
 }
 
-// Promo returns promotion peice type of the move.
+// Promo returns promotion piece type of the move.
 func (m *Move) Promo() PieceType {
 	return m.promo
 }

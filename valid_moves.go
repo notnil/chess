@@ -25,7 +25,7 @@ func (pos *Position) getValidMoves(s2BB bitboard, st searchType, allowChecks boo
 			}
 		}
 	}
-	// have to seperate castle moves because of callback loop
+	// have to separate castle moves because of callback loop
 	if !allowChecks {
 		result := castleMoves(pos, s2BB, st)
 		for _, m := range result {

@@ -184,7 +184,7 @@ func TestPositionUpdates(t *testing.T) {
 			log.Println(mt.pos.String())
 			log.Println(mt.pos.board.Draw())
 			log.Println(mt.pos.ValidMoves())
-			t.Fatalf("expected move %s %s to be valid", mt.m, mt.m.tags)
+			t.Fatalf("expected move %s %v to be valid", mt.m, mt.m.tags)
 		}
 
 		postPos := mt.pos.Update(mt.m)

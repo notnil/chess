@@ -37,7 +37,7 @@ func (cr CastleRights) String() string {
 	return string(cr)
 }
 
-// Position represents the state of the game without regaurd
+// Position represents the state of the game without reguard
 // to its outcome.  Position is translatable to FEN notation.
 type Position struct {
 	board           *Board
