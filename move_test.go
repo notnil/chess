@@ -36,6 +36,7 @@ var (
 		{m: &Move{s1: E4, s2: C3}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: C5}, pos: unsafeFEN("8/8/8/3pp3/4N3/8/5B2/8 w - - 0 1")},
 		{m: &Move{s1: B8, s2: D7}, pos: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
+		{m: &Move{s1: F6, s2: E4}, pos: unsafeFEN("r1b1k2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BK3R b kq - 0 8")},
 		// bishop moves
 		{m: &Move{s1: E4, s2: H7}, pos: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: D5}, pos: unsafeFEN("8/8/8/3pp3/4B3/5N2/8/8 w - - 0 1")},

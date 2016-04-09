@@ -105,6 +105,11 @@ var (
 			AlgText: "Ng6",
 			PostPos: unsafeFEN("3r2k1/b4p2/p1p3Np/6p1/4p1b1/1P2P2P/PB3PP1/R5K1 b - - 1 27"),
 		},
+		{
+			Pos:     unsafeFEN("r1b1k2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BK3R b kq - 0 8"),
+			AlgText: "Nxe4",
+			PostPos: unsafeFEN("r1b1k2r/ppp2ppp/2p5/4N3/4n3/2P5/PPP2PPP/R1BK3R w kq - 0 9"),
+		},
 	}
 
 	invalidAlgDecodeTests = []algDecodeTest{
