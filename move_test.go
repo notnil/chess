@@ -52,6 +52,7 @@ var (
 		{m: &Move{s1: B2, s2: A1}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		{m: &Move{s1: B2, s2: A2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
 		{m: &Move{s1: B2, s2: H2}, pos: unsafeFEN("8/1p5b/4N3/4p3/8/8/1Q6/1B6 w - - 0 1")},
+		{m: &Move{s1: D8, s2: D1}, pos: unsafeFEN("r1bqk2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BQK2R b KQkq - 0 7")},
 		// king moves
 		{m: &Move{s1: E4, s2: E5}, pos: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: E3}, pos: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
