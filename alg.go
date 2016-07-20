@@ -31,17 +31,11 @@ func encodeMove(pos *Position, move *Move) string {
 }
 
 func decodeMove(pos *Position, s string) (*Move, error) {
-	s = strings.Replace(s, "?", "", -1)
-	s = strings.Replace(s, "!", "", -1)
-	s = strings.Replace(s, "+", "", -1)
-	s = strings.Replace(s, "#", "", -1)
-	s = strings.Replace(s, "e.p.", "", -1)
+	s = removeSubstrings(s, "?", "!", "+", "#", "e.p.")
 	moves := pos.ValidMoves()
 	for _, move := range moves {
 		str := encodeMove(pos, move)
-		str = strings.Replace(str, "+", "", -1)
-		str = strings.Replace(str, "#", "", -1)
-		str = strings.Replace(str, "e.p.", "", -1)
+		str = removeSubstrings(str, "+", "#", "e.p.")
 		if str == s {
 			return move, nil
 		}
@@ -109,4 +103,11 @@ func charFromPieceType(p PieceType) string {
 		return "N"
 	}
 	return ""
+}
+
+func removeSubstrings(s string, subs ...string) string {
+	for _, sub := range subs {
+		s = strings.Replace(s, sub, "", -1)
+	}
+	return s
 }
