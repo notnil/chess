@@ -28,7 +28,7 @@ Random Game
     import (
         "fmt"
 
-        "github.com/loganjspears/chess"
+        "github.com/notnil/chess"
     )
 
     func main() {

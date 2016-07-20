@@ -1,8 +1,8 @@
 # chess
-[![GoDoc](https://godoc.org/github.com/loganjspears/chess?status.svg)](https://godoc.org/github.com/loganjspears/chess)
-[![Build Status](https://drone.io/github.com/loganjspears/chess/status.png)](https://drone.io/github.com/loganjspears/chess/latest)
-[![Coverage Status](https://coveralls.io/repos/loganjspears/chess/badge.svg?branch=master&service=github)](https://coveralls.io/github/loganjspears/chess?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/loganjspears/chess)](https://goreportcard.com/report/loganjspears/chess)
+[![GoDoc](https://godoc.org/github.com/notnil/chess?status.svg)](https://godoc.org/github.com/notnil/chess)
+[![Build Status](https://drone.io/github.com/notnil/chess/status.png)](https://drone.io/github.com/notnil/chess/latest)
+[![Coverage Status](https://coveralls.io/repos/notnil/chess/badge.svg?branch=master&service=github)](https://coveralls.io/github/notnil/chess?branch=master)
+[![Go Report Card](https://goreportcard.com/badge/notnil/chess)](https://goreportcard.com/report/notnil/chess)
 
 package chess is a go library designed to accomplish the following:
 - chess game / turn management
@@ -44,7 +44,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/loganjspears/chess"
+	"github.com/notnil/chess"
 )
 
 func main() {
