@@ -27,7 +27,7 @@ func encodeMove(pos *Position, move *Move) string {
 		epText = "e.p."
 	}
 	promoText := charForPromo(move.promo)
-	return fmt.Sprint(pChar, s1Str, capChar, move.s2, epText, promoText, checkChar)
+	return pChar + s1Str + capChar + move.s2.String() + epText + promoText + checkChar
 }
 
 func decodeMove(pos *Position, s string) (*Move, error) {
@@ -103,6 +103,22 @@ func charFromPieceType(p PieceType) string {
 		return "N"
 	}
 	return ""
+}
+
+func moveFuncForPieceType(p PieceType) moveFunc {
+	switch p {
+	case King:
+		return kingMoves
+	case Queen:
+		return queenMoves
+	case Rook:
+		return rookMoves
+	case Bishop:
+		return bishopMoves
+	case Knight:
+		return knightMoves
+	}
+	return pawnMoves
 }
 
 func removeSubstrings(s string, subs ...string) string {
