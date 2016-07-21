@@ -110,7 +110,7 @@ func (pos *Position) inCheck() bool {
 	if bb != 0 {
 		return pos.squaresAreAttacked(kingSq)
 	}
-	return pos.squaresAreAttacked(kingSq)
+	return false
 }
 
 func (pos *Position) squaresAreAttacked(sqs ...Square) bool {

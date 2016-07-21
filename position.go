@@ -96,7 +96,7 @@ func (pos *Position) ValidMoves() []*Move {
 // Possible returns values include Checkmate, Stalemate, and NoMethod.
 func (pos *Position) Status() Method {
 	inCheck := pos.inCheck()
-	hasMove := len(pos.ValidMoves()) > 0
+	hasMove := len(pos.ValidMoves()) > 0 // TODO use has valid move
 	if !inCheck && !hasMove {
 		return Stalemate
 	} else if inCheck && !hasMove {
