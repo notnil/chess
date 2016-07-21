@@ -5,8 +5,11 @@ import (
 	"strings"
 )
 
-func encodeMove(pos *Position, move *Move) string {
-	checkChar := getCheckChar(pos, move)
+func encodeMove(pos *Position, move *Move, addChecks bool) string {
+	checkChar := ""
+	if addChecks {
+		checkChar = getCheckChar(pos, move)
+	}
 	if move.HasTag(KingSideCastle) {
 		return "O-O" + checkChar
 	} else if move.HasTag(QueenSideCastle) {
@@ -34,8 +37,8 @@ func decodeMove(pos *Position, s string) (*Move, error) {
 	s = removeSubstrings(s, "?", "!", "+", "#", "e.p.")
 	moves := pos.ValidMoves()
 	for _, move := range moves {
-		str := encodeMove(pos, move)
-		str = removeSubstrings(str, "+", "#", "e.p.")
+		str := encodeMove(pos, move, false)
+		str = removeSubstrings(str, "e.p.")
 		if str == s {
 			return move, nil
 		}

@@ -153,7 +153,7 @@ func TestValidAlgDecoding(t *testing.T) {
 		if err != nil {
 			movesStrList := []string{}
 			for _, m := range test.Pos.ValidMoves() {
-				movesStrList = append(movesStrList, encodeMove(test.Pos, m))
+				movesStrList = append(movesStrList, encodeMove(test.Pos, m, true))
 			}
 			t.Fatalf("starting from board \n%s\n expected move to be valid error - %s %s\n", test.Pos.board.Draw(), err, strings.Join(movesStrList, ","))
 		}
