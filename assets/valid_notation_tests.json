@@ -1,0 +1,121 @@
+[
+	{
+		"pos1" : "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+		"pos2" : "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1",
+		"algText" : "e4",
+		"longAlgText" : "e2e4",
+		"description" : "opening move"
+	},
+	{
+		"pos1" : "rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7",
+		"pos2" : "r2qkb1r/pp1n1ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R w KQkq - 1 8",
+		"algText" : "Nbd7",
+		"longAlgText" : "b8d7",
+		"description" : "http://en.lichess.org/W91M4jms#14"
+	},
+	{
+		"pos1" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9",
+		"pos2" : "r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9",
+		"algText" : "O-O",
+		"longAlgText" : "e1g1",
+		"description" : "http://en.lichess.org/W91M4jms#17"
+	},
+	{
+		"pos1" : "3r1rk1/pp1nqppp/2pbpn2/3p4/2PP4/1PNQPN2/PB3PPP/3RR1K1 b - - 5 12",
+		"pos2" : "3r1rk1/pp1nqppp/2pbpn2/8/2pP4/1PNQPN2/PB3PPP/3RR1K1 w - - 0 13",
+		"algText" : "dxc4",
+		"longAlgText" : "d5c4",
+		"description" : "http://en.lichess.org/W91M4jms#24"
+	},
+	{
+		"pos1" : "3r2k1/pp2qppp/2p2n2/4b3/2P5/2N1P3/PB2QPPP/3R2K1 w - - 1 18",
+		"pos2" : "3R2k1/pp2qppp/2p2n2/4b3/2P5/2N1P3/PB2QPPP/6K1 b - - 0 18",
+		"algText" : "Rxd8+",
+		"longAlgText" : "d1d8",
+		"description" : "http://en.lichess.org/W91M4jms#35"
+	},
+	{
+		"pos1" : "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq d3 0 1",
+		"pos2" : "rnbqkb1r/pppppppp/5n2/8/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 1 2",
+		"algText" : "Nf6",
+		"longAlgText" : "g8f6",
+		"description" : "https://en.lichess.org/W91M4jms#2"
+	},
+	{
+		"pos1" : "r4rk1/ppbn1p2/2p1pn1p/q2p2pb/7N/PP1PP1PP/1BPN1PB1/R3QRK1 w - g6 0 14",
+		"pos2" : "r4rk1/ppbn1p2/2p1pn1p/q2p2pb/8/PP1PPNPP/1BPN1PB1/R3QRK1 b - - 1 14",
+		"algText" : "Nhf3",
+		"longAlgText" : "h4f3",
+		"description" : "http://en.lichess.org/4HXJOtpN#27"
+	},
+	{
+		"pos1" : "4r3/8/2p2PPk/1p1r4/pP2p1R1/P1B5/2P2K2/8 b - - 0 44",
+		"pos2" : "4r3/8/2p2PPk/1p6/pP2p1R1/P1B5/2P2K2/3r4 w - - 1 45",
+		"algText" : "Rd1??",
+		"longAlgText" : "d5d1",
+		"description" : "http://en.lichess.org/4HXJOtpN#87"
+	},
+	{
+		"pos1" : "8/3k2Kp/p7/1p1r4/6P1/8/Pn1p4/7R b - - 0 40",
+		"pos2" : "8/3k2Kp/p7/1p1r4/6P1/8/Pn6/3q3R w - - 0 41",
+		"algText" : "d1=Q",
+		"longAlgText" : "d2d1q",
+		"description" : "http://en.lichess.org/YXPuk8kg#80"
+	},
+	{
+		"pos1" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/R3KBNR w KQ - 0 10",
+		"pos2" : "rnbk1b1r/p3pppp/5n2/2p1p3/5B2/2N2P2/PPP3PP/2KR1BNR b - - 0 10",
+		"algText" : "O-O-O+",
+		"longAlgText" : "e1c1",
+		"description" : "http://en.lichess.org/dimuEVR0#19"
+	},
+	{
+		"pos1" : "4R3/1r1k2pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 w - - 5 32",
+		"pos2" : "8/1r1kR1pp/p1p5/1pP5/8/8/1PP3PP/2K1Rr2 b - - 6 32",
+		"algText" : "Re7+",
+		"longAlgText" : "e8e7",
+		"description" : "only 1 rook can move because of pin http://en.lichess.org/JCRBhXH7#62"
+	},
+	{
+		"pos1" : "rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NbPN2/PP3PPP/R1BQK2R w KQkq - 0 7",
+		"pos2" : "rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7",
+		"algText" : "Qxd3",
+		"longAlgText" : "d1d3",
+		"description" : "https://en.lichess.org/editor/rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NbPN2/PP3PPP/R1BQK2R_w_KQkq_-_0_7"
+	},
+	{
+		"pos1" : "7k/pBp2Rb1/4Q2p/4p3/1P4p1/2P4q/P2r1P2/6K1 b - - 1 38",
+		"pos2" : "7k/pBp2Rb1/4Q2p/4p3/1P4p1/2P4q/P4P2/3r2K1 w - - 2 39",
+		"algText" : "Rd1#",
+		"longAlgText" : "d2d1",
+		"description" : "https://en.lichess.org/editor/7k/pBp2Rb1/4Q2p/4p3/1P4p1/2P4q/P2r1P2/6K1_b_-_-_1_38"
+	},
+	{
+		"pos1" : "r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1 w - f6 0 13",
+		"pos2" : "r1b2rk1/pp2b1pp/1qn1pP2/3p4/1P1P4/P2BPN2/6PP/RN1Q1RK1 b - - 0 13",
+		"algText" : "exf6",
+		"longAlgText" : "e5f6",
+		"description" : "https://en.lichess.org/editor/r1b2rk1/pp2b1pp/1qn1p3/3pPp2/1P1P4/P2BPN2/6PP/RN1Q1RK1_w_-_f6_0_13"
+	},
+	{
+		"pos1" : "3r2k1/b4p2/p1p4p/6p1/4pNb1/1P2P2P/PB3PP1/R5K1 w - g6 0 27",
+		"pos2" : "3r2k1/b4p2/p1p3Np/6p1/4p1b1/1P2P2P/PB3PP1/R5K1 b - - 1 27",
+		"algText" : "Ng6",
+		"longAlgText" : "f4g6",
+		"description" : "https://en.lichess.org/editor/3r2k1/b4p2/p1p4p/6p1/4pNb1/1P2P2P/PB3PP1/R5K1_w_-_g6_0_27"
+	},
+	{
+		"pos1" : "r1b1k2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BK3R b kq - 0 8",
+		"pos2" : "r1b1k2r/ppp2ppp/2p5/4N3/4n3/2P5/PPP2PPP/R1BK3R w kq - 0 9",
+		"algText" : "Nxe4",
+		"longAlgText" : "f6e4",
+		"description" : "https://en.lichess.org/editor/r1b1k2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BK3R_b_kq_-_0_8"
+	},
+	{
+		"pos1" : "r1bqk2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BQK2R b KQkq - 0 7",
+		"pos2" : "r1b1k2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BqK2R w KQkq - 0 8",
+		"algText" : "Qxd1",
+		"longAlgText" : "d8d1",
+		"description" : "https://en.lichess.org/editor/r1bqk2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BQK2R_b_KQkq_-_0_7"
+	}
+]

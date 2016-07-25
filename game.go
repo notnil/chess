@@ -156,10 +156,9 @@ func (g *Game) Move(m *Move) error {
 
 // MoveAlg decodes the given string in algebraic notation
 // and calls the Move function.  An error is returned if
-// the move can't be decoded, the move is invalid, or the
-// game has already been completed.
+// the move can't be decoded or the move is invalid.
 func (g *Game) MoveAlg(alg string) error {
-	m, err := decodeMove(g.pos, alg)
+	m, err := AlgebraicNotation{}.Decode(g.pos, alg)
 	if err != nil {
 		return err
 	}
