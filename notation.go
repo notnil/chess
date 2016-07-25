@@ -5,37 +5,45 @@ import (
 	"strings"
 )
 
+// Encoder is the interface implemented by objects that can
+// encode a move into a string given the position.  It is not
+// the encoders responsibility to validate the move.
 type Encoder interface {
 	Encode(pos *Position, m *Move) string
 }
 
+// Decoder is the interface implemented by objects that can
+// decode a string into a move given the position. It is not
+// the decoders responsibility to validate the move.  An error
+// is returned if the string could not be decoded.
 type Decoder interface {
 	Decode(pos *Position, s string) (*Move, error)
 }
 
+// Notation is the interface implemented by objects that can
+// encode and decode moves.
 type Notation interface {
 	Encoder
 	Decoder
-	Name() string
 }
 
-/*
-Move format:
-------------
-The move format is in long algebraic notation.
-A nullmove from the Engine to the GUI should be sent as 0000.
-Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
-*/
+// LongAlgebraicNotation is a more computer friendly alternative to algebraic
+// notation.  This notation uses the same format as the UCI (Universal Chess
+// Interface).  Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
 type LongAlgebraicNotation struct{}
 
-func (_ LongAlgebraicNotation) Name() string {
+// String implements the fmt.Stringer interface and returns
+// the notation's name.
+func (_ LongAlgebraicNotation) String() string {
 	return "Long Algebraic Notation"
 }
 
+// Encode implements the Encoder interface.
 func (_ LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
 	return m.S1().String() + m.S2().String() + m.Promo().String()
 }
 
+// Decode implements the Decoder interface.
 func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	l := len(s)
 	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos.String())
@@ -77,12 +85,18 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	return m, nil
 }
 
+// AlgebraicNotation (or Standard Algebraic Notation) is the
+// official chess notation required by FIDE.  This notation uses the same format as the UCI (Universal Chess
+// Interface).  Examples: e2, e5, O-O (short castling), e8=Q (promotion)
 type AlgebraicNotation struct{}
 
-func (_ AlgebraicNotation) Name() string {
+// String implements the fmt.Stringer interface and returns
+// the notation's name.
+func (_ AlgebraicNotation) String() string {
 	return "Algebraic Notation"
 }
 
+// Encode implements the Encoder interface.
 func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
 	checkChar := getCheckChar(pos, m)
 	if m.HasTag(KingSideCastle) {
@@ -108,6 +122,7 @@ func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
 	return pChar + s1Str + capChar + m.s2.String() + epText + promoText + checkChar
 }
 
+// Decode implements the Decoder interface.
 func (_ AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	s = removeSubstrings(s, "?", "!", "+", "#", "e.p.")
 	for _, m := range pos.ValidMoves() {

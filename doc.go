@@ -12,7 +12,7 @@ Using Moves
 
 Using Algebraic Notation
     game := chess.NewGame()
-    game.MoveAlg("e4")
+    game.MoveStr("e4")
 
 Using PGN
     pgn, _ := chess.PGN(pgnReader)

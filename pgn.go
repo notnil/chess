@@ -51,8 +51,15 @@ func decodePGN(pgn string) (*Game, error) {
 	moveStrs, outcome := moveList(pgn)
 	g := NewGame(TagPairs(tagPairs))
 	g.ignoreAutomaticDraws = true
+	g.notation = AlgebraicNotation{}
+	if len(moveStrs) > 0 {
+		_, err := LongAlgebraicNotation{}.Decode(g.Position(), moveStrs[0])
+		if err == nil {
+			g.notation = LongAlgebraicNotation{}
+		}
+	}
 	for _, alg := range moveStrs {
-		if err := g.MoveAlg(alg); err != nil {
+		if err := g.MoveStr(alg); err != nil {
 			return nil, fmt.Errorf("%s on move %d - Tag Pairs: %s", err.Error(), g.Position().moveCount, g.TagPairs())
 		}
 	}
@@ -68,11 +75,11 @@ func encodePGN(g *Game) string {
 	s += "\n"
 	for i, move := range g.moves {
 		pos := g.positions[i]
-		alg := AlgebraicNotation{}.Encode(pos, move)
+		txt := g.notation.Encode(pos, move)
 		if i%2 == 0 {
-			s += fmt.Sprintf("%d.%s", (i/2)+1, alg)
+			s += fmt.Sprintf("%d.%s", (i/2)+1, txt)
 		} else {
-			s += fmt.Sprintf(" %s ", alg)
+			s += fmt.Sprintf(" %s ", txt)
 		}
 	}
 	s += " " + string(g.outcome)
