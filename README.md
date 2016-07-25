@@ -12,26 +12,26 @@ package chess is a go library designed to accomplish the following:
 
 ## Usage
 
-Using Moves
+Valid Moves
 ```go
 game := chess.NewGame()
 moves := game.ValidMoves()
 game.Move(moves[0])
 ```
 
-Using Algebraic Notation
+Algebraic Notation
 ```go
 game := chess.NewGame()
 game.MoveStr("e4")
 ```
 
-Using PGN
+PGN
 ```go
 pgn, _ := chess.PGN(pgnReader)
 game := chess.NewGame(pgn)
 ```
 
-Using FEN
+FEN
 ```go
 fen, _ := chess.FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
 game := chess.NewGame(fen)
