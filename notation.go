@@ -22,7 +22,6 @@ type Notation interface {
 /*
 Move format:
 ------------
-
 The move format is in long algebraic notation.
 A nullmove from the Engine to the GUI should be sent as 0000.
 Examples:  e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
@@ -58,7 +57,24 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 			return nil, err
 		}
 	}
-	return &Move{s1: s1, s2: s2, promo: promo}, nil
+	m := &Move{s1: s1, s2: s2, promo: promo}
+	p := pos.Board().piece(s1)
+	if p.Type() == King {
+		if (s1 == E1 && s2 == G1) || (s1 == E8 && s2 == G8) {
+			m.addTag(KingSideCastle)
+		} else if (s1 == E1 && s2 == C1) || (s1 == E8 && s2 == C8) {
+			m.addTag(QueenSideCastle)
+		}
+	} else if p.Type() == Pawn && s2 == pos.enPassantSquare {
+		m.addTag(EnPassant)
+		m.addTag(Capture)
+	}
+	c1 := p.Color()
+	c2 := pos.Board().piece(s2).Color()
+	if c2 != NoColor && c1 != c2 {
+		m.addTag(Capture)
+	}
+	return m, nil
 }
 
 type AlgebraicNotation struct{}
