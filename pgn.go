@@ -51,16 +51,20 @@ func decodePGN(pgn string) (*Game, error) {
 	moveStrs, outcome := moveList(pgn)
 	g := NewGame(TagPairs(tagPairs))
 	g.ignoreAutomaticDraws = true
-	g.notation = AlgebraicNotation{}
+	var notation Notation = AlgebraicNotation{}
 	if len(moveStrs) > 0 {
 		_, err := LongAlgebraicNotation{}.Decode(g.Position(), moveStrs[0])
 		if err == nil {
-			g.notation = LongAlgebraicNotation{}
+			notation = LongAlgebraicNotation{}
 		}
 	}
 	for _, alg := range moveStrs {
-		if err := g.MoveStr(alg); err != nil {
-			return nil, fmt.Errorf("%s on move %d - Tag Pairs: %s", err.Error(), g.Position().moveCount, g.TagPairs())
+		m, err := notation.Decode(g.Position(), alg)
+		if err != nil {
+			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
+		}
+		if err := g.Move(m); err != nil {
+			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
 		}
 	}
 	g.outcome = outcome

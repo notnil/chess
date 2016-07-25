@@ -80,10 +80,10 @@ type Game struct {
 }
 
 // PGN takes a reader and returns a function that updates
-// the game to reflect the PGN data.  The returned function
-// is designed to be used in the NewGame constructor.  An
-// error is returned if there is a problem parsing the PGN
-// data.
+// the game to reflect the PGN data.  The PGN can use any
+// move notation supported by this package.  The returned
+// function is designed to be used in the NewGame constructor.
+// An error is returned if there is a problem parsing the PGN data.
 func PGN(r io.Reader) (func(*Game), error) {
 	b, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -99,12 +99,12 @@ func PGN(r io.Reader) (func(*Game), error) {
 }
 
 // FEN takes a string and returns a function that updates
-// the game to reflect the FEN data.  Since FEN doesn't include
+// the game to reflect the FEN data.  Since FEN doesn't encode
 // prior moves, the move list will be empty.  The returned
 // function is designed to be used in the NewGame constructor.
 // An error is returned if there is a problem parsing the FEN data.
-func FEN(fenStr string) (func(*Game), error) {
-	pos, err := decodeFEN(fenStr)
+func FEN(fen string) (func(*Game), error) {
+	pos, err := decodeFEN(fen)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +121,17 @@ func FEN(fenStr string) (func(*Game), error) {
 func TagPairs(tagPairs []*TagPair) func(*Game) {
 	return func(g *Game) {
 		g.tagPairs = append([]*TagPair(nil), tagPairs...)
+	}
+}
+
+// UseNotation returns a function that sets the game's notation
+// to the given value.  The notation is used to parse the
+// string supplied to the MoveStr() method as well as the
+// any PGN output.  The returned function is designed
+// to be used in the NewGame constructor.
+func UseNotation(n Notation) func(*Game) {
+	return func(g *Game) {
+		g.notation = n
 	}
 }
 
