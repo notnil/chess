@@ -86,8 +86,8 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 }
 
 // AlgebraicNotation (or Standard Algebraic Notation) is the
-// official chess notation required by FIDE.  This notation uses the same format as the UCI (Universal Chess
-// Interface).  Examples: e2, e5, O-O (short castling), e8=Q (promotion)
+// official chess notation used by FIDE. Examples: e2, e5,
+// O-O (short castling), e8=Q (promotion)
 type AlgebraicNotation struct{}
 
 // String implements the fmt.Stringer interface and returns
