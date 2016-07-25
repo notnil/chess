@@ -15,6 +15,45 @@ type validNotationTest struct {
 	Description string
 }
 
+func TestValidDecoding(t *testing.T) {
+	f, err := os.Open("assets/valid_notation_tests.json")
+	if err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	validTests := []validNotationTest{}
+	if err := json.NewDecoder(f).Decode(&validTests); err != nil {
+		t.Fatal(err)
+		return
+	}
+
+	for _, test := range validTests {
+		for i, n := range []Notation{AlgebraicNotation{}, LongAlgebraicNotation{}} {
+			moveText := test.AlgText
+			if i == 1 {
+				moveText = test.LongAlgText
+			}
+			m, err := n.Decode(test.Pos1, moveText)
+			if err != nil {
+				movesStrList := []string{}
+				for _, m := range test.Pos1.ValidMoves() {
+					s := n.Encode(test.Pos1, m)
+					movesStrList = append(movesStrList, s)
+				}
+				t.Fatalf("starting from board \n%s\n expected move to be valid error - %s %s\n", test.Pos1.board.Draw(), err, strings.Join(movesStrList, ","))
+			}
+			postPos := test.Pos1.Update(m)
+			if test.Pos2.String() != postPos.String() {
+				t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+					test.Pos1.board.Draw(), m.String(), test.Pos2.String(),
+					test.Pos2.board.Draw(), postPos.String(), postPos.board.Draw())
+			}
+		}
+
+	}
+}
+
 type notationDecodeTest struct {
 	N       Notation
 	Pos     *Position
@@ -57,45 +96,6 @@ var (
 		},
 	}
 )
-
-func TestValidDecoding(t *testing.T) {
-	f, err := os.Open("assets/valid_notation_tests.json")
-	if err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	validTests := []validNotationTest{}
-	if err := json.NewDecoder(f).Decode(&validTests); err != nil {
-		t.Fatal(err)
-		return
-	}
-
-	for _, test := range validTests {
-		for i, n := range []Notation{AlgebraicNotation{}, LongAlgebraicNotation{}} {
-			moveText := test.AlgText
-			if i == 1 {
-				moveText = test.LongAlgText
-			}
-			m, err := n.Decode(test.Pos1, moveText)
-			if err != nil {
-				movesStrList := []string{}
-				for _, m := range test.Pos1.ValidMoves() {
-					s := n.Encode(test.Pos1, m)
-					movesStrList = append(movesStrList, s)
-				}
-				t.Fatalf("starting from board \n%s\n expected move to be valid error - %s %s\n", test.Pos1.board.Draw(), err, strings.Join(movesStrList, ","))
-			}
-			postPos := test.Pos1.Update(m)
-			if test.Pos2.String() != postPos.String() {
-				t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
-					test.Pos1.board.Draw(), m.String(), test.Pos2.String(),
-					test.Pos2.board.Draw(), postPos.String(), postPos.board.Draw())
-			}
-		}
-
-	}
-}
 
 func TestInvalidDecoding(t *testing.T) {
 	for _, test := range invalidDecodeTests {

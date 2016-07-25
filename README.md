@@ -22,7 +22,7 @@ game.Move(moves[0])
 Using Algebraic Notation
 ```go
 game := chess.NewGame()
-game.MoveAlg("e4")
+game.MoveStr("e4")
 ```
 
 Using PGN

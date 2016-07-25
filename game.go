@@ -61,7 +61,7 @@ const (
 	InsufficientMaterial
 )
 
-// TagPair represents metadata in a key value pairing used in PGN notation.
+// TagPair represents metadata in a key value pairing used in the PGN format.
 type TagPair struct {
 	Key   string
 	Value string
@@ -69,6 +69,7 @@ type TagPair struct {
 
 // A Game represents a single chess game.
 type Game struct {
+	notation             Notation
 	tagPairs             []*TagPair
 	moves                []*Move
 	positions            []*Position
@@ -129,6 +130,7 @@ func TagPairs(tagPairs []*TagPair) func(*Game) {
 func NewGame(options ...func(*Game)) *Game {
 	pos, _ := decodeFEN(startFEN)
 	game := &Game{
+		notation:  AlgebraicNotation{},
 		moves:     []*Move{},
 		pos:       pos,
 		positions: []*Position{pos},
@@ -144,6 +146,10 @@ func NewGame(options ...func(*Game)) *Game {
 // Move updates the game with the given move.  An error is returned
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(m *Move) error {
+	// TODO there is a bug here.  The move pointer shouldn't
+	// be used directly.  It could be later set to nil or
+	// it might have incomplete tag information from
+	// encodings.
 	if !moveSlice(g.ValidMoves()).contains(m) {
 		return fmt.Errorf("chess: invalid move %s", m)
 	}
@@ -154,11 +160,11 @@ func (g *Game) Move(m *Move) error {
 	return nil
 }
 
-// MoveAlg decodes the given string in algebraic notation
+// MoveStr decodes the given string in game's notation
 // and calls the Move function.  An error is returned if
 // the move can't be decoded or the move is invalid.
-func (g *Game) MoveAlg(alg string) error {
-	m, err := AlgebraicNotation{}.Decode(g.pos, alg)
+func (g *Game) MoveStr(s string) error {
+	m, err := g.notation.Decode(g.pos, s)
 	if err != nil {
 		return err
 	}

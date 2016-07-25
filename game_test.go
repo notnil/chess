@@ -13,7 +13,7 @@ func TestCheckmate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveAlg("Qxf7#"); err != nil {
+	if err := g.MoveStr("Qxf7#"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Checkmate {
@@ -31,7 +31,7 @@ func TestStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveAlg("Qb6"); err != nil {
+	if err := g.MoveStr("Qb6"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Stalemate {
@@ -50,7 +50,7 @@ func TestInvalidStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveAlg("d8=Q"); err != nil {
+	if err := g.MoveStr("d8=Q"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Outcome() != NoOutcome {
@@ -65,7 +65,7 @@ func TestThreeFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveAlg(m); err != nil {
+		if err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -83,7 +83,7 @@ func TestInvalidThreeFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveAlg(m); err != nil {
+		if err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -101,7 +101,7 @@ func TestFiveFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveAlg(m); err != nil {
+		if err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -129,7 +129,7 @@ func TestInvalidFiftyMoveRule(t *testing.T) {
 func TestSeventyFiveMoveRule(t *testing.T) {
 	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23")
 	g := NewGame(fen)
-	if err := g.MoveAlg("Kf8"); err != nil {
+	if err := g.MoveStr("Kf8"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Outcome() != Draw || g.Method() != SeventyFiveMoveRule {
