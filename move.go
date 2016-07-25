@@ -62,11 +62,11 @@ func (m *Move) addTag(tag MoveTag) {
 
 type moveSlice []*Move
 
-func (a moveSlice) contains(m *Move) bool {
+func (a moveSlice) find(m *Move) *Move {
 	for _, move := range a {
 		if move.String() == m.String() {
-			return true
+			return move
 		}
 	}
-	return false
+	return nil
 }

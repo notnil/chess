@@ -146,15 +146,12 @@ func NewGame(options ...func(*Game)) *Game {
 // Move updates the game with the given move.  An error is returned
 // if the move is invalid or the game has already been completed.
 func (g *Game) Move(m *Move) error {
-	// TODO there is a bug here.  The move pointer shouldn't
-	// be used directly.  It could be later set to nil or
-	// it might have incomplete tag information from
-	// encodings.
-	if !moveSlice(g.ValidMoves()).contains(m) {
+	valid := moveSlice(g.ValidMoves()).find(m)
+	if valid == nil {
 		return fmt.Errorf("chess: invalid move %s", m)
 	}
-	g.moves = append(g.moves, m)
-	g.pos = g.pos.Update(m)
+	g.moves = append(g.moves, valid)
+	g.pos = g.pos.Update(valid)
 	g.positions = append(g.positions, g.pos)
 	g.updatePosition()
 	return nil
