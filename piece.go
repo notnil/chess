@@ -35,6 +35,17 @@ func (c Color) String() string {
 	return "-"
 }
 
+// Name returns a display friendly name.
+func (c Color) Name() string {
+	switch c {
+	case White:
+		return "White"
+	case Black:
+		return "Black"
+	}
+	return "No Color"
+}
+
 // PieceType is the type of a piece.
 type PieceType int8
 

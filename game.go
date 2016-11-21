@@ -291,6 +291,46 @@ func (g *Game) EligibleDraws() []Method {
 	return draws
 }
 
+// AddTagPair adds or updates a tag pair with the given key and
+// value and returns true if the value is overwritten.
+func (g *Game) AddTagPair(k, v string) bool {
+	for i, tag := range g.tagPairs {
+		if tag.Key == k {
+			g.tagPairs[i].Value = v
+			return true
+		}
+	}
+	g.tagPairs = append(g.tagPairs, &TagPair{Key: k, Value: v})
+	return false
+}
+
+// GetTagPair returns the tag pair for the given key or nil
+// if it is not present.
+func (g *Game) GetTagPair(k string) *TagPair {
+	for _, tag := range g.tagPairs {
+		if tag.Key == k {
+			return tag
+		}
+	}
+	return nil
+}
+
+// RemoveTagPair removes the tag pair for the given key and
+// returns true if a tag pair was removed.
+func (g *Game) RemoveTagPair(k string) bool {
+	cp := []*TagPair{}
+	found := false
+	for _, tag := range g.tagPairs {
+		if tag.Key == k {
+			found = true
+		} else {
+			cp = append(cp, tag)
+		}
+	}
+	g.tagPairs = cp
+	return found
+}
+
 func (g *Game) updatePosition() {
 	method := g.pos.Status()
 	if method == Stalemate {
