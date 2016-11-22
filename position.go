@@ -203,12 +203,12 @@ func (pos *Position) updateEnPassantSquare(m *Move) Square {
 		return NoSquare
 	}
 	if pos.turn == White &&
-		(bbSquares[m.s1]&bbRank2) != 0 &&
-		(bbSquares[m.s2]&bbRank4) != 0 {
+		(bbForSquare(m.s1)&bbRank2) != 0 &&
+		(bbForSquare(m.s2)&bbRank4) != 0 {
 		return Square(m.s2 - 8)
 	} else if pos.turn == Black &&
-		(bbSquares[m.s1]&bbRank7) != 0 &&
-		(bbSquares[m.s2]&bbRank5) != 0 {
+		(bbForSquare(m.s1)&bbRank7) != 0 &&
+		(bbForSquare(m.s2)&bbRank5) != 0 {
 		return Square(m.s2 + 8)
 	}
 	return NoSquare

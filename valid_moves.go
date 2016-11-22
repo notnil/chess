@@ -87,7 +87,7 @@ func (pos *Position) inCheck() bool {
 		return false
 	}
 	// if no piece is on a attacking square, there can't be a check
-	kingBB := bbSquares[kingSq]
+	kingBB := bbForSquare(kingSq)
 	s2BB := pos.board.blackSqs
 	if pos.Turn() == Black {
 		s2BB = pos.board.whiteSqs
@@ -117,7 +117,7 @@ func (pos *Position) squaresAreAttacked(sqs ...Square) bool {
 	// make s2bb for attacked squares
 	var s2BB bitboard
 	for _, sq := range sqs {
-		s2BB = s2BB | bbSquares[sq]
+		s2BB = s2BB | bbForSquare(sq)
 	}
 	// toggle turn to get other colors moves
 	cp := pos.copy()
@@ -133,7 +133,7 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	queenSide := pos.castleRights.CanCastle(pos.Turn(), QueenSide)
 	// white king side
 	if pos.turn == White && kingSide &&
-		(^pos.board.emptySqs&(bbSquares[F1]|bbSquares[G1])) == 0 &&
+		(^pos.board.emptySqs&(bbForSquare(F1)|bbForSquare(G1))) == 0 &&
 		!pos.squaresAreAttacked(F1, G1) &&
 		!pos.inCheck() {
 		m := &Move{s1: E1, s2: G1}
@@ -142,7 +142,7 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	}
 	// white queen side
 	if pos.turn == White && queenSide &&
-		(^pos.board.emptySqs&(bbSquares[B1]|bbSquares[C1]|bbSquares[D1])) == 0 &&
+		(^pos.board.emptySqs&(bbForSquare(B1)|bbForSquare(C1)|bbForSquare(D1))) == 0 &&
 		!pos.squaresAreAttacked(C1, D1) &&
 		!pos.inCheck() {
 		m := &Move{s1: E1, s2: C1}
@@ -151,7 +151,7 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	}
 	// black king side
 	if pos.turn == Black && kingSide &&
-		(^pos.board.emptySqs&(bbSquares[F8]|bbSquares[G8])) == 0 &&
+		(^pos.board.emptySqs&(bbForSquare(F8)|bbForSquare(G8))) == 0 &&
 		!pos.squaresAreAttacked(F8, G8) &&
 		!pos.inCheck() {
 		m := &Move{s1: E8, s2: G8}
@@ -160,7 +160,7 @@ func castleMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	}
 	// black queen side
 	if pos.turn == Black && queenSide &&
-		(^pos.board.emptySqs&(bbSquares[B8]|bbSquares[C8]|bbSquares[D8])) == 0 &&
+		(^pos.board.emptySqs&(bbForSquare(B8)|bbForSquare(C8)|bbForSquare(D8))) == 0 &&
 		!pos.squaresAreAttacked(C8, D8) &&
 		!pos.inCheck() {
 		m := &Move{s1: E8, s2: C8}
@@ -174,7 +174,7 @@ func pawnMoves(pos *Position, s2BB bitboard, st searchType) []*Move {
 	var bbs []*validMoveBB
 	var bbEnPassant bitboard
 	if pos.enPassantSquare != NoSquare {
-		bbEnPassant = bbSquares[pos.enPassantSquare]
+		bbEnPassant = bbForSquare(pos.enPassantSquare)
 	}
 	p := NoPiece
 	if pos.Turn() == White {
@@ -338,14 +338,14 @@ func (pos *Position) slidingMoves(pt PieceType, s2BB bitboard, st searchType, f 
 }
 
 func diaAttack(occupied bitboard, sq Square) bitboard {
-	pos := bbSquares[sq]
-	dMask := bbDiagonal[sq]
-	adMask := bbAntiDiagonal[sq]
+	pos := bbForSquare(sq)
+	dMask := bbDiagonals[sq]
+	adMask := bbAntiDiagonals[sq]
 	return linearAttack(occupied, pos, dMask) | linearAttack(occupied, pos, adMask)
 }
 
 func hvAttack(occupied bitboard, sq Square) bitboard {
-	pos := bbSquares[sq]
+	pos := bbForSquare(sq)
 	rankMask := bbRanks[Square(sq).Rank()]
 	fileMask := bbFiles[Square(sq).File()]
 	return linearAttack(occupied, pos, rankMask) | linearAttack(occupied, pos, fileMask)

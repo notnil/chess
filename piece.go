@@ -75,6 +75,7 @@ func (p PieceType) String() string {
 	}
 	return ""
 }
+
 func (p PieceType) promotableTo() bool {
 	switch p {
 	case Queen, Rook, Bishop, Knight:
