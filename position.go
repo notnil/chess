@@ -84,19 +84,15 @@ func (pos *Position) ValidMoves() []*Move {
 	if pos.validMoves != nil {
 		return append([]*Move(nil), pos.validMoves...)
 	}
-	s2BB := ^pos.board.whiteSqs
-	if pos.Turn() == Black {
-		s2BB = ^pos.board.blackSqs
-	}
-	pos.validMoves = pos.getValidMoves(s2BB, getAll, false)
+	pos.validMoves = defaultEngine{}.CalcMoves(pos)
 	return append([]*Move(nil), pos.validMoves...)
 }
 
 // Status returns the position's status as one of the outcome methods.
 // Possible returns values include Checkmate, Stalemate, and NoMethod.
 func (pos *Position) Status() Method {
-	inCheck := pos.inCheck()
 	hasMove := len(pos.ValidMoves()) > 0 // TODO use has valid move
+	inCheck := pos.isInCheck()
 	if !inCheck && !hasMove {
 		return Stalemate
 	} else if inCheck && !hasMove {
@@ -166,14 +162,35 @@ func (pos *Position) copy() *Position {
 	}
 }
 
-// TODO isn't working correctly, use in status method
-func (pos *Position) hasValidMove() bool {
-	s2BB := ^pos.board.whiteSqs
+func (pos *Position) isInCheck() bool {
+	kingSq := pos.board.whiteKingSq
 	if pos.Turn() == Black {
-		s2BB = ^pos.board.blackSqs
+		kingSq = pos.board.blackKingSq
 	}
-	moves := pos.getValidMoves(s2BB, getFirst, false)
-	return len(moves) > 0
+	return squaresAreAttacked(pos, kingSq)
+	// king should only be missing in tests / examples
+	if kingSq == NoSquare {
+		return false
+	}
+	// hot path optimization to eleminate if every piece is attacking the king
+	// if no piece is on a attacking square, there can't be a check
+	// TODO piece specific checks (queen vector for queen, bishop vector for bishop, etc)
+	s2BB := pos.board.blackSqs
+	if pos.Turn() == Black {
+		s2BB = pos.board.whiteSqs
+	}
+	occ := ^pos.board.emptySqs
+	// check queen attack vector
+	bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
+	if bb != 0 {
+		return squaresAreAttacked(pos, kingSq)
+	}
+	// check knight attack vector
+	bb = bbKnightMoves[kingSq] & s2BB
+	if bb != 0 {
+		return squaresAreAttacked(pos, kingSq)
+	}
+	return false
 }
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {
