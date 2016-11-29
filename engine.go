@@ -8,7 +8,9 @@ type Engine interface {
 type defaultEngine struct{}
 
 func (defaultEngine) CalcMoves(pos *Position) []*Move {
-	moves := standardMoves(pos, false)
+	// generate possible moves
+	moves := standardMoves(pos, false, nil)
+	// filter out moves that put king into check
 	validMoves := []*Move{}
 	for _, m := range moves {
 		addTags(m, pos)
@@ -16,6 +18,7 @@ func (defaultEngine) CalcMoves(pos *Position) []*Move {
 			validMoves = append(validMoves, m)
 		}
 	}
+	// return moves including castles
 	return append(validMoves, castleMoves(pos)...)
 }
 
@@ -27,13 +30,13 @@ var (
 	promoPieceTypes = []PieceType{Queen, Rook, Bishop, Knight}
 )
 
-func standardMoves(pos *Position, returnFirst bool) []*Move {
-	moves := []*Move{}
+func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
 	// compute allowed destination bitboard
 	bbAllowed := ^pos.board.whiteSqs
 	if pos.Turn() == Black {
 		bbAllowed = ^pos.board.blackSqs
 	}
+	moves := []*Move{}
 	// iterate through pieces to find possible moves
 	for _, p := range allPieces {
 		if pos.Turn() != p.Color() {
@@ -47,15 +50,21 @@ func standardMoves(pos *Position, returnFirst bool) []*Move {
 				// add promotions if pawn on promo square
 				if (p == WhitePawn && s2.Rank() == Rank8) || (p == BlackPawn && s2.Rank() == Rank1) {
 					for _, pt := range promoPieceTypes {
-						moves = append(moves, &Move{s1: s1, s2: s2, promo: pt})
-						if returnFirst {
-							return moves
+						m := &Move{s1: s1, s2: s2, promo: pt}
+						if filter == nil || (filter != nil && filter(m)) {
+							moves = append(moves, m)
+							if first {
+								return moves
+							}
 						}
 					}
 				} else {
-					moves = append(moves, &Move{s1: s1, s2: s2})
-					if returnFirst {
-						return moves
+					m := &Move{s1: s1, s2: s2}
+					if filter == nil || (filter != nil && filter(m)) {
+						moves = append(moves, m)
+						if first {
+							return moves
+						}
 					}
 				}
 			}
@@ -94,7 +103,16 @@ func squaresAreAttacked(pos *Position, sqs ...Square) bool {
 	cp := pos.copy()
 	cp.turn = cp.turn.Other()
 	cp.enPassantSquare = NoSquare
-	moves := standardMoves(pos, true)
+	// filter that only returns moves ending on sqs
+	filter := func(m *Move) bool {
+		for _, sq := range sqs {
+			if sq == m.s2 {
+				return true
+			}
+		}
+		return false
+	}
+	moves := standardMoves(cp, true, filter)
 	return len(moves) > 0
 }
 
@@ -161,26 +179,23 @@ func castleMoves(pos *Position) []*Move {
 }
 
 func pawnMoves(pos *Position, sq Square) bitboard {
+	bb := bbForSquare(sq)
 	var bbEnPassant bitboard
 	if pos.enPassantSquare != NoSquare {
 		bbEnPassant = bbForSquare(pos.enPassantSquare)
 	}
 	if pos.Turn() == White {
-		s2BB := ^pos.board.whiteSqs
-		bbWhite := pos.board.bbWhitePawn
-		bbWhiteCapRight := ((bbWhite & ^bbFileH & ^bbRank8) >> 9) & ((pos.board.blackSqs & s2BB) | bbEnPassant)
-		bbWhiteCapLeft := ((bbWhite & ^bbFileA & ^bbRank8) >> 7) & ((pos.board.blackSqs & s2BB) | bbEnPassant)
-		bbWhiteUpOne := ((bbWhite & ^bbRank8) >> 8) & (pos.board.emptySqs & s2BB)
-		bbWhiteUpTwo := ((bbWhiteUpOne & bbRank3) >> 8) & (pos.board.emptySqs & s2BB)
-		return bbWhiteCapRight | bbWhiteCapLeft | bbWhiteUpOne | bbWhiteUpTwo
+		capRight := ((bb & ^bbFileH & ^bbRank8) >> 9) & (pos.board.blackSqs | bbEnPassant)
+		capLeft := ((bb & ^bbFileA & ^bbRank8) >> 7) & (pos.board.blackSqs | bbEnPassant)
+		upOne := ((bb & ^bbRank8) >> 8) & pos.board.emptySqs
+		upTwo := ((upOne & bbRank3) >> 8) & pos.board.emptySqs
+		return capRight | capLeft | upOne | upTwo
 	}
-	s2BB := ^pos.board.blackSqs
-	bbBlack := pos.board.bbBlackPawn
-	bbBlackCapRight := ((bbBlack & ^bbFileH & ^bbRank1) << 7) & ((pos.board.whiteSqs & s2BB) | bbEnPassant)
-	bbBlackCapLeft := ((bbBlack & ^bbFileA & ^bbRank1) << 9) & ((pos.board.whiteSqs & s2BB) | bbEnPassant)
-	bbBlackUpOne := ((bbBlack & ^bbRank1) << 8) & (pos.board.emptySqs & s2BB)
-	bbBlackUpTwo := ((bbBlackUpOne & bbRank6) << 8) & (pos.board.emptySqs & s2BB)
-	return bbBlackCapRight | bbBlackCapLeft | bbBlackUpOne | bbBlackUpTwo
+	capRight := ((bb & ^bbFileH & ^bbRank1) << 7) & (pos.board.whiteSqs | bbEnPassant)
+	capLeft := ((bb & ^bbFileA & ^bbRank1) << 9) & (pos.board.whiteSqs | bbEnPassant)
+	upOne := ((bb & ^bbRank1) << 8) & pos.board.emptySqs
+	upTwo := ((upOne & bbRank6) << 8) & pos.board.emptySqs
+	return capRight | capLeft | upOne | upTwo
 }
 
 func diaAttack(occupied bitboard, sq Square) bitboard {

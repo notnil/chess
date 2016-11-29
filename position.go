@@ -167,7 +167,6 @@ func (pos *Position) isInCheck() bool {
 	if pos.Turn() == Black {
 		kingSq = pos.board.blackKingSq
 	}
-	return squaresAreAttacked(pos, kingSq)
 	// king should only be missing in tests / examples
 	if kingSq == NoSquare {
 		return false
