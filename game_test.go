@@ -198,3 +198,35 @@ func TestInitialNumOfValidMoves(t *testing.T) {
 		t.Fatal("should find 20 valid moves from the initial position")
 	}
 }
+
+func BenchmarkStalemateStatus(b *testing.B) {
+	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w - - 0 1"
+	fen, err := FEN(fenStr)
+	if err != nil {
+		b.Fatal(err)
+	}
+	g := NewGame(fen)
+	if err := g.MoveStr("Qb6"); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		g.Position().Status()
+	}
+}
+
+func BenchmarkInvalidStalemateStatus(b *testing.B) {
+	fenStr := "8/3P4/8/8/8/7k/7p/7K w - - 2 70"
+	fen, err := FEN(fenStr)
+	if err != nil {
+		b.Fatal(err)
+	}
+	g := NewGame(fen)
+	if err := g.MoveStr("d8=Q"); err != nil {
+		b.Fatal(err)
+	}
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		g.Position().Status()
+	}
+}

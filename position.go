@@ -46,6 +46,7 @@ type Position struct {
 	enPassantSquare Square
 	halfMoveClock   int
 	moveCount       int
+	inCheck         bool
 	validMoves      []*Move
 }
 
@@ -76,6 +77,7 @@ func (pos *Position) Update(m *Move) *Position {
 		enPassantSquare: pos.updateEnPassantSquare(m),
 		halfMoveClock:   halfMove,
 		moveCount:       moveCount,
+		inCheck:         m.HasTag(Check),
 	}
 }
 
@@ -84,21 +86,14 @@ func (pos *Position) ValidMoves() []*Move {
 	if pos.validMoves != nil {
 		return append([]*Move(nil), pos.validMoves...)
 	}
-	pos.validMoves = defaultEngine{}.CalcMoves(pos)
+	pos.validMoves = engine{}.CalcMoves(pos, false)
 	return append([]*Move(nil), pos.validMoves...)
 }
 
 // Status returns the position's status as one of the outcome methods.
 // Possible returns values include Checkmate, Stalemate, and NoMethod.
 func (pos *Position) Status() Method {
-	hasMove := len(pos.ValidMoves()) > 0 // TODO use has valid move
-	inCheck := pos.isInCheck()
-	if !inCheck && !hasMove {
-		return Stalemate
-	} else if inCheck && !hasMove {
-		return Checkmate
-	}
-	return NoMethod
+	return engine{}.Status(pos)
 }
 
 // Board returns the position's board.
@@ -148,6 +143,7 @@ func (pos *Position) UnmarshalText(text []byte) error {
 	pos.enPassantSquare = cp.enPassantSquare
 	pos.halfMoveClock = cp.halfMoveClock
 	pos.moveCount = cp.moveCount
+	pos.inCheck = isInCheck(cp)
 	return nil
 }
 
@@ -159,19 +155,8 @@ func (pos *Position) copy() *Position {
 		enPassantSquare: pos.enPassantSquare,
 		halfMoveClock:   pos.halfMoveClock,
 		moveCount:       pos.moveCount,
+		inCheck:         pos.inCheck,
 	}
-}
-
-func (pos *Position) isInCheck() bool {
-	kingSq := pos.board.whiteKingSq
-	if pos.Turn() == Black {
-		kingSq = pos.board.blackKingSq
-	}
-	// king should only be missing in tests / examples
-	if kingSq == NoSquare {
-		return false
-	}
-	return squaresAreAttacked(pos, kingSq)
 }
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {

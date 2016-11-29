@@ -1,36 +1,34 @@
 package chess
 
-type Engine interface {
-	CalcMoves(*Position) []*Move
-	Outcome(*Position) Outcome
-}
+type engine struct{}
 
-type defaultEngine struct{}
-
-func (defaultEngine) CalcMoves(pos *Position) []*Move {
+func (engine) CalcMoves(pos *Position, first bool) []*Move {
 	// generate possible moves
-	moves := standardMoves(pos, false, nil)
-	// filter out moves that put king into check
-	validMoves := []*Move{}
-	for _, m := range moves {
-		addTags(m, pos)
-		if !m.HasTag(inCheck) {
-			validMoves = append(validMoves, m)
-		}
-	}
+	moves := standardMoves(pos, first)
 	// return moves including castles
-	return append(validMoves, castleMoves(pos)...)
+	return append(moves, castleMoves(pos)...)
 }
 
-func (defaultEngine) Outcome(*Position) Outcome {
-	return NoOutcome
+func (engine) Status(pos *Position) Method {
+	hasMove := false
+	if pos.validMoves != nil {
+		hasMove = len(pos.validMoves) > 0
+	} else {
+		hasMove = len(engine{}.CalcMoves(pos, true)) > 0
+	}
+	if !pos.inCheck && !hasMove {
+		return Stalemate
+	} else if pos.inCheck && !hasMove {
+		return Checkmate
+	}
+	return NoMethod
 }
 
 var (
 	promoPieceTypes = []PieceType{Queen, Rook, Bishop, Knight}
 )
 
-func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
+func standardMoves(pos *Position, first bool) []*Move {
 	// compute allowed destination bitboard
 	bbAllowed := ^pos.board.whiteSqs
 	if pos.Turn() == Black {
@@ -64,7 +62,9 @@ func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
 				if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
 					for _, pt := range promoPieceTypes {
 						m := &Move{s1: Square(s1), s2: Square(s2), promo: pt}
-						if filter == nil || (filter != nil && filter(m)) {
+						addTags(m, pos)
+						// filter out moves that put king into check
+						if !m.HasTag(inCheck) {
 							moves = append(moves, m)
 							if first {
 								return moves
@@ -73,7 +73,9 @@ func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
 					}
 				} else {
 					m := &Move{s1: Square(s1), s2: Square(s2)}
-					if filter == nil || (filter != nil && filter(m)) {
+					addTags(m, pos)
+					// filter out moves that put king into check
+					if !m.HasTag(inCheck) {
 						moves = append(moves, m)
 						if first {
 							return moves
@@ -96,14 +98,26 @@ func addTags(m *Move, pos *Position) {
 	// determine if in check after move (makes move invalid)
 	cp := pos.copy()
 	cp.board.update(m)
-	if cp.isInCheck() {
+	if isInCheck(cp) {
 		m.addTag(inCheck)
 	}
 	// determine if opponent in check after move
 	cp.turn = cp.turn.Other()
-	if cp.isInCheck() {
+	if isInCheck(cp) {
 		m.addTag(Check)
 	}
+}
+
+func isInCheck(pos *Position) bool {
+	kingSq := pos.board.whiteKingSq
+	if pos.Turn() == Black {
+		kingSq = pos.board.blackKingSq
+	}
+	// king should only be missing in tests / examples
+	if kingSq == NoSquare {
+		return false
+	}
+	return squaresAreAttacked(pos, kingSq)
 }
 
 func squaresAreAttacked(pos *Position, sqs ...Square) bool {
@@ -195,7 +209,7 @@ func castleMoves(pos *Position) []*Move {
 	if pos.turn == White && kingSide &&
 		(^pos.board.emptySqs&(bbForSquare(F1)|bbForSquare(G1))) == 0 &&
 		!squaresAreAttacked(pos, F1, G1) &&
-		!pos.isInCheck() {
+		!pos.inCheck {
 		m := &Move{s1: E1, s2: G1}
 		m.addTag(KingSideCastle)
 		moves = append(moves, m)
@@ -204,7 +218,7 @@ func castleMoves(pos *Position) []*Move {
 	if pos.turn == White && queenSide &&
 		(^pos.board.emptySqs&(bbForSquare(B1)|bbForSquare(C1)|bbForSquare(D1))) == 0 &&
 		!squaresAreAttacked(pos, C1, D1) &&
-		!pos.isInCheck() {
+		!pos.inCheck {
 		m := &Move{s1: E1, s2: C1}
 		m.addTag(QueenSideCastle)
 		moves = append(moves, m)
@@ -213,7 +227,7 @@ func castleMoves(pos *Position) []*Move {
 	if pos.turn == Black && kingSide &&
 		(^pos.board.emptySqs&(bbForSquare(F8)|bbForSquare(G8))) == 0 &&
 		!squaresAreAttacked(pos, F8, G8) &&
-		!pos.isInCheck() {
+		!pos.inCheck {
 		m := &Move{s1: E8, s2: G8}
 		m.addTag(KingSideCastle)
 		moves = append(moves, m)
@@ -222,7 +236,7 @@ func castleMoves(pos *Position) []*Move {
 	if pos.turn == Black && queenSide &&
 		(^pos.board.emptySqs&(bbForSquare(B8)|bbForSquare(C8)|bbForSquare(D8))) == 0 &&
 		!squaresAreAttacked(pos, C8, D8) &&
-		!pos.isInCheck() {
+		!pos.inCheck {
 		m := &Move{s1: E8, s2: C8}
 		m.addTag(QueenSideCastle)
 		moves = append(moves, m)
