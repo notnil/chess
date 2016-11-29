@@ -1,11 +1,11 @@
 package chess
 
 // A MoveTag represents a notable consequence of a move.
-type MoveTag int8
+type MoveTag uint16
 
 const (
 	// KingSideCastle indicates that the move is a king side castle.
-	KingSideCastle MoveTag = iota + 1
+	KingSideCastle MoveTag = 1 << iota
 	// QueenSideCastle indicates that the move is a queen side castle.
 	QueenSideCastle
 	// Capture indicates that the move captures a piece.
@@ -24,7 +24,7 @@ type Move struct {
 	s1    Square
 	s2    Square
 	promo PieceType
-	tags  map[MoveTag]bool
+	tags  MoveTag
 }
 
 // String returns a string useful for debugging.  String doesn't return
@@ -50,14 +50,11 @@ func (m *Move) Promo() PieceType {
 
 // HasTag returns true if the move contains the MoveTag given.
 func (m *Move) HasTag(tag MoveTag) bool {
-	return m.tags[tag]
+	return (tag & m.tags) > 0
 }
 
 func (m *Move) addTag(tag MoveTag) {
-	if m.tags == nil {
-		m.tags = map[MoveTag]bool{}
-	}
-	m.tags[tag] = true
+	m.tags = m.tags | tag
 }
 
 type moveSlice []*Move
