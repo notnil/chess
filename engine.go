@@ -44,31 +44,39 @@ func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
 		}
 		// iterate through possible starting squares for piece
 		s1BB := pos.board.bbForPiece(p)
+		if s1BB == 0 {
+			continue
+		}
 		for s1 := 0; s1 < numOfSquaresInBoard; s1++ {
-			if s1BB&bbForSquare(Square(s1)) > 0 {
-				// iterate through possible destination squares for piece
-				s2BB := bbForPossibleMoves(pos, p.Type(), Square(s1)) & bbAllowed
-				for s2 := 0; s2 < numOfSquaresInBoard; s2++ {
-					if s2BB&bbForSquare(Square(s2)) > 0 {
-						// add promotions if pawn on promo square
-						if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
-							for _, pt := range promoPieceTypes {
-								m := &Move{s1: Square(s1), s2: Square(s2), promo: pt}
-								if filter == nil || (filter != nil && filter(m)) {
-									moves = append(moves, m)
-									if first {
-										return moves
-									}
-								}
+			if s1BB&bbForSquare(Square(s1)) == 0 {
+				continue
+			}
+			// iterate through possible destination squares for piece
+			s2BB := bbForPossibleMoves(pos, p.Type(), Square(s1)) & bbAllowed
+			if s2BB == 0 {
+				continue
+			}
+			for s2 := 0; s2 < numOfSquaresInBoard; s2++ {
+				if s2BB&bbForSquare(Square(s2)) == 0 {
+					continue
+				}
+				// add promotions if pawn on promo square
+				if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
+					for _, pt := range promoPieceTypes {
+						m := &Move{s1: Square(s1), s2: Square(s2), promo: pt}
+						if filter == nil || (filter != nil && filter(m)) {
+							moves = append(moves, m)
+							if first {
+								return moves
 							}
-						} else {
-							m := &Move{s1: Square(s1), s2: Square(s2)}
-							if filter == nil || (filter != nil && filter(m)) {
-								moves = append(moves, m)
-								if first {
-									return moves
-								}
-							}
+						}
+					}
+				} else {
+					m := &Move{s1: Square(s1), s2: Square(s2)}
+					if filter == nil || (filter != nil && filter(m)) {
+						moves = append(moves, m)
+						if first {
+							return moves
 						}
 					}
 				}
