@@ -171,25 +171,7 @@ func (pos *Position) isInCheck() bool {
 	if kingSq == NoSquare {
 		return false
 	}
-	// hot path optimization to eleminate if every piece is attacking the king
-	// if no piece is on a attacking square, there can't be a check
-	// TODO piece specific checks (queen vector for queen, bishop vector for bishop, etc)
-	s2BB := pos.board.blackSqs
-	if pos.Turn() == Black {
-		s2BB = pos.board.whiteSqs
-	}
-	occ := ^pos.board.emptySqs
-	// check queen attack vector
-	bb := (diaAttack(occ, kingSq) | hvAttack(occ, kingSq)) & s2BB
-	if bb != 0 {
-		return squaresAreAttacked(pos, kingSq)
-	}
-	// check knight attack vector
-	bb = bbKnightMoves[kingSq] & s2BB
-	if bb != 0 {
-		return squaresAreAttacked(pos, kingSq)
-	}
-	return false
+	return squaresAreAttacked(pos, kingSq)
 }
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {

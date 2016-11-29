@@ -107,26 +107,57 @@ func addTags(m *Move, pos *Position) {
 }
 
 func squaresAreAttacked(pos *Position, sqs ...Square) bool {
-	// make s2bb for attacked squares
-	var s2BB bitboard
+	otherColor := pos.Turn().Other()
+	occ := ^pos.board.emptySqs
 	for _, sq := range sqs {
-		s2BB = s2BB | bbForSquare(sq)
-	}
-	// toggle turn to get other colors moves
-	cp := pos.copy()
-	cp.turn = cp.turn.Other()
-	cp.enPassantSquare = NoSquare
-	// filter that only returns moves ending on sqs
-	filter := func(m *Move) bool {
-		for _, sq := range sqs {
-			if sq == m.s2 {
+		// check queen attack vector
+		queenBB := pos.board.bbForPiece(getPiece(Queen, otherColor))
+		bb := (diaAttack(occ, sq) | hvAttack(occ, sq)) & queenBB
+		if bb != 0 {
+			return true
+		}
+		// check rook attack vector
+		rookBB := pos.board.bbForPiece(getPiece(Rook, otherColor))
+		bb = hvAttack(occ, sq) & rookBB
+		if bb != 0 {
+			return true
+		}
+		// check bishop attack vector
+		bishopBB := pos.board.bbForPiece(getPiece(Bishop, otherColor))
+		bb = diaAttack(occ, sq) & bishopBB
+		if bb != 0 {
+			return true
+		}
+		// check knight attack vector
+		knightBB := pos.board.bbForPiece(getPiece(Knight, otherColor))
+		bb = bbKnightMoves[sq] & knightBB
+		if bb != 0 {
+			return true
+		}
+		// check pawn attack vector
+		if pos.Turn() == White {
+			capRight := (pos.board.bbBlackPawn & ^bbFileH & ^bbRank1) << 7
+			capLeft := (pos.board.bbBlackPawn & ^bbFileA & ^bbRank1) << 9
+			bb = (capRight | capLeft) & bbForSquare(sq)
+			if bb != 0 {
+				return true
+			}
+		} else {
+			capRight := (pos.board.bbWhitePawn & ^bbFileH & ^bbRank8) >> 9
+			capLeft := (pos.board.bbWhitePawn & ^bbFileA & ^bbRank8) >> 7
+			bb = (capRight | capLeft) & bbForSquare(sq)
+			if bb != 0 {
 				return true
 			}
 		}
-		return false
+		// check king attack vector
+		kingBB := pos.board.bbForPiece(getPiece(King, otherColor))
+		bb = bbKingMoves[sq] & kingBB
+		if bb != 0 {
+			return true
+		}
 	}
-	moves := standardMoves(cp, true, filter)
-	return len(moves) > 0
+	return false
 }
 
 func bbForPossibleMoves(pos *Position, pt PieceType, sq Square) bitboard {
