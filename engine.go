@@ -110,6 +110,14 @@ func squaresAreAttacked(pos *Position, sqs ...Square) bool {
 	otherColor := pos.Turn().Other()
 	occ := ^pos.board.emptySqs
 	for _, sq := range sqs {
+		// hot path check to see if attack vector is possible
+		s2BB := pos.board.blackSqs
+		if pos.Turn() == Black {
+			s2BB = pos.board.whiteSqs
+		}
+		if ((diaAttack(occ, sq)|hvAttack(occ, sq))&s2BB)|(bbKnightMoves[sq]&s2BB) == 0 {
+			continue
+		}
 		// check queen attack vector
 		queenBB := pos.board.bbForPiece(getPiece(Queen, otherColor))
 		bb := (diaAttack(occ, sq) | hvAttack(occ, sq)) & queenBB
