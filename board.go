@@ -95,7 +95,7 @@ func newBoard(m map[Square]Piece) *Board {
 		bb := newBitboard(bm)
 		b.setBBForPiece(p1, bb)
 	}
-	b.calcConvienceBBs()
+	b.calcConvienceBBs(nil)
 	return b
 }
 
@@ -143,26 +143,32 @@ func (b *Board) update(m *Move) {
 	} else if p1.Color() == Black && m.HasTag(QueenSideCastle) {
 		b.bbBlackRook = (b.bbBlackRook & ^bbForSquare(A8)) | bbForSquare(D8)
 	}
-	b.calcConvienceBBs()
+	b.calcConvienceBBs(m)
 }
 
-func (b *Board) calcConvienceBBs() {
+func (b *Board) calcConvienceBBs(m *Move) {
 	whiteSqs := b.bbWhiteKing | b.bbWhiteQueen | b.bbWhiteRook | b.bbWhiteBishop | b.bbWhiteKnight | b.bbWhitePawn
 	blackSqs := b.bbBlackKing | b.bbBlackQueen | b.bbBlackRook | b.bbBlackBishop | b.bbBlackKnight | b.bbBlackPawn
 	emptySqs := ^(whiteSqs | blackSqs)
 	b.whiteSqs = whiteSqs
 	b.blackSqs = blackSqs
 	b.emptySqs = emptySqs
-	b.whiteKingSq = NoSquare
-	b.blackKingSq = NoSquare
+	if m == nil {
+		b.whiteKingSq = NoSquare
+		b.blackKingSq = NoSquare
 
-	for sq := 0; sq < numOfSquaresInBoard; sq++ {
-		sqr := Square(sq)
-		if b.bbWhiteKing.Occupied(sqr) {
-			b.whiteKingSq = sqr
-		} else if b.bbBlackKing.Occupied(sqr) {
-			b.blackKingSq = sqr
+		for sq := 0; sq < numOfSquaresInBoard; sq++ {
+			sqr := Square(sq)
+			if b.bbWhiteKing.Occupied(sqr) {
+				b.whiteKingSq = sqr
+			} else if b.bbBlackKing.Occupied(sqr) {
+				b.blackKingSq = sqr
+			}
 		}
+	} else if m.s1 == b.whiteKingSq {
+		b.whiteKingSq = m.s2
+	} else if m.s1 == b.blackKingSq {
+		b.blackKingSq = m.s2
 	}
 }
 
