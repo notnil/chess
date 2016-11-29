@@ -197,21 +197,21 @@ func charFromPieceType(p PieceType) string {
 	return ""
 }
 
-func moveFuncForPieceType(p PieceType) moveFunc {
-	switch p {
-	case King:
-		return kingMoves
-	case Queen:
-		return queenMoves
-	case Rook:
-		return rookMoves
-	case Bishop:
-		return bishopMoves
-	case Knight:
-		return knightMoves
-	}
-	return pawnMoves
-}
+// func moveFuncForPieceType(p PieceType) moveFunc {
+// 	switch p {
+// 	case King:
+// 		return kingMoves
+// 	case Queen:
+// 		return queenMoves
+// 	case Rook:
+// 		return rookMoves
+// 	case Bishop:
+// 		return bishopMoves
+// 	case Knight:
+// 		return knightMoves
+// 	}
+// 	return pawnMoves
+// }
 
 func pieceTypeFromChar(c string) PieceType {
 	switch c {

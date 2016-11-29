@@ -26,10 +26,9 @@ func newBitboard(m map[Square]bool) bitboard {
 }
 
 func (b bitboard) Mapping() map[Square]bool {
-	s := b.String()
 	m := map[Square]bool{}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
-		if s[sq:sq+1] == "1" {
+		if b&bbForSquare(Square(sq)) > 0 {
 			m[Square(sq)] = true
 		}
 	}

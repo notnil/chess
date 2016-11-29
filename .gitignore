@@ -22,3 +22,9 @@ _testmain.go
 *.exe
 *.test
 *.prof
+
+# VS Code
+.vscode
+
+# Benchmarking
+cpu.out

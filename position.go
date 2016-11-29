@@ -46,6 +46,7 @@ type Position struct {
 	enPassantSquare Square
 	halfMoveClock   int
 	moveCount       int
+	inCheck         bool
 	validMoves      []*Move
 }
 
@@ -76,6 +77,7 @@ func (pos *Position) Update(m *Move) *Position {
 		enPassantSquare: pos.updateEnPassantSquare(m),
 		halfMoveClock:   halfMove,
 		moveCount:       moveCount,
+		inCheck:         m.HasTag(Check),
 	}
 }
 
@@ -84,25 +86,14 @@ func (pos *Position) ValidMoves() []*Move {
 	if pos.validMoves != nil {
 		return append([]*Move(nil), pos.validMoves...)
 	}
-	s2BB := ^pos.board.whiteSqs
-	if pos.Turn() == Black {
-		s2BB = ^pos.board.blackSqs
-	}
-	pos.validMoves = pos.getValidMoves(s2BB, getAll, false)
+	pos.validMoves = engine{}.CalcMoves(pos, false)
 	return append([]*Move(nil), pos.validMoves...)
 }
 
 // Status returns the position's status as one of the outcome methods.
 // Possible returns values include Checkmate, Stalemate, and NoMethod.
 func (pos *Position) Status() Method {
-	inCheck := pos.inCheck()
-	hasMove := len(pos.ValidMoves()) > 0 // TODO use has valid move
-	if !inCheck && !hasMove {
-		return Stalemate
-	} else if inCheck && !hasMove {
-		return Checkmate
-	}
-	return NoMethod
+	return engine{}.Status(pos)
 }
 
 // Board returns the position's board.
@@ -152,6 +143,7 @@ func (pos *Position) UnmarshalText(text []byte) error {
 	pos.enPassantSquare = cp.enPassantSquare
 	pos.halfMoveClock = cp.halfMoveClock
 	pos.moveCount = cp.moveCount
+	pos.inCheck = isInCheck(cp)
 	return nil
 }
 
@@ -163,17 +155,8 @@ func (pos *Position) copy() *Position {
 		enPassantSquare: pos.enPassantSquare,
 		halfMoveClock:   pos.halfMoveClock,
 		moveCount:       pos.moveCount,
+		inCheck:         pos.inCheck,
 	}
-}
-
-// TODO isn't working correctly, use in status method
-func (pos *Position) hasValidMove() bool {
-	s2BB := ^pos.board.whiteSqs
-	if pos.Turn() == Black {
-		s2BB = ^pos.board.blackSqs
-	}
-	moves := pos.getValidMoves(s2BB, getFirst, false)
-	return len(moves) > 0
 }
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {
@@ -203,12 +186,12 @@ func (pos *Position) updateEnPassantSquare(m *Move) Square {
 		return NoSquare
 	}
 	if pos.turn == White &&
-		(bbSquares[m.s1]&bbRank2) != 0 &&
-		(bbSquares[m.s2]&bbRank4) != 0 {
+		(bbForSquare(m.s1)&bbRank2) != 0 &&
+		(bbForSquare(m.s2)&bbRank4) != 0 {
 		return Square(m.s2 - 8)
 	} else if pos.turn == Black &&
-		(bbSquares[m.s1]&bbRank7) != 0 &&
-		(bbSquares[m.s2]&bbRank5) != 0 {
+		(bbForSquare(m.s1)&bbRank7) != 0 &&
+		(bbForSquare(m.s2)&bbRank5) != 0 {
 		return Square(m.s2 + 8)
 	}
 	return NoSquare
