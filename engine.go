@@ -43,27 +43,32 @@ func standardMoves(pos *Position, first bool, filter func(*Move) bool) []*Move {
 			continue
 		}
 		// iterate through possible starting squares for piece
-		for s1 := range pos.board.bbForPiece(p).Mapping() {
-			s2BB := bbForPossibleMoves(pos, p.Type(), s1) & bbAllowed
-			// add moves for possible destination squares for piece
-			for s2 := range s2BB.Mapping() {
-				// add promotions if pawn on promo square
-				if (p == WhitePawn && s2.Rank() == Rank8) || (p == BlackPawn && s2.Rank() == Rank1) {
-					for _, pt := range promoPieceTypes {
-						m := &Move{s1: s1, s2: s2, promo: pt}
-						if filter == nil || (filter != nil && filter(m)) {
-							moves = append(moves, m)
-							if first {
-								return moves
+		s1BB := pos.board.bbForPiece(p)
+		for s1 := 0; s1 < numOfSquaresInBoard; s1++ {
+			if s1BB&bbForSquare(Square(s1)) > 0 {
+				// iterate through possible destination squares for piece
+				s2BB := bbForPossibleMoves(pos, p.Type(), Square(s1)) & bbAllowed
+				for s2 := 0; s2 < numOfSquaresInBoard; s2++ {
+					if s2BB&bbForSquare(Square(s2)) > 0 {
+						// add promotions if pawn on promo square
+						if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
+							for _, pt := range promoPieceTypes {
+								m := &Move{s1: Square(s1), s2: Square(s2), promo: pt}
+								if filter == nil || (filter != nil && filter(m)) {
+									moves = append(moves, m)
+									if first {
+										return moves
+									}
+								}
 							}
-						}
-					}
-				} else {
-					m := &Move{s1: s1, s2: s2}
-					if filter == nil || (filter != nil && filter(m)) {
-						moves = append(moves, m)
-						if first {
-							return moves
+						} else {
+							m := &Move{s1: Square(s1), s2: Square(s2)}
+							if filter == nil || (filter != nil && filter(m)) {
+								moves = append(moves, m)
+								if first {
+									return moves
+								}
+							}
 						}
 					}
 				}
