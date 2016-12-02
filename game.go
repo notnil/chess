@@ -149,7 +149,9 @@ func NewGame(options ...func(*Game)) *Game {
 		method:    NoMethod,
 	}
 	for _, f := range options {
-		f(game)
+		if f != nil {
+			f(game)
+		}
 	}
 	return game
 }
