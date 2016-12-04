@@ -124,6 +124,17 @@ func (pos *Position) String() string {
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, pos.halfMoveClock, pos.moveCount)
 }
 
+func (pos *Position) Hash() string {
+	b := pos.board.String()
+	t := pos.turn.String()
+	c := pos.castleRights.String()
+	sq := "-"
+	if pos.enPassantSquare != NoSquare {
+		sq = pos.enPassantSquare.String()
+	}
+	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq)
+}
+
 // MarshalText implements the encoding.TextMarshaler interface and
 // encodes the position's FEN.
 func (pos *Position) MarshalText() (text []byte, err error) {
