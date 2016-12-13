@@ -1,7 +1,9 @@
 package chess
 
 import (
+	"crypto/md5"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -61,7 +63,7 @@ func (pos *Position) Update(m *Move) *Position {
 	}
 	cr := pos.CastleRights()
 	ncr := pos.updateCastleRights(m)
-	p := pos.board.piece(m.s1)
+	p := pos.board.Piece(m.s1)
 	halfMove := pos.halfMoveClock
 	if p.Type() == Pawn || m.HasTag(Capture) || cr != ncr {
 		halfMove = 0
@@ -124,15 +126,18 @@ func (pos *Position) String() string {
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, pos.halfMoveClock, pos.moveCount)
 }
 
-func (pos *Position) Hash() string {
-	b := pos.board.String()
-	t := pos.turn.String()
-	c := pos.castleRights.String()
+// Hash returns a unique hash of the position
+func (pos *Position) Hash() [16]byte {
 	sq := "-"
 	if pos.enPassantSquare != NoSquare {
 		sq = pos.enPassantSquare.String()
 	}
-	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq)
+	s := pos.turn.String() + ":" + pos.castleRights.String() + ":" + sq
+	for _, p := range allPieces {
+		bb := pos.board.bbForPiece(p)
+		s += ":" + strconv.FormatUint(uint64(bb), 16)
+	}
+	return md5.Sum([]byte(s))
 }
 
 // MarshalText implements the encoding.TextMarshaler interface and
@@ -172,7 +177,7 @@ func (pos *Position) copy() *Position {
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {
 	cr := string(pos.castleRights)
-	p := pos.board.piece(m.s1)
+	p := pos.board.Piece(m.s1)
 	if p == WhiteKing || m.s1 == H1 {
 		cr = strings.Replace(cr, "K", "", -1)
 	}
@@ -192,7 +197,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 }
 
 func (pos *Position) updateEnPassantSquare(m *Move) Square {
-	p := pos.board.piece(m.s1)
+	p := pos.board.Piece(m.s1)
 	if p.Type() != Pawn {
 		return NoSquare
 	}

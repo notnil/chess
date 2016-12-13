@@ -89,7 +89,7 @@ func standardMoves(pos *Position, first bool) []*Move {
 }
 
 func addTags(m *Move, pos *Position) {
-	p := pos.board.piece(m.s1)
+	p := pos.board.Piece(m.s1)
 	if pos.board.isOccupied(m.s2) {
 		m.addTag(Capture)
 	} else if m.s2 == pos.enPassantSquare && p.Type() == Pawn {

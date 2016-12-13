@@ -66,7 +66,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		}
 	}
 	m := &Move{s1: s1, s2: s2, promo: promo}
-	p := pos.Board().piece(s1)
+	p := pos.Board().Piece(s1)
 	if p.Type() == King {
 		if (s1 == E1 && s2 == G1) || (s1 == E8 && s2 == G8) {
 			m.addTag(KingSideCastle)
@@ -78,7 +78,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		m.addTag(Capture)
 	}
 	c1 := p.Color()
-	c2 := pos.Board().piece(s2).Color()
+	c2 := pos.Board().Piece(s2).Color()
 	if c2 != NoColor && c1 != c2 {
 		m.addTag(Capture)
 	}
@@ -104,7 +104,7 @@ func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
 	} else if m.HasTag(QueenSideCastle) {
 		return "O-O-O" + checkChar
 	}
-	p := pos.Board().piece(m.S1())
+	p := pos.Board().Piece(m.S1())
 	pChar := charFromPieceType(p.Type())
 	s1Str := formS1(pos, m)
 	capChar := ""
@@ -152,12 +152,12 @@ func formS1(pos *Position, m *Move) string {
 	pMoves := []*Move{}
 	files := map[File]int{}
 	ranks := map[Rank]int{}
-	p := pos.board.piece(m.s1)
+	p := pos.board.Piece(m.s1)
 	if p.Type() == Pawn {
 		return ""
 	}
 	for _, mv := range moves {
-		if mv.s2 == m.s2 && p == pos.board.piece(mv.s1) {
+		if mv.s2 == m.s2 && p == pos.board.Piece(mv.s1) {
 			pMoves = append(pMoves, mv)
 			files[mv.s1.File()] = files[mv.s1.File()] + 1
 			ranks[mv.s1.Rank()] = ranks[mv.s1.Rank()] + 1
@@ -196,22 +196,6 @@ func charFromPieceType(p PieceType) string {
 	}
 	return ""
 }
-
-// func moveFuncForPieceType(p PieceType) moveFunc {
-// 	switch p {
-// 	case King:
-// 		return kingMoves
-// 	case Queen:
-// 		return queenMoves
-// 	case Rook:
-// 		return rookMoves
-// 	case Bishop:
-// 		return bishopMoves
-// 	case Knight:
-// 		return knightMoves
-// 	}
-// 	return pawnMoves
-// }
 
 func pieceTypeFromChar(c string) PieceType {
 	switch c {

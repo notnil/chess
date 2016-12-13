@@ -30,7 +30,7 @@ type Board struct {
 func (b *Board) SquareMap() map[Square]Piece {
 	m := map[Square]Piece{}
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
-		p := b.piece(Square(sq))
+		p := b.Piece(Square(sq))
 		if p != NoPiece {
 			m[Square(sq)] = p
 		}
@@ -44,7 +44,7 @@ func (b *Board) Draw() string {
 	for r := 7; r >= 0; r-- {
 		s += Rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
-			p := b.piece(getSquare(File(f), Rank(r)))
+			p := b.Piece(getSquare(File(f), Rank(r)))
 			if p == NoPiece {
 				s += "-"
 			} else {
@@ -64,7 +64,7 @@ func (b *Board) String() string {
 	for r := 7; r >= 0; r-- {
 		for f := 0; f < numOfSquaresInRow; f++ {
 			sq := getSquare(File(f), Rank(r))
-			p := b.piece(sq)
+			p := b.Piece(sq)
 			if p != NoPiece {
 				fen += p.getFENChar()
 			} else {
@@ -81,6 +81,17 @@ func (b *Board) String() string {
 		fen = strings.Replace(fen, repeatStr, countStr, -1)
 	}
 	return fen
+}
+
+// Piece returns the piece for the given square.
+func (b *Board) Piece(sq Square) Piece {
+	for _, p := range allPieces {
+		bb := b.bbForPiece(p)
+		if bb.Occupied(sq) {
+			return p
+		}
+	}
+	return NoPiece
 }
 
 func newBoard(m map[Square]Piece) *Board {
@@ -100,7 +111,7 @@ func newBoard(m map[Square]Piece) *Board {
 }
 
 func (b *Board) update(m *Move) {
-	p1 := b.piece(m.s1)
+	p1 := b.Piece(m.s1)
 	s1BB := bbForSquare(m.s1)
 	s2BB := bbForSquare(m.s2)
 
@@ -196,16 +207,6 @@ func (b *Board) copy() *Board {
 
 func (b *Board) isOccupied(sq Square) bool {
 	return !b.emptySqs.Occupied(sq)
-}
-
-func (b *Board) piece(sq Square) Piece {
-	for _, p := range allPieces {
-		bb := b.bbForPiece(p)
-		if bb.Occupied(sq) {
-			return p
-		}
-	}
-	return NoPiece
 }
 
 func (b *Board) hasSufficientMaterial() bool {
