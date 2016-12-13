@@ -216,6 +216,20 @@ func TestTagPairs(t *testing.T) {
 	}
 }
 
+func TestPositionHash(t *testing.T) {
+	g1 := NewGame()
+	for _, s := range []string{"Nc3", "e5", "Nf3"} {
+		g1.MoveStr(s)
+	}
+	g2 := NewGame()
+	for _, s := range []string{"Nf3", "e5", "Nc3"} {
+		g2.MoveStr(s)
+	}
+	if g1.Position().Hash() != g2.Position().Hash() {
+		t.Fatalf("expected position hashes to be equal but got %s and %s", g1.Position().Hash(), g2.Position().Hash())
+	}
+}
+
 func BenchmarkStalemateStatus(b *testing.B) {
 	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w - - 0 1"
 	fen, err := FEN(fenStr)
@@ -245,5 +259,18 @@ func BenchmarkInvalidStalemateStatus(b *testing.B) {
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
 		g.Position().Status()
+	}
+}
+
+func BenchmarkPositionHash(b *testing.B) {
+	fenStr := "8/3P4/8/8/8/7k/7p/7K w - - 2 70"
+	fen, err := FEN(fenStr)
+	if err != nil {
+		b.Fatal(err)
+	}
+	g := NewGame(fen)
+	b.ResetTimer()
+	for n := 0; n < b.N; n++ {
+		g.Position().Hash()
 	}
 }
