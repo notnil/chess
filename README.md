@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Chess is a go library which provides common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, and others.  It is well tested and optimized for performance.
+Chess is a go library which provides common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, and others.  It is well tested and optimized for performance and has no dependencies outside the standard library.   
 
 ## Installation
 
@@ -324,14 +324,21 @@ fmt.Println(game.Position().Board().Draw())
 // create file
 f, err := os.Create("example.svg")
 if err != nil {
-    // handle error
+	// handle error
 }
 defer f.Close()
 
-// write image of position and marked squares to file
+// create board position
 fenStr := "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
-mark := chessimg.MarkSquares(color.RGBA{255, 255, 0, 1}, chess.D2, chess.D4)
-if err := chessimg.New(f, mark).EncodeSVG(fenStr); err != nil {
+pos := &chess.Position{}
+if err := pos.UnmarshalText([]byte(fenStr)); err != nil {
+	// handle error
+}
+
+// write board SVG to file
+yellow := color.RGBA{255, 255, 0, 1}
+mark := chessimg.MarkSquares(yellow, chess.D2, chess.D4)
+if err := chessimg.SVG(f, pos.Board(), mark); err != nil {
 	// handle error
 }
 ```
