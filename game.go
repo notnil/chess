@@ -287,7 +287,7 @@ func (g *Game) EligibleDraws() []Method {
 	if g.numOfRepitions() >= 3 {
 		draws = append(draws, ThreefoldRepetition)
 	}
-	if g.pos.halfMoveClock < 50 {
+	if g.pos.halfMoveClock >= 50 {
 		draws = append(draws, FiftyMoveRule)
 	}
 	return draws
