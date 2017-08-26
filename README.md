@@ -338,9 +338,9 @@ if err := chessimg.New(f, mark).EncodeSVG(fenStr); err != nil {
 
 ![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.png)      
 
-### Full Example
+### Example Program
 
-Game in which valid moves are randomly selected until the game is over: 
+Valid moves are randomly selected until the game is over: 
 ```go
 package main
 
