@@ -51,10 +51,10 @@ const (
 	// by the game state being repeated five times.
 	FivefoldRepetition
 	// FiftyMoveRule indicates that the game was drawn by the half
-	// move clock being fifty or greater when a player requested a draw.
+	// move clock being one hundred or greater when a player requested a draw.
 	FiftyMoveRule
 	// SeventyFiveMoveRule indicates that the game was automatically drawn
-	// when the half move clock was seventy five or greater.
+	// when the half move clock was one hundred and fifty or greater.
 	SeventyFiveMoveRule
 	// InsufficientMaterial indicates that the game was automatically drawn
 	// because there was insufficient material for checkmate.
@@ -255,8 +255,8 @@ func (g *Game) Draw(method Method) error {
 			return errors.New("chess: draw by ThreefoldRepetition requires at least three repetitions of the current board state")
 		}
 	case FiftyMoveRule:
-		if g.pos.halfMoveClock < 50 {
-			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 50 or greater but is %d", g.pos.halfMoveClock)
+		if g.pos.halfMoveClock < 100 {
+			return fmt.Errorf("chess: draw by FiftyMoveRule requires the half move clock to be at 100 or greater but is %d", g.pos.halfMoveClock)
 		}
 	case DrawOffer:
 	default:
@@ -287,7 +287,7 @@ func (g *Game) EligibleDraws() []Method {
 	if g.numOfRepitions() >= 3 {
 		draws = append(draws, ThreefoldRepetition)
 	}
-	if g.pos.halfMoveClock >= 50 {
+	if g.pos.halfMoveClock >= 100 {
 		draws = append(draws, FiftyMoveRule)
 	}
 	return draws
@@ -356,7 +356,7 @@ func (g *Game) updatePosition() {
 	}
 
 	// 75 move rule creates automatic draw
-	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 75 && g.method != Checkmate {
+	if !g.ignoreAutomaticDraws && g.pos.halfMoveClock >= 150 && g.method != Checkmate {
 		g.outcome = Draw
 		g.method = SeventyFiveMoveRule
 	}
