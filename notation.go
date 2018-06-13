@@ -114,12 +114,8 @@ func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
 			capChar = m.s1.File().String() + "x"
 		}
 	}
-	epText := ""
-	if m.HasTag(EnPassant) {
-		epText = "e.p."
-	}
 	promoText := charForPromo(m.promo)
-	return pChar + s1Str + capChar + m.s2.String() + epText + promoText + checkChar
+	return pChar + s1Str + capChar + m.s2.String() + promoText + checkChar
 }
 
 // Decode implements the Decoder interface.
