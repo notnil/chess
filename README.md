@@ -353,6 +353,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 
 	"github.com/notnil/chess"
 )
