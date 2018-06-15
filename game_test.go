@@ -111,7 +111,7 @@ func TestFiveFoldRepition(t *testing.T) {
 }
 
 func TestFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 50 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 100 60")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err != nil {
 		t.Fatal(err)
@@ -119,7 +119,7 @@ func TestFiftyMoveRule(t *testing.T) {
 }
 
 func TestInvalidFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 49 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 99 60")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err == nil {
 		t.Fatal("should require fifty moves")
@@ -127,7 +127,7 @@ func TestInvalidFiftyMoveRule(t *testing.T) {
 }
 
 func TestSeventyFiveMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 149 80")
 	g := NewGame(fen)
 	if err := g.MoveStr("Kf8"); err != nil {
 		t.Fatal(err)
