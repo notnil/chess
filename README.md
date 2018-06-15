@@ -157,7 +157,7 @@ fmt.Println(game.Method()) // FivefoldRepetition
 [Fifty-move rule](https://en.wikipedia.org/wiki/Fifty-move_rule) allows either player to claim a draw if no capture has been made and no pawn has been moved in the last fifty moves.  
 
 ```go
-fen, _ := chess.FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 50 23")
+fen, _ := chess.FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 100 23")
 game := chess.NewGame(fen)
 game.Draw(chess.FiftyMoveRule)
 fmt.Println(game.Outcome()) // 1/2-1/2
@@ -169,7 +169,7 @@ fmt.Println(game.Method()) // FiftyMoveRule
 According to [FIDE Laws of Chess Rule 9.6b](http://www.fide.com/component/handbook/?id=171&view=article) if 75 consecutive moves have been made without movement of any pawn or any capture, the game is drawn unless the last move was checkmate.
 
 ```go
-fen, _ := chess.FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23")
+fen, _ := chess.FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 149 23")
 game := chess.NewGame(fen)
 game.MoveStr("Kf8")
 fmt.Println(game.Outcome()) // 1/2-1/2
