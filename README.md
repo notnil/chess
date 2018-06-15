@@ -292,7 +292,7 @@ game.MoveStr("e7e5")
 fmt.Println(game) // 1.e2e4 e7e5  *
 ```
 
-### Visiualization
+### Visualization
 
 Chess has multiple ways to visualize board positions for debugging and presentation.  
 
