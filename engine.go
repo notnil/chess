@@ -212,6 +212,7 @@ func castleMoves(pos *Position) []*Move {
 		!pos.inCheck {
 		m := &Move{s1: E1, s2: G1}
 		m.addTag(KingSideCastle)
+		addTags(m, pos)
 		moves = append(moves, m)
 	}
 	// white queen side
@@ -221,6 +222,7 @@ func castleMoves(pos *Position) []*Move {
 		!pos.inCheck {
 		m := &Move{s1: E1, s2: C1}
 		m.addTag(QueenSideCastle)
+		addTags(m, pos)
 		moves = append(moves, m)
 	}
 	// black king side
@@ -230,6 +232,7 @@ func castleMoves(pos *Position) []*Move {
 		!pos.inCheck {
 		m := &Move{s1: E8, s2: G8}
 		m.addTag(KingSideCastle)
+		addTags(m, pos)
 		moves = append(moves, m)
 	}
 	// black queen side
@@ -239,6 +242,7 @@ func castleMoves(pos *Position) []*Move {
 		!pos.inCheck {
 		m := &Move{s1: E8, s2: C8}
 		m.addTag(QueenSideCastle)
+		addTags(m, pos)
 		moves = append(moves, m)
 	}
 	return moves
