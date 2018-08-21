@@ -377,6 +377,18 @@ func (g *Game) copy(game *Game) {
 	g.method = game.method
 }
 
+func (g *Game) Clone() *Game {
+	return &Game{
+		tagPairs:  g.TagPairs(),
+		notation:  g.notation,
+		moves:     g.Moves(),
+		positions: g.Positions(),
+		pos:       g.pos,
+		outcome:   g.outcome,
+		method:    g.method,
+	}
+}
+
 func (g *Game) numOfRepitions() int {
 	count := 0
 	for _, pos := range g.Positions() {
