@@ -247,12 +247,12 @@ func TestPerfResults(t *testing.T) {
 	}
 }
 
-func countMoves(t *testing.T, originalPosition *Position, positions []*Position, nodesPerDepth []int, max_depth int) {
+func countMoves(t *testing.T, originalPosition *Position, positions []*Position, nodesPerDepth []int, maxDepth int) {
 	if len(nodesPerDepth) == 0 {
 		return
 	}
-	depth := max_depth - len(nodesPerDepth) + 1
-	exp_nodes := nodesPerDepth[0]
+	depth := maxDepth - len(nodesPerDepth) + 1
+	expNodes := nodesPerDepth[0]
 	newPositions := make([]*Position, 0)
 	for _, pos := range positions {
 		for _, move := range pos.ValidMoves() {
@@ -261,14 +261,14 @@ func countMoves(t *testing.T, originalPosition *Position, positions []*Position,
 			newPositions = append(newPositions, newPos)
 		}
 	}
-	got_nodes := len(newPositions)
-	if exp_nodes != got_nodes {
+	gotNodes := len(newPositions)
+	if expNodes != gotNodes {
 		t.Log(originalPosition.String())
 		t.Log(originalPosition.board.Draw())
-		t.Errorf("Depth: %d Expected: %d Got: %d", depth, exp_nodes, got_nodes)
+		t.Errorf("Depth: %d Expected: %d Got: %d", depth, expNodes, gotNodes)
 	}
 
-	countMoves(t, originalPosition, newPositions, nodesPerDepth[1:], max_depth)
+	countMoves(t, originalPosition, newPositions, nodesPerDepth[1:], maxDepth)
 }
 
 func BenchmarkValidMoves(b *testing.B) {
