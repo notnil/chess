@@ -243,9 +243,7 @@ var perfResults = []perfTest{
 }
 
 // func TestPerfResults(t *testing.T) {
-// 	//cache := make(map[[16]byte][]*Position, 0)
 // 	for _, perf := range perfResults {
-// 		//countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), cache)
 // 		countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), make(map[[16]byte][]*Position, 0))
 // 	}
 // }
