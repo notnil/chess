@@ -2,6 +2,7 @@ package chess
 
 import (
 	"log"
+	"sync"
 	"testing"
 )
 
@@ -212,12 +213,12 @@ type perfTest struct {
 /* https://www.chessprogramming.org/Perft_Results */
 var perfResults = []perfTest{
 	{pos: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"), nodesPerDepth: []int{
-		20, 400, 8902, 197281,
-		// 4865609, 119060324, 3195901860, 84998978956, 2439530234167, 69352859712417
+		20, 400, 8902, 197281, 4865609,
+		// 119060324, 3195901860, 84998978956, 2439530234167, 69352859712417
 	}},
 	{pos: unsafeFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"), nodesPerDepth: []int{
-		48, 2039, 97862,
-		// 4085603, 193690690
+		48, 2039, 97862, 4085603,
+		// 193690690
 	}},
 	{pos: unsafeFEN("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1"), nodesPerDepth: []int{
 		14, 191, 2812, 43238, 674624,
@@ -232,22 +233,43 @@ var perfResults = []perfTest{
 		// 15833292, 706045033
 	}},
 	{pos: unsafeFEN("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8"), nodesPerDepth: []int{
-		44, 1486, 62379,
-		// 2103487, 89941194
+		44, 1486, 62379, 2103487,
+		// 89941194
 	}},
 	{pos: unsafeFEN("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10"), nodesPerDepth: []int{
-		46, 2079, 89890,
-		// 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714
+		46, 2079, 89890, 3894594,
+		// 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714
 	}},
 }
 
+// func TestPerfResults(t *testing.T) {
+// 	//cache := make(map[[16]byte][]*Position, 0)
+// 	for _, perf := range perfResults {
+// 		//countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), cache)
+// 		countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), make(map[[16]byte][]*Position, 0))
+// 	}
+// }
+
+// func TestPerfResults(t *testing.T) {
+// 	cache := make(map[[16]byte][]*Position, 0)
+// 	for _, perf := range perfResults {
+// 		countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), cache)
+// 	}
+// }
+
 func TestPerfResults(t *testing.T) {
+	var wg sync.WaitGroup
 	for _, perf := range perfResults {
-		countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth))
+		wg.Add(1)
+		go func(perf perfTest) {
+			defer wg.Done()
+			countMoves(t, perf.pos, []*Position{perf.pos}, perf.nodesPerDepth, len(perf.nodesPerDepth), make(map[[16]byte][]*Position, 0))
+		}(perf)
 	}
+	wg.Wait()
 }
 
-func countMoves(t *testing.T, originalPosition *Position, positions []*Position, nodesPerDepth []int, maxDepth int) {
+func countMoves(t *testing.T, originalPosition *Position, positions []*Position, nodesPerDepth []int, maxDepth int, cache map[[16]byte][]*Position) {
 	if len(nodesPerDepth) == 0 {
 		return
 	}
@@ -255,9 +277,19 @@ func countMoves(t *testing.T, originalPosition *Position, positions []*Position,
 	expNodes := nodesPerDepth[0]
 	newPositions := make([]*Position, 0)
 	for _, pos := range positions {
-		for _, move := range pos.ValidMoves() {
-			newPos := pos.Update(move)
-			newPositions = append(newPositions, newPos)
+		cachedPositions, ok := cache[pos.Hash()]
+		if ok {
+			for _, cachedPos := range cachedPositions {
+				newPositions = append(newPositions, cachedPos)
+			}
+		} else {
+			childPositions := make([]*Position, 0)
+			for _, move := range pos.ValidMoves() {
+				newPos := pos.Update(move)
+				newPositions = append(newPositions, newPos)
+				childPositions = append(childPositions, newPos)
+			}
+			cache[pos.Hash()] = childPositions
 		}
 	}
 	gotNodes := len(newPositions)
@@ -271,11 +303,11 @@ func countMoves(t *testing.T, originalPosition *Position, positions []*Position,
 		t.Log("##############################")
 		t.Log("# Details in JSONL (http://jsonlines.org)")
 		t.Log("###")
-		for _, pos := range positions {
-			t.Logf(`{"position": "%s", "moves": %d}`, pos.String(), len(pos.ValidMoves()))
-		}
+		// for _, pos := range positions {
+		// 	t.Logf(`{"position": "%s", "moves": %d}`, pos.String(), len(pos.ValidMoves()))
+		// }
 	}
-	countMoves(t, originalPosition, newPositions, nodesPerDepth[1:], maxDepth)
+	countMoves(t, originalPosition, newPositions, nodesPerDepth[1:], maxDepth, cache)
 }
 
 func BenchmarkValidMoves(b *testing.B) {
