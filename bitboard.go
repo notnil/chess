@@ -48,7 +48,6 @@ func (b bitboard) String() string {
 }
 
 // Reverse returns a bitboard where the bit order is reversed.
-// Implementation from: http://stackoverflow.com/questions/746171/best-algorithm-for-bit-reversal-from-msb-lsb-to-lsb-msb-in-c
 func (b bitboard) Reverse() bitboard {
 	return bitboard(bits.Reverse64(uint64(b)))
 }
