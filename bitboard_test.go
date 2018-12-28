@@ -40,6 +40,29 @@ func BenchmarkBitboardReverse(b *testing.B) {
 	}
 }
 
+func TestBitboardOccupied(t *testing.T) {
+	b := newBitboard(map[Square]bool{A2: true, H8: true})
+	if b.Occupied(A1) {
+		t.Error("A1 should not be occupied")
+	}
+	if !b.Occupied(A2) {
+		t.Error("A2 should be occupied")
+	}
+	if b.Occupied(D4) {
+		t.Error("A1 should not be occupied")
+	}
+	if !b.Occupied(H8) {
+		t.Error("A2 should be occupied")
+	}
+}
+
+func BenchmarkBitboardOccupied(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		u := uint64(1)
+		bitboard(u).Occupied(A1)
+	}
+}
+
 func intStr(i uint64) string {
 	return bitboard(i).String()
 }
