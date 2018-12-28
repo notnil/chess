@@ -287,6 +287,14 @@ func BenchmarkValidMoves(b *testing.B) {
 	}
 }
 
+func BenchmarkValidMoves2(b *testing.B) {
+	pos := unsafeFEN("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1")
+	for n := 0; n < b.N; n++ {
+		pos.ValidMoves()
+		pos.validMoves = nil
+	}
+}
+
 func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 	for _, move := range pos.ValidMoves() {
 		if move.s1 == m.s1 && move.s2 == m.s2 && move.promo == m.promo {
