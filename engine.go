@@ -1,5 +1,9 @@
 package chess
 
+import (
+	"math/bits"
+)
+
 type engine struct{}
 
 func (engine) CalcMoves(pos *Position, first bool) []*Move {
@@ -28,6 +32,20 @@ var (
 	promoPieceTypes = []PieceType{Queen, Rook, Bishop, Knight}
 )
 
+func squaresPopulated(bb bitboard) []Square {
+	uu := uint64(bb)
+	pop := make([]Square, 0, bits.OnesCount64(uu))
+
+	for uu != 0 {
+		lzeros := uint64(bits.LeadingZeros64(uu))
+		pop = append(pop, Square(lzeros))
+		const mask uint64 = 0x1 << 63
+		maskBits := mask >> lzeros
+		uu ^= maskBits
+	}
+	return pop
+}
+
 func standardMoves(pos *Position, first bool) []*Move {
 	// compute allowed destination bitboard
 	bbAllowed := ^pos.board.whiteSqs
@@ -45,7 +63,7 @@ func standardMoves(pos *Position, first bool) []*Move {
 		if s1BB == 0 {
 			continue
 		}
-		for s1 := 0; s1 < numOfSquaresInBoard; s1++ {
+		for _, s1 := range squaresPopulated(s1BB) {
 			if s1BB&bbForSquare(Square(s1)) == 0 {
 				continue
 			}
@@ -54,10 +72,7 @@ func standardMoves(pos *Position, first bool) []*Move {
 			if s2BB == 0 {
 				continue
 			}
-			for s2 := 0; s2 < numOfSquaresInBoard; s2++ {
-				if s2BB&bbForSquare(Square(s2)) == 0 {
-					continue
-				}
+			for _, s2 := range squaresPopulated(s2BB) {
 				// add promotions if pawn on promo square
 				if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
 					for _, pt := range promoPieceTypes {
