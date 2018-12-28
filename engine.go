@@ -33,6 +33,9 @@ var (
 )
 
 func squaresPopulated(bb bitboard) []Square {
+	if bb == 0 {
+		return nil
+	}
 	uu := uint64(bb)
 	pop := make([]Square, 0, bits.OnesCount64(uu))
 	const mask uint64 = 0x1 << 63
