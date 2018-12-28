@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"math/bits"
 	"strconv"
 	"strings"
 )
@@ -49,14 +50,7 @@ func (b bitboard) String() string {
 // Reverse returns a bitboard where the bit order is reversed.
 // Implementation from: http://stackoverflow.com/questions/746171/best-algorithm-for-bit-reversal-from-msb-lsb-to-lsb-msb-in-c
 func (b bitboard) Reverse() bitboard {
-	return bitboard((bitReverseLookupTable[b&0xff] << 56) |
-		(bitReverseLookupTable[(b>>8)&0xff] << 48) |
-		(bitReverseLookupTable[(b>>16)&0xff] << 40) |
-		(bitReverseLookupTable[(b>>24)&0xff] << 32) |
-		(bitReverseLookupTable[(b>>32)&0xff] << 24) |
-		(bitReverseLookupTable[(b>>40)&0xff] << 16) |
-		(bitReverseLookupTable[(b>>48)&0xff] << 8) |
-		(bitReverseLookupTable[(b>>56)&0xff]))
+	return bitboard(bits.Reverse64(uint64(b)))
 }
 
 var bitReverseLookupTable = []uint64{
