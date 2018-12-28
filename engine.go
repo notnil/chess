@@ -35,13 +35,11 @@ var (
 func squaresPopulated(bb bitboard) []Square {
 	uu := uint64(bb)
 	pop := make([]Square, 0, bits.OnesCount64(uu))
-
+	const mask uint64 = 0x1 << 63
 	for uu != 0 {
 		lzeros := uint64(bits.LeadingZeros64(uu))
 		pop = append(pop, Square(lzeros))
-		const mask uint64 = 0x1 << 63
-		maskBits := mask >> lzeros
-		uu ^= maskBits
+		uu ^= mask >> lzeros
 	}
 	return pop
 }
@@ -60,18 +58,9 @@ func standardMoves(pos *Position, first bool) []*Move {
 		}
 		// iterate through possible starting squares for piece
 		s1BB := pos.board.bbForPiece(p)
-		if s1BB == 0 {
-			continue
-		}
 		for _, s1 := range squaresPopulated(s1BB) {
-			if s1BB&bbForSquare(Square(s1)) == 0 {
-				continue
-			}
 			// iterate through possible destination squares for piece
 			s2BB := bbForPossibleMoves(pos, p.Type(), Square(s1)) & bbAllowed
-			if s2BB == 0 {
-				continue
-			}
 			for _, s2 := range squaresPopulated(s2BB) {
 				// add promotions if pawn on promo square
 				if (p == WhitePawn && Square(s2).Rank() == Rank8) || (p == BlackPawn && Square(s2).Rank() == Rank1) {
