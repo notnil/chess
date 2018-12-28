@@ -38,7 +38,7 @@ func (b bitboard) Mapping() map[Square]bool {
 
 // Occupied returns true if the square's bitboard position is 1.
 func (b bitboard) Occupied(sq Square) bool {
-	return (uint64(b) >> uint64(63-sq) & 1) == 1
+	return (uint64(b) & (1 << (63 - uint64(sq)))) != 0
 }
 
 // String returns a 64 character string of 1s and 0s starting with the most significant bit.
