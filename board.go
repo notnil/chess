@@ -1,6 +1,9 @@
 package chess
 
 import (
+	"bytes"
+	"encoding/binary"
+	"errors"
 	"strconv"
 	"strings"
 )
@@ -92,6 +95,59 @@ func (b *Board) Piece(sq Square) Piece {
 		}
 	}
 	return NoPiece
+}
+
+// MarshalText implements the encoding.TextMarshaler interface and returns
+// a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+func (b *Board) MarshalText() (text []byte, err error) {
+	return []byte(b.String()), nil
+}
+
+// UnmarshalText implements the encoding.TextUnarshaler interface and takes
+// a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
+func (b *Board) UnmarshalText(text []byte) error {
+	cp, err := fenBoard(string(text))
+	if err != nil {
+		return err
+	}
+	*b = *cp
+	return nil
+}
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface and returns
+// the bitboard representations as a array of bytes.  Bitboads are encoded
+// in the following order: WhiteKing, WhiteQueen, WhiteRook, WhiteBishop, WhiteKnight
+// WhitePawn, BlackKing, BlackQueen, BlackRook, BlackBishop, BlackKnight, BlackPawn
+func (b *Board) MarshalBinary() (data []byte, err error) {
+	bbs := []bitboard{b.bbWhiteKing, b.bbWhiteQueen, b.bbWhiteRook, b.bbWhiteBishop, b.bbWhiteKnight, b.bbWhitePawn,
+		b.bbBlackKing, b.bbBlackQueen, b.bbBlackRook, b.bbBlackBishop, b.bbBlackKnight, b.bbBlackPawn}
+	buf := new(bytes.Buffer)
+	err = binary.Write(buf, binary.BigEndian, bbs)
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryUnmarshaler interface and parses
+// the bitboard representations as a array of bytes.  Bitboads are decoded
+// in the following order: WhiteKing, WhiteQueen, WhiteRook, WhiteBishop, WhiteKnight
+// WhitePawn, BlackKing, BlackQueen, BlackRook, BlackBishop, BlackKnight, BlackPawn
+func (b *Board) UnmarshalBinary(data []byte) error {
+	if len(data) != 96 {
+		return errors.New("chess: invalid number of bytes for board unmarshal binary")
+	}
+	b.bbWhiteKing = bitboard(binary.BigEndian.Uint64(data[:8]))
+	b.bbWhiteQueen = bitboard(binary.BigEndian.Uint64(data[8:16]))
+	b.bbWhiteRook = bitboard(binary.BigEndian.Uint64(data[16:24]))
+	b.bbWhiteBishop = bitboard(binary.BigEndian.Uint64(data[24:32]))
+	b.bbWhiteKnight = bitboard(binary.BigEndian.Uint64(data[32:40]))
+	b.bbWhitePawn = bitboard(binary.BigEndian.Uint64(data[40:48]))
+	b.bbBlackKing = bitboard(binary.BigEndian.Uint64(data[48:56]))
+	b.bbBlackQueen = bitboard(binary.BigEndian.Uint64(data[56:64]))
+	b.bbBlackRook = bitboard(binary.BigEndian.Uint64(data[64:72]))
+	b.bbBlackBishop = bitboard(binary.BigEndian.Uint64(data[72:80]))
+	b.bbBlackKnight = bitboard(binary.BigEndian.Uint64(data[80:88]))
+	b.bbBlackPawn = bitboard(binary.BigEndian.Uint64(data[88:96]))
+	b.calcConvienceBBs(nil)
+	return nil
 }
 
 func newBoard(m map[Square]Piece) *Board {
