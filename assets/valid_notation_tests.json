@@ -117,5 +117,12 @@
 		"algText" : "Qxd1",
 		"longAlgText" : "d8d1",
 		"description" : "https://en.lichess.org/editor/r1bqk2r/ppp2ppp/2p2n2/4N3/4P3/2P5/PPP2PPP/R1BQK2R_b_KQkq_-_0_7"
+	},
+	{
+		"pos1" : "2k5/6K1/8/8/8/8/4qq2/4q3 b - - 9 55",
+		"pos2" : "2k5/6K1/8/8/8/8/4qq2/5q2 w - - 10 56",
+		"algText" : "Q1f1",
+		"longAlgText" : "e1f1",
+		"description" : "https://lichess.org/editor/2k5/6K1/8/8/8/8/4qq2/4q3_b_-_-_9_55"
 	}
 ]
