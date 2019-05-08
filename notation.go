@@ -143,33 +143,31 @@ func getCheckChar(pos *Position, move *Move) string {
 }
 
 func formS1(pos *Position, m *Move) string {
-	moves := pos.ValidMoves()
-	// find moves for piece type
-	pMoves := []*Move{}
 	p := pos.board.Piece(m.s1)
 	if p.Type() == Pawn {
 		return ""
 	}
+
+	var req, fileReq, rankReq bool
+	moves := pos.ValidMoves()
+
 	for _, mv := range moves {
 		if mv.s1 != m.s1 && mv.s2 == m.s2 && p == pos.board.Piece(mv.s1) {
-			pMoves = append(pMoves, mv)
-		}
-	}
+			req = true
 
-	var fileReq, rankReq bool
-	for _, mv := range pMoves {
-		if mv.s1.File() == m.s1.File() {
-			rankReq = true;
-		}
+			if mv.s1.File() == m.s1.File() {
+				rankReq = true;
+			}
 
-		if mv.s1.Rank() == m.s1.Rank() {
-			fileReq = true
+			if mv.s1.Rank() == m.s1.Rank() {
+				fileReq = true
+			}
 		}
 	}
 
 	var s1 = ""
 
-	if fileReq || !rankReq && len(pMoves) > 0 {
+	if fileReq || !rankReq && req {
 		s1 = m.s1.File().String()
 	}
 
