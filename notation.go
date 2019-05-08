@@ -162,13 +162,14 @@ func formS1(pos *Position, m *Move) string {
 			rankReq = true;
 		}
 
-		if !rankReq || mv.s1.Rank() == m.s1.Rank() {
+		if mv.s1.Rank() == m.s1.Rank() {
 			fileReq = true
 		}
 	}
 
 	var s1 = ""
-	if fileReq {
+
+	if fileReq || !rankReq && len(pMoves) > 0 {
 		s1 = m.s1.File().String()
 	}
 
