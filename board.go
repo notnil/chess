@@ -370,6 +370,6 @@ func (b *Board) setBBForPiece(p Piece, bb bitboard) {
 	case BlackPawn:
 		b.bbBlackPawn = bb
 	default:
-		panic("HERE")
+		panic("invalid piece")
 	}
 }
