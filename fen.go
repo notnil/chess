@@ -66,7 +66,7 @@ func fenBoard(boardStr string) (*Board, error) {
 			m[getSquare(file, rank)] = piece
 		}
 	}
-	return newBoard(m), nil
+	return NewBoard(m), nil
 }
 
 func fenFormRank(rankStr string) (map[File]Piece, error) {

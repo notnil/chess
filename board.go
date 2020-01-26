@@ -29,6 +29,23 @@ type Board struct {
 	blackKingSq   Square
 }
 
+// NewBoard returns a board from a square to piece mapping.
+func NewBoard(m map[Square]Piece) *Board {
+	b := &Board{}
+	for _, p1 := range allPieces {
+		bm := map[Square]bool{}
+		for sq, p2 := range m {
+			if p1 == p2 {
+				bm[sq] = true
+			}
+		}
+		bb := newBitboard(bm)
+		b.setBBForPiece(p1, bb)
+	}
+	b.calcConvienceBBs(nil)
+	return b
+}
+
 // SquareMap returns a mapping of squares to pieces.  A square is only added to the map if it is occupied.
 func (b *Board) SquareMap() map[Square]Piece {
 	m := map[Square]Piece{}
@@ -148,22 +165,6 @@ func (b *Board) UnmarshalBinary(data []byte) error {
 	b.bbBlackPawn = bitboard(binary.BigEndian.Uint64(data[88:96]))
 	b.calcConvienceBBs(nil)
 	return nil
-}
-
-func newBoard(m map[Square]Piece) *Board {
-	b := &Board{}
-	for _, p1 := range allPieces {
-		bm := map[Square]bool{}
-		for sq, p2 := range m {
-			if p1 == p2 {
-				bm[sq] = true
-			}
-		}
-		bb := newBitboard(bm)
-		b.setBBForPiece(p1, bb)
-	}
-	b.calcConvienceBBs(nil)
-	return b
 }
 
 func (b *Board) update(m *Move) {
