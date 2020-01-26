@@ -33,6 +33,16 @@ func TestBitboardReverse(t *testing.T) {
 	}
 }
 
+func TestBitboardOccupied(t *testing.T) {
+	m := map[Square]bool{
+		B3: true,
+	}
+	bb := newBitboard(m)
+	if bb.Occupied(B3) != true {
+		t.Fatalf("bitboard occupied of %s expected %t but got %t", bb, true, false)
+	}
+}
+
 func BenchmarkBitboardReverse(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		u := uint64(9223372036854775807)
