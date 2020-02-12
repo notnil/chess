@@ -219,3 +219,9 @@ func (pos *Position) samePosition(pos2 *Position) bool {
 		pos.castleRights.String() == pos2.castleRights.String() &&
 		pos.enPassantSquare == pos2.enPassantSquare
 }
+
+func (pos *Position) ParseMove(move string) (Move, error) {
+	lan := LongAlgebraicNotation{}
+	m, err := lan.Decode(pos, move)
+	return *m, err
+}
