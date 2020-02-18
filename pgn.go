@@ -46,6 +46,59 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 	return games, nil
 }
 
+// LimitGamesFromPGN returns <nrOfGames PGN decoding games from the
+// reader.  It is designed to be used decoding multiple PGNs
+// in the same file.  An error is returned if there is an
+// issue parsing the PGNs.
+// If verbose is set to true then log information is printed
+// br is the pointer to the next game to read from the pgn file
+func LimitedGamesFromPGN(br *bufio.Reader, nrOfGames int, verbose bool) ([]*Game, *bufio.Reader, int, error) {
+	games := []*Game{}
+	current := ""
+	count := 0
+	totalCount := 0
+	// br := bufio.NewReader(r)
+	for {
+		line, err := br.ReadString('\n')
+		if err == io.EOF {
+			break
+		} else if err != nil {
+			return nil, nil, 0, err
+		}
+		if strings.TrimSpace(line) == "" {
+			count++
+		} else {
+			current += line
+		}
+		if count == 2 {
+			game, err := decodePGN(current)
+			if err != nil {
+				return nil, nil, 0, err
+			}
+			games = append(games, game)
+			count = 0
+			current = ""
+			totalCount++
+			if totalCount < nrOfGames {
+				if verbose {
+					log.Println("Processed game", totalCount)
+				}
+			} else {
+				if verbose {
+					log.Println("Processed game", totalCount)
+				}
+				return games, br, totalCount, nil
+			}
+		}
+	}
+	return games, nil, totalCount, nil
+}
+
+// Same result as LimitedGamesFromPGN but no logging information is printed
+func LimitedGamesFromPGNReader(br *bufio.Reader, nrOfGames int) ([]*Game, *bufio.Reader, int, error) {
+	return LimitedGamesFromPGN(br, nrOfGames, false)
+}
+
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)

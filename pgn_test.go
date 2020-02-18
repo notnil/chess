@@ -1,6 +1,9 @@
 package chess
 
 import (
+	"bufio"
+	"github.com/notnil/chess"
+	"os"
 	"strings"
 	"testing"
 )
@@ -67,6 +70,44 @@ func TestValidPGNs(t *testing.T) {
 				test.PostPos.board.Draw(), test.PostPos.String(),
 				game.Position().board.Draw(), game.Position().String())
 		}
+	}
+}
+
+func TestLimitedGamesFromPGNReader(t *testing.T) {
+	inputPath := "./assets/twic0920.pgn"
+	in, err := os.Open(inputPath)
+	if err != nil {
+		t.Fatalf("unexpected pgn read error %s", err.Error())
+	}
+	defer in.Close()
+
+	readNrGames := 1000
+	processed_games := 0
+	tel := 0
+	br := bufio.NewReader(in)
+	for br != nil {
+		_, br, processed_games, err = LimitedGamesFromPGNReader(br, readNrGames)
+		if err != nil {
+			t.Fatalf("unexpected pgn read processing games error %s", err.Error())
+		}
+		tel = tel + processed_games
+	}
+	if tel != 2245 {
+		t.Fatalf("2245 games should have been read from ./assets/twic0920.pgn. %d games read", processed_games)
+	}
+}
+
+func TestGamesFromPGN(t *testing.T) {
+	inputPath := "./assets/twic0920.pgn"
+	in, err := os.Open(inputPath)
+	if err != nil {
+		t.Fatalf("unexpected pgn read error %s", err.Error())
+	}
+	defer in.Close()
+
+	_, err = chess.GamesFromPGN(in)
+	if err != nil {
+		t.Fatalf("Error reading ./assets/twic0920.pgn")
 	}
 }
 
