@@ -105,9 +105,28 @@ func TestGamesFromPGN(t *testing.T) {
 	}
 	defer in.Close()
 
-	_, err = chess.GamesFromPGN(in)
+	games, err := chess.GamesFromPGN(in)
 	if err != nil {
 		t.Fatalf("Error reading ./assets/twic0920.pgn")
+	}
+	// create FEN for all games
+	a := []string{}
+	for _, game := range games {
+		for _, pos := range game.Positions() {
+			a = append(a, pos.String())
+		}
+	}
+
+	if a[0] != "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1" {
+		t.Fatalf("Fen not correct. Should be: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1, but is: %s ", a[0])
+	}
+
+	if a[1058] != "6k1/p2q1b2/1p1n1B1p/2p3p1/2P5/1PN3QP/P5P1/6K1 b - - 1 37" {
+		t.Fatalf("Fen not correct. Should be: 6k1/p2q1b2/1p1n1B1p/2p3p1/2P5/1PN3QP/P5P1/6K1 b - - 1 37, but is: %s ", a[1058])
+	}
+
+	if a[184726] != "2rrn1k1/2qNbp1p/4p3/p3P3/2NnQpP1/7P/P4BB1/1R2R1K1 b - - 2 30" {
+		t.Fatalf("Fen not correct. Should be: 2rrn1k1/2qNbp1p/4p3/p3P3/2NnQpP1/7P/P4BB1/1R2R1K1 b - - 2 30, but is: %s ", a[184726])
 	}
 }
 

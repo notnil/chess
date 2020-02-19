@@ -57,7 +57,6 @@ func LimitedGamesFromPGN(br *bufio.Reader, nrOfGames int, verbose bool) ([]*Game
 	current := ""
 	count := 0
 	totalCount := 0
-	// br := bufio.NewReader(r)
 	for {
 		line, err := br.ReadString('\n')
 		if err == io.EOF {
@@ -79,14 +78,11 @@ func LimitedGamesFromPGN(br *bufio.Reader, nrOfGames int, verbose bool) ([]*Game
 			count = 0
 			current = ""
 			totalCount++
+			if verbose {
+				log.Println("Processed game", totalCount)
+			}
 			if totalCount < nrOfGames {
-				if verbose {
-					log.Println("Processed game", totalCount)
-				}
 			} else {
-				if verbose {
-					log.Println("Processed game", totalCount)
-				}
 				return games, br, totalCount, nil
 			}
 		}
