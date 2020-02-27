@@ -2,6 +2,7 @@ package chess
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -201,4 +202,52 @@ func removeSection(leftChar, rightChar, s string) string {
 		}
 		s = s[0:i[0]] + s[i[1]:len(s)]
 	}
+}
+
+func splitPGN(data []byte, atEOF bool) (advance int, token []byte, err error) {
+	// http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm
+	if atEOF {
+		return 0, nil, nil
+	}
+
+	if len(data) == 0 {
+		return 0, nil, nil
+	}
+
+	// Read Tag pair section:  [Left bracket, tag name, tag value, and right bracket]
+	pos := 0
+	for data[pos] == '[' {
+		if i := bytes.IndexByte(data[pos:], '\n'); i >= 0 {
+			// We have a full newline-terminated line.
+			pos = pos + i + 1
+			//// Request more data.
+			if pos >= len(data) {
+				return 0, nil, nil
+			}
+		} else {
+			// request more data
+			return 0, nil, nil
+		}
+	}
+
+	pos = pos + 1
+	//endOfTagPairSection := pos
+
+	// Read Move section
+	continueReadingMoveSection := true
+	for continueReadingMoveSection {
+		if i := bytes.IndexByte(data[pos:], '\n'); i > 0 {
+			// We have a full newline-terminated line.
+			pos = pos + i + 1
+		} else {
+			if i < 0 {
+				//// Request more data.
+				return 0, nil, nil
+			} else {
+				continueReadingMoveSection = false
+			}
+		}
+	}
+	endOfMoveSection := pos
+	return pos + 1, data[0:endOfMoveSection], nil
 }
