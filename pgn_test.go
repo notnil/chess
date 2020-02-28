@@ -3,7 +3,6 @@ package chess
 import (
 	"bufio"
 	"fmt"
-	"github.com/notnil/chess"
 	"os"
 	"strings"
 	"testing"
@@ -157,7 +156,7 @@ func TestGamesFromPGN(t *testing.T) {
 	}
 	defer in.Close()
 
-	games, err := chess.GamesFromPGN(in)
+	games, err := GamesFromPGN(in, "false")
 	if err != nil {
 		t.Fatalf("Error reading ./assets/twic0920.pgn")
 	}

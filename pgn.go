@@ -14,7 +14,10 @@ import (
 // reader.  It is designed to be used decoding multiple PGNs
 // in the same file.  An error is returned if there is an
 // issue parsing the PGNs.
-func GamesFromPGN(r io.Reader) ([]*Game, error) {
+func GamesFromPGN(r io.Reader, verbose ...string) ([]*Game, error) {
+	if len(verbose) == 0 {
+		verbose = append(verbose, "true")
+	}
 	games := []*Game{}
 	current := ""
 	count := 0
@@ -41,7 +44,9 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 			count = 0
 			current = ""
 			totalCount++
-			log.Println("Processed game", totalCount)
+			if verbose[0] == "true" {
+				log.Println("Processed game", totalCount)
+			}
 		}
 	}
 	return games, nil
