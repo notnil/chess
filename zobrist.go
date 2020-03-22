@@ -4,23 +4,23 @@ import (
 	"math/rand"
 )
 
-var pieceSquareZobristC [12][64]uint64
-var castleRightsZobristC [4]uint64
-var enPassantZobristC [16]uint64
-var whiteToMoveZobristC uint64
+var piecesZC [12][64]uint64
+var castleRightsZC [4]uint64
+var enPassantZC [16]uint64
+var whiteTurnZC uint64
 
 func initZobrist() {
-	whiteToMoveZobristC = rand.Uint64()
+	whiteTurnZC = rand.Uint64()
 	for i := 0; i < 12; i++ {
 		for j := 0; j < 64; j++ {
-			pieceSquareZobristC[i][j] = rand.Uint64()
+			piecesZC[i][j] = rand.Uint64()
 		}
 	}
 	for i := 0; i < 4; i++ {
-		castleRightsZobristC[i] = rand.Uint64()
+		castleRightsZC[i] = rand.Uint64()
 	}
 	for i := 0; i < 16; i++ {
-		enPassantZobristC[i] = rand.Uint64()
+		enPassantZC[i] = rand.Uint64()
 	}
 }
 
@@ -30,22 +30,22 @@ func generateZobristHash(pos *Position) uint64 {
 
 	/* Turn */
 	if turn == White {
-		hash ^= whiteToMoveZobristC
+		hash ^= whiteTurnZC
 	}
 
 	/* Castle */
 	cc := pos.castleRights.CanCastle
 	if cc(White, KingSide) {
-		hash ^= castleRightsZobristC[0]
+		hash ^= castleRightsZC[0]
 	}
 	if cc(White, QueenSide) {
-		hash ^= castleRightsZobristC[1]
+		hash ^= castleRightsZC[1]
 	}
 	if cc(Black, KingSide) {
-		hash ^= castleRightsZobristC[2]
+		hash ^= castleRightsZC[2]
 	}
 	if cc(Black, QueenSide) {
-		hash ^= castleRightsZobristC[3]
+		hash ^= castleRightsZC[3]
 	}
 
 	/* En passant */
@@ -53,10 +53,10 @@ func generateZobristHash(pos *Position) uint64 {
 	if enPassant != NoSquare {
 		if turn == Black {
 			/* Next mov Black -> Current pos White -> White en passant square */
-			hash ^= enPassantZobristC[enPassant-16]
+			hash ^= enPassantZC[enPassant-16]
 		} else {
 			/* Next mov White -> Current pos Black -> Black en passant square */
-			hash ^= enPassantZobristC[enPassant-40+8]
+			hash ^= enPassantZC[enPassant-40+8]
 		}
 	}
 
@@ -65,7 +65,7 @@ func generateZobristHash(pos *Position) uint64 {
 	for sq := 0; sq < 64; sq++ {
 		p := piece(Square(sq))
 		if p != NoPiece {
-			hash ^= pieceSquareZobristC[int8(p)-1][sq]
+			hash ^= piecesZC[int8(p)-1][sq]
 		}
 	}
 
@@ -83,11 +83,11 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 	movEnPassantSquare := pos.updateEnPassantSquare(mov)
 
 	/* Switch turn */
-	hash ^= whiteToMoveZobristC
+	hash ^= whiteTurnZC
 
 	/* Remove our piece in S1 */
 	ourP := piece(srcSq)
-	hash ^= pieceSquareZobristC[int8(ourP)-1][srcSq]
+	hash ^= piecesZC[int8(ourP)-1][srcSq]
 
 	/* Add our promoted piece in S2 */
 	var ourPromoP Piece
@@ -97,42 +97,42 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 	} else {
 		ourPromoP = ourP
 	}
-	hash ^= pieceSquareZobristC[int8(ourPromoP)-1][dstSq]
+	hash ^= piecesZC[int8(ourPromoP)-1][dstSq]
 
 	/* Capture */
 	if hasTag(Capture) {
 		/* Remove captured piece */
-		hash ^= pieceSquareZobristC[int8(piece(dstSq))-1][dstSq]
+		hash ^= piecesZC[int8(piece(dstSq))-1][dstSq]
 	}
 
 	if oldCR, newCR := pos.castleRights, pos.updateCastleRights(mov); newCR != oldCR {
 		/* Remove old castle rights */
 		oldCanCastle := oldCR.CanCastle
 		if oldCanCastle(White, KingSide) {
-			hash ^= castleRightsZobristC[0]
+			hash ^= castleRightsZC[0]
 		}
 		if oldCanCastle(White, QueenSide) {
-			hash ^= castleRightsZobristC[1]
+			hash ^= castleRightsZC[1]
 		}
 		if oldCanCastle(Black, KingSide) {
-			hash ^= castleRightsZobristC[2]
+			hash ^= castleRightsZC[2]
 		}
 		if oldCanCastle(Black, QueenSide) {
-			hash ^= castleRightsZobristC[3]
+			hash ^= castleRightsZC[3]
 		}
 		/* Add new castle rights */
 		newCanCastle := newCR.CanCastle
 		if newCanCastle(White, KingSide) {
-			hash ^= castleRightsZobristC[0]
+			hash ^= castleRightsZC[0]
 		}
 		if newCanCastle(White, QueenSide) {
-			hash ^= castleRightsZobristC[1]
+			hash ^= castleRightsZC[1]
 		}
 		if newCanCastle(Black, KingSide) {
-			hash ^= castleRightsZobristC[2]
+			hash ^= castleRightsZC[2]
 		}
 		if newCanCastle(Black, QueenSide) {
-			hash ^= castleRightsZobristC[3]
+			hash ^= castleRightsZC[3]
 		}
 	}
 
@@ -140,7 +140,7 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 	hasKingSideCastle := hasTag(KingSideCastle)
 	hasQueenSideCastle := hasTag(QueenSideCastle)
 	if turn == White {
-		rookBoard := pieceSquareZobristC[int8(WhiteRook)-1]
+		rookBoard := piecesZC[int8(WhiteRook)-1]
 		if hasKingSideCastle {
 			/* Remove rook in H1 */
 			hash ^= rookBoard[H1]
@@ -153,7 +153,7 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 			hash ^= rookBoard[D1]
 		}
 	} else {
-		rookBoard := pieceSquareZobristC[int8(BlackRook)-1]
+		rookBoard := piecesZC[int8(BlackRook)-1]
 		if hasKingSideCastle {
 			/* Remove rook in H8 */
 			hash ^= rookBoard[H8]
@@ -171,10 +171,10 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 	if posEnPassantSquare != NoSquare {
 		if turn == White {
 			/* White mov -> Black old en passant square */
-			hash ^= enPassantZobristC[posEnPassantSquare-40+8]
+			hash ^= enPassantZC[posEnPassantSquare-40+8]
 		} else {
 			/* Black mov -> White old en passant square */
-			hash ^= enPassantZobristC[posEnPassantSquare-16]
+			hash ^= enPassantZC[posEnPassantSquare-16]
 		}
 	}
 
@@ -182,10 +182,10 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 	if movEnPassantSquare != NoSquare {
 		if turn == Black {
 			/* Black mov -> new Black en passant square */
-			hash ^= enPassantZobristC[movEnPassantSquare-40+8]
+			hash ^= enPassantZC[movEnPassantSquare-40+8]
 		} else {
 			/* White mov -> new White en passant square */
-			hash ^= enPassantZobristC[movEnPassantSquare-16]
+			hash ^= enPassantZC[movEnPassantSquare-16]
 		}
 	}
 
@@ -194,11 +194,11 @@ func updateZobristHash(pos *Position, mov *Move) uint64 {
 		if turn == White {
 			/* White mov ->
 			Remove black pawn in same file as en passant square but previous rank */
-			hash ^= pieceSquareZobristC[int8(BlackPawn)-1][posEnPassantSquare-8]
+			hash ^= piecesZC[int8(BlackPawn)-1][posEnPassantSquare-8]
 		} else {
 			/* Black mov ->
 			Remove white pawn in same file as en passant square but next rank */
-			hash ^= pieceSquareZobristC[int8(WhitePawn)-1][posEnPassantSquare+8]
+			hash ^= piecesZC[int8(WhitePawn)-1][posEnPassantSquare+8]
 		}
 	}
 
