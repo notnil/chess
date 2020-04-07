@@ -27,6 +27,7 @@ Random Game
 
     import (
         "fmt"
+        "math/rand"
 
         "github.com/notnil/chess"
     )

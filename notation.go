@@ -143,30 +143,39 @@ func getCheckChar(pos *Position, move *Move) string {
 }
 
 func formS1(pos *Position, m *Move) string {
-	moves := pos.ValidMoves()
-	// find moves for piece type
-	pMoves := []*Move{}
-	files := map[File]int{}
-	ranks := map[Rank]int{}
 	p := pos.board.Piece(m.s1)
 	if p.Type() == Pawn {
 		return ""
 	}
+
+	var req, fileReq, rankReq bool
+	moves := pos.ValidMoves()
+
 	for _, mv := range moves {
-		if mv.s2 == m.s2 && p == pos.board.Piece(mv.s1) {
-			pMoves = append(pMoves, mv)
-			files[mv.s1.File()] = files[mv.s1.File()] + 1
-			ranks[mv.s1.Rank()] = ranks[mv.s1.Rank()] + 1
+		if mv.s1 != m.s1 && mv.s2 == m.s2 && p == pos.board.Piece(mv.s1) {
+			req = true
+
+			if mv.s1.File() == m.s1.File() {
+				rankReq = true;
+			}
+
+			if mv.s1.Rank() == m.s1.Rank() {
+				fileReq = true
+			}
 		}
 	}
-	if len(pMoves) == 1 {
-		return ""
-	} else if len(files) == len(pMoves) {
-		return m.s1.File().String()
-	} else if len(ranks) == len(pMoves) {
-		return m.s1.Rank().String()
+
+	var s1 = ""
+
+	if fileReq || !rankReq && req {
+		s1 = m.s1.File().String()
 	}
-	return m.s1.String()
+
+	if rankReq {
+		s1 += m.s1.Rank().String()
+	}
+
+	return s1
 }
 
 func charForPromo(p PieceType) string {

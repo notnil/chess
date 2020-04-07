@@ -42,6 +42,22 @@ func TestCheckmate(t *testing.T) {
 
 }
 
+func TestCheckmateFromFen(t *testing.T) {
+	fenStr := "rn1qkbnr/pbpp1Qpp/1p6/4p3/2B1P3/8/PPPP1PPP/RNB1K1NR b KQkq - 0 1"
+	fen, err := FEN(fenStr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	g := NewGame(fen)
+	if g.Method() != Checkmate {
+		t.Error(g.Position().Board().Draw())
+		t.Fatalf("expected method %s but got %s", Checkmate, g.Method())
+	}
+	if g.Outcome() != WhiteWon {
+		t.Fatalf("expected outcome %s but got %s", WhiteWon, g.Outcome())
+	}
+}
+
 func TestStalemate(t *testing.T) {
 	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w - - 0 1"
 	fen, err := FEN(fenStr)
@@ -129,7 +145,7 @@ func TestFiveFoldRepition(t *testing.T) {
 }
 
 func TestFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 50 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 100 60")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err != nil {
 		t.Fatal(err)
@@ -137,7 +153,7 @@ func TestFiftyMoveRule(t *testing.T) {
 }
 
 func TestInvalidFiftyMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 49 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 99 60")
 	g := NewGame(fen)
 	if err := g.Draw(FiftyMoveRule); err == nil {
 		t.Fatal("should require fifty moves")
@@ -145,7 +161,7 @@ func TestInvalidFiftyMoveRule(t *testing.T) {
 }
 
 func TestSeventyFiveMoveRule(t *testing.T) {
-	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 74 23")
+	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 149 80")
 	g := NewGame(fen)
 	if err := g.MoveStr("Kf8"); err != nil {
 		t.Fatal(err)

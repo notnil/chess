@@ -109,6 +109,7 @@ func FEN(fen string) (func(*Game), error) {
 		return nil, err
 	}
 	return func(g *Game) {
+		pos.inCheck = isInCheck(pos)
 		g.pos = pos
 		g.positions = []*Position{pos}
 		g.updatePosition()
@@ -375,6 +376,18 @@ func (g *Game) copy(game *Game) {
 	g.pos = game.pos
 	g.outcome = game.outcome
 	g.method = game.method
+}
+
+func (g *Game) Clone() *Game {
+	return &Game{
+		tagPairs:  g.TagPairs(),
+		notation:  g.notation,
+		moves:     g.Moves(),
+		positions: g.Positions(),
+		pos:       g.pos,
+		outcome:   g.outcome,
+		method:    g.method,
+	}
 }
 
 func (g *Game) numOfRepitions() int {
