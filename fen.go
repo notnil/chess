@@ -122,7 +122,7 @@ func formCastleRights(castleStr string) (CastleRights, error) {
 	if upperCount > 2 || lowerCount > 2 || otherCount > 1 || (otherCount == 1 && len(castleStr) != 1) {
 		return "-", fmt.Errorf("chess: fen invalid castle rights %s", castleStr)
 	}
-	// TODO: Verify other illegal combinations, like QA
+	// TODO: Verify other illegal combinations, like QA or KH
 	return CastleRights(castleStr), nil
 }
 
