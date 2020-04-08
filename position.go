@@ -224,13 +224,14 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 		cr = new
 	} else {
 		// Rook move or Capture
+		// TODO: Should change back to KQkq format when the last outside non-castling rook moves away from rank.
 		p2 := pos.board.Piece(m.s2)
 		if p == WhiteRook || p2 == WhiteRook {
 			sq := m.s1
 			if p2 == WhiteRook {
 				sq = m.s2
 			}
-			if sq.Rank() == Rank1 {
+			if sq.Rank() == Rank1 || sq == m.s1 && m.s2.Rank() == Rank1 {
 				new := ""
 				kingFile := pos.board.whiteKingSq.File()
 				for _, r := range(cr) {
@@ -242,6 +243,11 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.File() == file {
 									keep = false
 								}
+								if sq.Rank() != Rank1 && sq.File() > file {
+									keep = false
+									// No longer the outer, needs to change to A-H format.
+									new += strings.ToUpper(fileChars[file:file+1])
+								}
 								break;
 							}
 						}
@@ -250,6 +256,11 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 							if pos.board.bbWhiteRook.Occupied(getSquare(file, Rank1)) {
 								if sq.File() == file {
 									keep = false
+								}
+								if sq.Rank() != Rank1 && sq.File() < file {
+									keep = false
+									// No longer the outer, needs to change to A-H format.
+									new += strings.ToUpper(fileChars[file:file+1])
 								}
 								break;
 							}
@@ -271,7 +282,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 			if p2 == BlackRook {
 				sq = m.s2
 			}
-			if sq.Rank() == Rank8 {
+			if sq.Rank() == Rank8 || sq == m.s1 && m.s2.Rank() == Rank8 {
 				new := ""
 				kingFile := pos.board.blackKingSq.File()
 				for _, r := range(cr) {
@@ -283,6 +294,11 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.File() == file {
 									keep = false
 								}
+								if sq.Rank() != Rank8 && sq.File() > file {
+									keep = false
+									// No longer the outer, needs to change to a-h format.
+									new += fileChars[file:file+1]
+								}
 								break;
 							}
 						}
@@ -291,6 +307,11 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 							if pos.board.bbBlackRook.Occupied(getSquare(file, Rank8)) {
 								if sq.File() == file {
 									keep = false
+								}
+								if sq.Rank() != Rank8 && sq.File() < file {
+									keep = false
+									// No longer the outer, needs to change to a-h format.
+									new += fileChars[file:file+1]
 								}
 								break;
 							}
