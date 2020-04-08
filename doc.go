@@ -48,3 +48,7 @@ Random Game
     }
 */
 package chess
+
+func GetLibraryVersion() int {
+  return 2
+}
