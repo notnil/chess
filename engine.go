@@ -95,7 +95,7 @@ func standardMoves(pos *Position, first bool) []*Move {
 
 func addTags(m *Move, pos *Position) {
 	p := pos.board.Piece(m.s1)
-	if pos.board.isOccupied(m.s2) {
+	if pos.board.isOccupied(m.s2) && !m.HasTag(QueenSideCastle) && !m.HasTag(KingSideCastle) {
 		m.addTag(Capture)
 	} else if m.s2 == pos.enPassantSquare && p.Type() == Pawn {
 		m.addTag(EnPassant)
@@ -305,6 +305,7 @@ func castleMoves(pos *Position) []*Move {
 			}
 			m := &Move{s1: getSquare(kingFile, kingRank), s2: getSquare(rookFile, kingRank)}
 			m.addTag(QueenSideCastle)
+			addTags(m, pos)
 			moves = append(moves, m)
 		} else {
 			// Validate King side legal.
@@ -335,6 +336,7 @@ func castleMoves(pos *Position) []*Move {
 			}
 			m := &Move{s1: getSquare(kingFile, kingRank), s2: getSquare(rookFile, kingRank)}
 			m.addTag(KingSideCastle)
+			addTags(m, pos)
 			moves = append(moves, m)		
 		}
 	}

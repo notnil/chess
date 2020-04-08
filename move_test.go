@@ -248,6 +248,10 @@ var perfResults = []perfTest{
 		46, 2079, 89890,
 		// 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714
 	}},
+	{pos: unsafeFEN("bqrkrbnn/ppp1pppp/8/8/8/8/PPP1PPPP/BQRKRBNN w CKeq - 0 1"), nodesPerDepth: []int{
+		19, 342, 6987, 142308, 
+		// 3294156, 75460468,
+	}},
 }
 
 func TestPerfResults(t *testing.T) {
