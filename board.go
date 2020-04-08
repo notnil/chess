@@ -266,7 +266,8 @@ func (b *Board) calcConvienceBBs(m *Move) {
 	b.whiteSqs = whiteSqs
 	b.blackSqs = blackSqs
 	b.emptySqs = emptySqs
-	if m == nil {
+	// In non-legacy castling, s2 is not the destination for the king.
+	if m == nil || m.HasTag(QueenSideCastle) || m.HasTag(KingSideCastle) {
 		b.whiteKingSq = NoSquare
 		b.blackKingSq = NoSquare
 
