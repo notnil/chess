@@ -202,18 +202,111 @@ func (pos *Position) copy() *Position {
 
 func (pos *Position) updateCastleRights(m *Move) CastleRights {
 	cr := string(pos.castleRights)
+	if cr == "-" {
+		return pos.castleRights
+	}
 	p := pos.board.Piece(m.s1)
-	if p == WhiteKing || m.s1 == H1 || m.s2 == H1 {
-		cr = strings.Replace(cr, "K", "", -1)
-	}
-	if p == WhiteKing || m.s1 == A1 || m.s2 == A1 {
-		cr = strings.Replace(cr, "Q", "", -1)
-	}
-	if p == BlackKing || m.s1 == H8 || m.s2 == H8 {
-		cr = strings.Replace(cr, "k", "", -1)
-	}
-	if p == BlackKing || m.s1 == A8 || m.s2 == A8 {
-		cr = strings.Replace(cr, "q", "", -1)
+	if p == WhiteKing {
+		new := ""
+		for _, r := range(cr) {
+			if unicode.IsLower(r) {
+				new += string(r)
+			}
+		}
+		cr = new
+	} else if p == BlackKing {
+		new := ""
+		for _, r := range(cr) {
+			if unicode.IsUpper(r) {
+				new += string(r)
+			}
+		}
+		cr = new
+	} else {
+		// Rook move or Capture
+		p2 := pos.board.Piece(m.s2)
+		if p == WhiteRook || p2 == WhiteRook {
+			sq := m.s1
+			if p2 == WhiteRook {
+				sq = m.s2
+			}
+			if sq.Rank() == Rank1 {
+				new := ""
+				kingFile := pos.board.whiteKingSq.File()
+				for _, r := range(cr) {
+					keep := true
+					if unicode.IsLower(r) {
+					} else if string(r) == "K" {
+						for file := FileH; file > kingFile; file -= 1 {
+							if pos.board.bbWhiteRook.Occupied(getSquare(file, Rank1)) {
+								if sq.File() == file {
+									keep = false
+								}
+								break;
+							}
+						}
+					} else if string(r) == "Q" {
+						for file := FileA; file < kingFile; file += 1 {
+							if pos.board.bbWhiteRook.Occupied(getSquare(file, Rank1)) {
+								if sq.File() == file {
+									keep = false
+								}
+								break;
+							}
+						}				
+					} else {
+						if fileChars[sq.File() : sq.File() + 1] == strings.ToLower(string(r)) {
+							keep = false;
+						}
+					}
+					if keep {
+						new += string(r)
+					}
+				}
+				cr = new
+			}
+		} 
+		if p == BlackRook || p2 == BlackRook {
+			sq := m.s1
+			if p2 == BlackRook {
+				sq = m.s2
+			}
+			if sq.Rank() == Rank8 {
+				new := ""
+				kingFile := pos.board.blackKingSq.File()
+				for _, r := range(cr) {
+					keep := true
+					if unicode.IsUpper(r) {
+					} else if string(r) == "k" {
+						for file := FileH; file > kingFile; file -= 1 {
+							if pos.board.bbBlackRook.Occupied(getSquare(file, Rank8)) {
+								if sq.File() == file {
+									keep = false
+								}
+								break;
+							}
+						}
+					} else if string(r) == "q" {
+						for file := FileA; file < kingFile; file += 1 {
+							if pos.board.bbBlackRook.Occupied(getSquare(file, Rank8)) {
+								if sq.File() == file {
+									keep = false
+								}
+								break;
+							}
+						}				
+					} else {
+						if fileChars[sq.File() : sq.File() + 1] == string(r) {
+							keep = false;
+						}
+					}
+					if keep {
+						new += string(r)
+					}
+				}
+				cr = new
+			}
+		}
 	}
 	if cr == "" {
 		cr = "-"
