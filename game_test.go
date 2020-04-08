@@ -22,24 +22,6 @@ func TestCheckmate(t *testing.T) {
 	if g.Outcome() != WhiteWon {
 		t.Fatalf("expected outcome %s but got %s", WhiteWon, g.Outcome())
 	}
-
-	// Checkmate on castle
-	fenStr = "Q7/5Qp1/3k2N1/7p/8/4B3/PP3PPP/R3K2R w KQ - 0 31"
-	fen, err = FEN(fenStr)
-	if err != nil {
-		t.Fatal(err)
-	}
-	g = NewGame(fen)
-	if err := g.MoveStr("O-O-O"); err != nil {
-		t.Fatal(err)
-	}
-	if g.Method() != Checkmate {
-		t.Fatalf("expected method %s but got %s", Checkmate, g.Method())
-	}
-	if g.Outcome() != WhiteWon {
-		t.Fatalf("expected outcome %s but got %s", WhiteWon, g.Outcome())
-	}
-
 }
 
 func TestCheckmateFromFen(t *testing.T) {
