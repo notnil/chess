@@ -203,8 +203,8 @@ func bbForPossibleMoves(pos *Position, pt PieceType, sq Square) bitboard {
 // TODO can calc isInCheck twice
 func castleMoves(pos *Position) []*Move {
 	moves := []*Move{}
-	kingSide := pos.castleRights.CanCastle(pos.Turn(), KingSide)
-	queenSide := pos.castleRights.CanCastle(pos.Turn(), QueenSide)
+	kingSide := pos.castleRights.CanCastle(pos.Board(), pos.Turn(), KingSide)
+	queenSide := pos.castleRights.CanCastle(pos.Board(), pos.Turn(), QueenSide)
 	// white king side
 	if pos.turn == White && kingSide &&
 		(^pos.board.emptySqs&(bbForSquare(F1)|bbForSquare(G1))) == 0 &&

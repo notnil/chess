@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 // Side represents a side of the board.
@@ -22,7 +23,10 @@ type CastleRights string
 
 // CanCastle returns true if the given color and side combination
 // can castle, otherwise returns false.
-func (cr CastleRights) CanCastle(c Color, side Side) bool {
+func (cr CastleRights) CanCastle(board *Board, c Color, side Side) bool {
+	if string(cr) == "-" {
+		return false
+	}
 	char := "k"
 	if side == QueenSide {
 		char = "q"
@@ -30,7 +34,28 @@ func (cr CastleRights) CanCastle(c Color, side Side) bool {
 	if c == White {
 		char = strings.ToUpper(char)
 	}
-	return strings.Contains(string(cr), char)
+	if strings.Contains(string(cr), char) {
+		return true
+	}
+	// Check for file rights.
+	for _, r := range(string(cr)) {
+		if (c == White) != unicode.IsUpper(r) {
+			continue
+		}
+		letter := strings.ToLower(fmt.Sprintf("%c", r))
+		if (letter == "q" || letter == "k") {
+			continue
+		}
+		kingFile := board.whiteKingSq.File()
+		if c != White {
+		  kingFile = board.blackKingSq.File()
+		}
+		kingFileLetter := fileChars[kingFile: kingFile + 1]
+		if (side == QueenSide) == (letter < kingFileLetter) {
+			return true
+		}
+	}
+	return false
 }
 
 // String implements the fmt.Stringer interface and returns
