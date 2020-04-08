@@ -61,10 +61,14 @@ var (
 		{m: &Move{s1: E4, s2: D5}, pos: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
 		{m: &Move{s1: E4, s2: E5}, pos: unsafeFEN("5r2/8/8/8/4K3/8/8/8 w - - 0 1")},
 		// castleing
-		{m: &Move{s1: E1, s2: G1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
-		{m: &Move{s1: E1, s2: C1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
-		{m: &Move{s1: E8, s2: G8}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
-		{m: &Move{s1: E8, s2: C8}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: G1, tags: KingSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: C1, tags: QueenSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E8, s2: G8, tags: KingSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		{m: &Move{s1: E8, s2: C8, tags: QueenSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: H1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: A1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E8, s2: H8}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
+		{m: &Move{s1: E8, s2: A8}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
 		// king moving in front of enemy pawn http://en.lichess.org/4HXJOtpN#75
 		{m: &Move{s1: F8, s2: G7}, pos: unsafeFEN("3rrk2/8/2p3P1/1p2nP1p/pP2p3/P1B1NbPB/2P2K2/5R2 b - - 1 38")},
 	}
@@ -105,11 +109,16 @@ var (
 		// castleing
 		{m: &Move{s1: E1, s2: B1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
 		{m: &Move{s1: E8, s2: B8}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R b KQkq - 0 1")},
-		{m: &Move{s1: E1, s2: C1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1")},
-		{m: &Move{s1: E1, s2: C1}, pos: unsafeFEN("2r1k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
-		{m: &Move{s1: E1, s2: C1}, pos: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
-		{m: &Move{s1: E1, s2: G1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
-		{m: &Move{s1: E1, s2: C1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
+		{m: &Move{s1: E1, s2: C1, tags: QueenSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: C1, tags: QueenSideCastle}, pos: unsafeFEN("2r1k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: C1, tags: QueenSideCastle}, pos: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: G1, tags: KingSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
+		{m: &Move{s1: E1, s2: C1, tags: QueenSideCastle}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
+		{m: &Move{s1: E1, s2: A1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R2QK2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: A1}, pos: unsafeFEN("2r1k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: A1}, pos: unsafeFEN("3rk2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1")},
+		{m: &Move{s1: E1, s2: H1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Qkq - 0 1")},
+		{m: &Move{s1: E1, s2: A1}, pos: unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w Kkq - 0 1")},
 		// invalid promotion for non-pawn move
 		{m: &Move{s1: B8, s2: D7, promo: Pawn}, pos: unsafeFEN("rn1qkb1r/pp3ppp/2p1pn2/3p4/2PP4/2NQPN2/PP3PPP/R1B1K2R b KQkq - 0 7")},
 		// en passant on doubled pawn file http://en.lichess.org/TnRtrHxf#24
@@ -289,6 +298,16 @@ func BenchmarkValidMoves(b *testing.B) {
 
 func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 	for _, move := range pos.ValidMoves() {
+		// Support comparison of legacy and 960 style castling move formats.
+		if move.HasTag(QueenSideCastle) || move.HasTag(KingSideCastle) {
+			castle_flags := QueenSideCastle | KingSideCastle
+			if (move.tags & castle_flags) == (m.tags & castle_flags) && move.s1 == m.s1 {
+				if m.tags != move.tags {
+					return false
+				}
+				return true
+			}
+		}
 		if move.s1 == m.s1 && move.s2 == m.s2 && move.promo == m.promo {
 			if useTags {
 				if m.tags != move.tags {
