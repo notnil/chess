@@ -248,9 +248,86 @@ var perfResults = []perfTest{
 		46, 2079, 89890,
 		// 3894594, 164075551, 6923051137, 287188994746, 11923589843526, 490154852788714
 	}},
+	// FRC/960 specific positions.
 	{pos: unsafeFEN("bqrkrbnn/ppp1pppp/8/8/8/8/PPP1PPPP/BQRKRBNN w CKeq - 0 1"), nodesPerDepth: []int{
 		19, 342, 6987, 142308, 
 		// 3294156, 75460468,
+	}},
+	{pos: unsafeFEN("qn1rkrbb/pp1p1ppp/2p1p3/3n4/4P2P/2NP4/PPP2PP1/Q1NRKRBB w FDfd - 1 9"), nodesPerDepth: []int{
+		24, 585, 14769, 356950,
+		// 9482310, 233468620
+	}},
+	{pos: unsafeFEN("nbnrbk2/p1pppp1p/1p3qr1/6p1/1B1P4/1N6/PPP1PPPP/1BNR1RKQ w d - 2 9"), nodesPerDepth: []int{
+		30, 796, 22780, 687302,
+		// 20120565, 641832725
+	}},
+	{pos: unsafeFEN("nrbbnk1r/pp2pppq/8/2pp3p/3P2P1/1N6/PPP1PP1P/1RBBNKQR w HBhb - 0 9"), nodesPerDepth: []int{
+		29, 1036, 31344, 
+		// 1139166, 35627310, 1310683359
+	}},
+	{pos: unsafeFEN("2rkqbnr/p1pppppp/2b5/1pn5/1P3P1Q/2B5/P1PPP1PP/1NRK1BNR w HChc - 3 9"), nodesPerDepth: []int{
+		33, 904, 30111, 
+		// 840025, 28194726, 801757709
+	}},
+	{pos: unsafeFEN("1qrkrnbb/1p1p1ppp/pnp1p3/8/3PP3/P6P/1PP2PP1/NQRKRNBB w ECec - 0 9"), nodesPerDepth: []int{
+		24, 688, 17342, 511444,
+		// 13322502, 403441498
+	}},
+	{pos: unsafeFEN("qbrnnkbr/1p2pp1p/p1p3p1/3p4/6P1/P1N4P/1PPPPP2/QBR1NKBR w HChc - 0 9"), nodesPerDepth: []int{
+		26, 701, 18930, 521377,
+		// 14733245, 416881799
+	}},
+	{pos: unsafeFEN("r1nbbkrq/1ppp2pp/2n2p2/p3p3/5P2/1N4BP/PPPPP1P1/RN1B1KRQ w GAga - 0 9"), nodesPerDepth: []int{
+		25, 774, 20141, 618805,
+		// 16718577, 515864053
+	}},
+	{pos: unsafeFEN("rnb2bqr/ppkpppp1/3n3p/2p5/6PP/2N2P2/PPPPP3/R1BKNBQR w HA - 2 9"), nodesPerDepth: []int{
+		30, 647, 20365, 467780,
+		// 15115531, 369257622
+	}},
+	{pos: unsafeFEN("b1rkqrnb/p1ppp1pp/1p1n4/5p2/5P2/PN5P/1PPPP1P1/BR1KQRNB w FBf - 0 9"), nodesPerDepth: []int{
+		23, 688, 17259, 531592,
+		// 14228372, 451842354
+	}},
+	{pos: unsafeFEN("bbrkqn1r/1pppppp1/5n2/p7/1PP2P1p/7N/P2PP1PP/BBRKQN1R w HChc - 1 9"), nodesPerDepth: []int{
+		36, 963, 35291, 
+		// 973839, 35907489, 1034223364
+	}},
+	{pos: unsafeFEN("1rkb1rbn/p1pp1ppp/3np3/1p6/4qP2/3NB3/PPPPPRPP/QRKB3N w Bfb - 0 9"), nodesPerDepth: []int{
+		22, 923, 22585, 914106,
+		// 24049880, 957218571
+	}},
+	{pos: unsafeFEN("rknr1bnq/p2pp1pp/1p3p2/2p4b/6PP/2P2N2/PP1PPP2/RKNRBB1Q w DAda - 1 9"), nodesPerDepth: []int{
+		25, 502, 13150, 279098,
+		// 7824941, 175766730
+	}},
+	{pos: unsafeFEN("1kbrnqnb/r1ppppp1/8/pp5p/8/1P1NP3/P1PP1PPP/RKB1RQNB w Ad - 2 9"), nodesPerDepth: []int{
+		26, 618, 17305, 442643,
+		// 13112297, 357030697
+	}},
+	{pos: unsafeFEN("r1bkrn1q/ppbppppp/5n2/2p5/3P4/P6N/1PP1PPPP/RBBKRNQ1 w KQkq - 3 99"), nodesPerDepth: []int{
+		27, 822, 22551, 678880,
+		// 19115128, 578210135
+	}},
+	{pos: unsafeFEN("qn1rkrbb/pp1p1ppp/2p1p3/3n4/4P2P/2NP4/PPP2PP1/Q1NRKRBB w KQkq - 1 9"), nodesPerDepth: []int{
+		24, 585, 14769, 356950,
+		// 9482310, 233468620
+	}},
+	{pos: unsafeFEN("qnr1bkrb/pppp2pp/3np3/5p2/8/P2P2P1/NPP1PP1P/QN1RBKRB w KQk - 3 9"), nodesPerDepth: []int{
+		33, 823, 26895, 713420,
+		// 23114629, 646390782
+	}},
+	{pos: unsafeFEN("bnrbk1qn/1pppprpp/8/p4p1P/6P1/3P4/PPP1PP2/BNRBKRQN w KQq - 0 9"), nodesPerDepth: []int{
+		22, 459, 11447, 268157,
+		// 7371098, 190583454
+	}},
+	{pos: unsafeFEN("1rbnkbrq/pppppp2/n5pp/2P5/P7/4N3/1P1PPPPP/RNB1KBRQ w KQk - 2 9"), nodesPerDepth: []int{
+		23, 574, 14146, 391413, 
+		// 10203438, 301874034
+	}},
+	{pos: unsafeFEN("rbbk1rnq/pppp1pp1/4p2p/8/3P2n1/4BN1P/PPP1PPP1/RB1K1RNQ w KQkq - 3 9"), nodesPerDepth: []int{
+		26, 628, 16151, 411995, 
+		// 11237919, 300314373
 	}},
 }
 
