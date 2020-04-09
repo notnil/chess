@@ -250,7 +250,7 @@ var perfResults = []perfTest{
 	}},
 	// FRC/960 specific positions.
 	{pos: unsafeFEN("bqrkrbnn/ppp1pppp/8/8/8/8/PPP1PPPP/BQRKRBNN w CKeq - 0 1"), nodesPerDepth: []int{
-		19, 342, 6987, 142308, 
+		19, 342, 6987, 142308,
 		// 3294156, 75460468,
 	}},
 	{pos: unsafeFEN("qn1rkrbb/pp1p1ppp/2p1p3/3n4/4P2P/2NP4/PPP2PP1/Q1NRKRBB w FDfd - 1 9"), nodesPerDepth: []int{
@@ -262,11 +262,11 @@ var perfResults = []perfTest{
 		// 20120565, 641832725
 	}},
 	{pos: unsafeFEN("nrbbnk1r/pp2pppq/8/2pp3p/3P2P1/1N6/PPP1PP1P/1RBBNKQR w HBhb - 0 9"), nodesPerDepth: []int{
-		29, 1036, 31344, 
+		29, 1036, 31344,
 		// 1139166, 35627310, 1310683359
 	}},
 	{pos: unsafeFEN("2rkqbnr/p1pppppp/2b5/1pn5/1P3P1Q/2B5/P1PPP1PP/1NRK1BNR w HChc - 3 9"), nodesPerDepth: []int{
-		33, 904, 30111, 
+		33, 904, 30111,
 		// 840025, 28194726, 801757709
 	}},
 	{pos: unsafeFEN("1qrkrnbb/1p1p1ppp/pnp1p3/8/3PP3/P6P/1PP2PP1/NQRKRNBB w ECec - 0 9"), nodesPerDepth: []int{
@@ -290,7 +290,7 @@ var perfResults = []perfTest{
 		// 14228372, 451842354
 	}},
 	{pos: unsafeFEN("bbrkqn1r/1pppppp1/5n2/p7/1PP2P1p/7N/P2PP1PP/BBRKQN1R w HChc - 1 9"), nodesPerDepth: []int{
-		36, 963, 35291, 
+		36, 963, 35291,
 		// 973839, 35907489, 1034223364
 	}},
 	{pos: unsafeFEN("1rkb1rbn/p1pp1ppp/3np3/1p6/4qP2/3NB3/PPPPPRPP/QRKB3N w Bfb - 0 9"), nodesPerDepth: []int{
@@ -322,11 +322,11 @@ var perfResults = []perfTest{
 		// 7371098, 190583454
 	}},
 	{pos: unsafeFEN("1rbnkbrq/pppppp2/n5pp/2P5/P7/4N3/1P1PPPPP/RNB1KBRQ w KQk - 2 9"), nodesPerDepth: []int{
-		23, 574, 14146, 391413, 
+		23, 574, 14146, 391413,
 		// 10203438, 301874034
 	}},
 	{pos: unsafeFEN("rbbk1rnq/pppp1pp1/4p2p/8/3P2n1/4BN1P/PPP1PPP1/RB1K1RNQ w KQkq - 3 9"), nodesPerDepth: []int{
-		26, 628, 16151, 411995, 
+		26, 628, 16151, 411995,
 		// 11237919, 300314373
 	}},
 }
@@ -382,7 +382,7 @@ func moveIsValid(pos *Position, m *Move, useTags bool) bool {
 		// Support comparison of legacy and 960 style castling move formats.
 		if move.HasTag(QueenSideCastle) || move.HasTag(KingSideCastle) {
 			castle_flags := QueenSideCastle | KingSideCastle
-			if (move.tags & castle_flags) == (m.tags & castle_flags) && move.s1 == m.s1 {
+			if (move.tags&castle_flags) == (m.tags&castle_flags) && move.s1 == m.s1 {
 				if m.tags != move.tags {
 					return false
 				}

@@ -38,19 +38,19 @@ func (cr CastleRights) CanCastle(board *Board, c Color, side Side) bool {
 		return true
 	}
 	// Check for file rights.
-	for _, r := range(string(cr)) {
+	for _, r := range string(cr) {
 		if (c == White) != unicode.IsUpper(r) {
 			continue
 		}
 		letter := strings.ToLower(fmt.Sprintf("%c", r))
-		if (letter == "q" || letter == "k") {
+		if letter == "q" || letter == "k" {
 			continue
 		}
 		kingFile := board.whiteKingSq.File()
 		if c != White {
-		  kingFile = board.blackKingSq.File()
+			kingFile = board.blackKingSq.File()
 		}
-		kingFileLetter := fileChars[kingFile: kingFile + 1]
+		kingFileLetter := fileChars[kingFile : kingFile+1]
 		if (side == QueenSide) == (letter < kingFileLetter) {
 			return true
 		}
@@ -207,7 +207,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 	p := pos.board.Piece(m.s1)
 	if p == WhiteKing {
 		new := ""
-		for _, r := range(cr) {
+		for _, r := range cr {
 			if unicode.IsLower(r) {
 				new += string(r)
 			}
@@ -215,7 +215,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 		cr = new
 	} else if p == BlackKing {
 		new := ""
-		for _, r := range(cr) {
+		for _, r := range cr {
 			if unicode.IsUpper(r) {
 				new += string(r)
 			}
@@ -233,7 +233,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 			if sq.Rank() == Rank1 || sq == m.s1 && m.s2.Rank() == Rank1 {
 				new := ""
 				kingFile := pos.board.whiteKingSq.File()
-				for _, r := range(cr) {
+				for _, r := range cr {
 					keep := true
 					if unicode.IsLower(r) {
 					} else if string(r) == "K" {
@@ -245,9 +245,9 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.Rank() != Rank1 && sq.File() > file {
 									keep = false
 									// No longer the outer, needs to change to A-H format.
-									new += strings.ToUpper(fileChars[file:file+1])
+									new += strings.ToUpper(fileChars[file : file+1])
 								}
-								break;
+								break
 							}
 						}
 					} else if string(r) == "Q" {
@@ -259,14 +259,14 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.Rank() != Rank1 && sq.File() < file {
 									keep = false
 									// No longer the outer, needs to change to A-H format.
-									new += strings.ToUpper(fileChars[file:file+1])
+									new += strings.ToUpper(fileChars[file : file+1])
 								}
-								break;
+								break
 							}
-						}				
+						}
 					} else {
-						if fileChars[sq.File() : sq.File() + 1] == strings.ToLower(string(r)) {
-							keep = false;
+						if fileChars[sq.File():sq.File()+1] == strings.ToLower(string(r)) {
+							keep = false
 						}
 					}
 					if keep {
@@ -275,7 +275,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 				}
 				cr = new
 			}
-		} 
+		}
 		if p == BlackRook || p2 == BlackRook {
 			sq := m.s1
 			if p2 == BlackRook {
@@ -284,7 +284,7 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 			if sq.Rank() == Rank8 || sq == m.s1 && m.s2.Rank() == Rank8 {
 				new := ""
 				kingFile := pos.board.blackKingSq.File()
-				for _, r := range(cr) {
+				for _, r := range cr {
 					keep := true
 					if unicode.IsUpper(r) {
 					} else if string(r) == "k" {
@@ -296,9 +296,9 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.Rank() != Rank8 && sq.File() > file {
 									keep = false
 									// No longer the outer, needs to change to a-h format.
-									new += fileChars[file:file+1]
+									new += fileChars[file : file+1]
 								}
-								break;
+								break
 							}
 						}
 					} else if string(r) == "q" {
@@ -310,14 +310,14 @@ func (pos *Position) updateCastleRights(m *Move) CastleRights {
 								if sq.Rank() != Rank8 && sq.File() < file {
 									keep = false
 									// No longer the outer, needs to change to a-h format.
-									new += fileChars[file:file+1]
+									new += fileChars[file : file+1]
 								}
-								break;
+								break
 							}
-						}				
+						}
 					} else {
-						if fileChars[sq.File() : sq.File() + 1] == string(r) {
-							keep = false;
+						if fileChars[sq.File():sq.File()+1] == string(r) {
+							keep = false
 						}
 					}
 					if keep {

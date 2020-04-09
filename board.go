@@ -173,17 +173,17 @@ func (b *Board) update(m *Move) {
 	s2BB := bbForSquare(m.s2)
 
 	legacyCastle := false
-	if (m.HasTag(KingSideCastle) || m.HasTag(QueenSideCastle)) {
+	if m.HasTag(KingSideCastle) || m.HasTag(QueenSideCastle) {
 		// We support both legacy and 960 style moves.
-		if p1.Color() == White  {
+		if p1.Color() == White {
 			if b.bbWhiteRook.Occupied(m.s2) {
 				// Clear out rook, it'll be placed back later.
 				b.bbWhiteRook = b.bbWhiteRook & ^s2BB
 				// Correct the king destination.
-				if (m.HasTag(QueenSideCastle)) {
+				if m.HasTag(QueenSideCastle) {
 					s2BB = bbForSquare(getSquare(FileC, m.s2.Rank()))
 				} else {
-					s2BB = bbForSquare(getSquare(FileG, m.s2.Rank()))			
+					s2BB = bbForSquare(getSquare(FileG, m.s2.Rank()))
 				}
 			} else {
 				legacyCastle = true
@@ -193,14 +193,14 @@ func (b *Board) update(m *Move) {
 				// Clear out rook, it'll be placed back later.
 				b.bbBlackRook = b.bbBlackRook & ^s2BB
 				// Correct the king destination.
-				if (m.HasTag(QueenSideCastle)) {
+				if m.HasTag(QueenSideCastle) {
 					s2BB = bbForSquare(getSquare(FileC, m.s2.Rank()))
 				} else {
-					s2BB = bbForSquare(getSquare(FileG, m.s2.Rank()))			
+					s2BB = bbForSquare(getSquare(FileG, m.s2.Rank()))
 				}
 			} else {
 				legacyCastle = true
-			}		
+			}
 		}
 	}
 
@@ -233,7 +233,7 @@ func (b *Board) update(m *Move) {
 			b.bbWhitePawn = ^(bbForSquare(m.s2) >> 8) & b.bbWhitePawn
 		}
 	}
-	if (legacyCastle) {
+	if legacyCastle {
 		// move rook for castle
 		if p1.Color() == White && m.HasTag(KingSideCastle) {
 			b.bbWhiteRook = (b.bbWhiteRook & ^bbForSquare(H1) | bbForSquare(F1))
@@ -249,12 +249,12 @@ func (b *Board) update(m *Move) {
 		if p1.Color() == White && m.HasTag(KingSideCastle) {
 			b.bbWhiteRook = (b.bbWhiteRook | bbForSquare(F1))
 		} else if p1.Color() == White && m.HasTag(QueenSideCastle) {
-			b.bbWhiteRook = (b.bbWhiteRook  | bbForSquare(D1))
+			b.bbWhiteRook = (b.bbWhiteRook | bbForSquare(D1))
 		} else if p1.Color() == Black && m.HasTag(KingSideCastle) {
 			b.bbBlackRook = (b.bbBlackRook | bbForSquare(F8))
 		} else if p1.Color() == Black && m.HasTag(QueenSideCastle) {
-			b.bbBlackRook = (b.bbBlackRook  | bbForSquare(D8))
-		}	
+			b.bbBlackRook = (b.bbBlackRook | bbForSquare(D8))
+		}
 	}
 	b.calcConvienceBBs(m)
 }

@@ -205,16 +205,15 @@ func bbForPossibleMoves(pos *Position, pt PieceType, sq Square) bitboard {
 	return bitboard(0)
 }
 
-
 func min(a, b File) File {
-	if (a < b) {
+	if a < b {
 		return a
 	}
 	return b
 }
 
 func max(a, b File) File {
-	if (a > b) {
+	if a > b {
 		return a
 	}
 	return b
@@ -234,7 +233,7 @@ func castleMoves(pos *Position) []*Move {
 		kingFile = pos.board.blackKingSq.File()
 		kingRank = Rank8
 	}
-	for _, r := range(string(pos.castleRights)) {
+	for _, r := range string(pos.castleRights) {
 		if (pos.Turn() == White) != unicode.IsUpper(r) {
 			continue
 		}
@@ -244,16 +243,16 @@ func castleMoves(pos *Position) []*Move {
 				for file := FileH; file > kingFile; file -= 1 {
 					if pos.board.bbWhiteRook.Occupied(getSquare(file, kingRank)) {
 						rookFile = file
-						break;
+						break
 					}
 				}
-			} else if string(r) == "Q"{
+			} else if string(r) == "Q" {
 				for file := FileA; file < kingFile; file += 1 {
 					if pos.board.bbWhiteRook.Occupied(getSquare(file, kingRank)) {
 						rookFile = file
-						break;
+						break
 					}
-				}			
+				}
 			} else {
 				rookFile = File(int(FileA) + strings.Index(fileChars, strings.ToLower(string(r))))
 			}
@@ -262,19 +261,19 @@ func castleMoves(pos *Position) []*Move {
 				for file := FileH; file > kingFile; file -= 1 {
 					if pos.board.bbBlackRook.Occupied(getSquare(file, kingRank)) {
 						rookFile = file
-						break;
+						break
 					}
 				}
-			} else if string(r) == "q"{
+			} else if string(r) == "q" {
 				for file := FileA; file < kingFile; file += 1 {
 					if pos.board.bbBlackRook.Occupied(getSquare(file, kingRank)) {
 						rookFile = file
-						break;
+						break
 					}
-				}			
+				}
 			} else {
 				rookFile = File(int(FileA) + strings.Index(fileChars, string(r)))
-			}		
+			}
 		}
 		if rookFile < kingFile {
 			// Validate Queen side legal.
@@ -288,13 +287,15 @@ func castleMoves(pos *Position) []*Move {
 				}
 			}
 			if count > 2 {
-				continue;
+				continue
 			}
 			legal := true
 			lower = min(kingFile, FileC)
 			higher = max(kingFile, FileC)
 			for file := lower; file <= higher; file += 1 {
-				if file == kingFile { continue }
+				if file == kingFile {
+					continue
+				}
 				if squaresAreAttacked(pos, getSquare(file, kingRank)) {
 					legal = false
 					break
@@ -319,13 +320,15 @@ func castleMoves(pos *Position) []*Move {
 				}
 			}
 			if count > 2 {
-				continue;
+				continue
 			}
 			legal := true
 			lower = min(kingFile, FileG)
 			higher = max(kingFile, FileG)
 			for file := lower; file <= higher; file += 1 {
-				if file == kingFile { continue }
+				if file == kingFile {
+					continue
+				}
 				if squaresAreAttacked(pos, getSquare(file, kingRank)) {
 					legal = false
 					break
@@ -337,7 +340,7 @@ func castleMoves(pos *Position) []*Move {
 			m := &Move{s1: getSquare(kingFile, kingRank), s2: getSquare(rookFile, kingRank)}
 			m.addTag(KingSideCastle)
 			addTags(m, pos)
-			moves = append(moves, m)		
+			moves = append(moves, m)
 		}
 	}
 	return moves

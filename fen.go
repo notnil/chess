@@ -111,7 +111,7 @@ func formCastleRights(castleStr string) (CastleRights, error) {
 		switch c {
 		case "K", "Q", "A", "B", "C", "D", "E", "F", "G", "H":
 			upperCount += 1
-		case "k", "q", "a", "b", "c", "d", "e", "f", "g", "h": 
+		case "k", "q", "a", "b", "c", "d", "e", "f", "g", "h":
 			lowerCount += 1
 		case "-":
 			otherCount += 1

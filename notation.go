@@ -73,15 +73,15 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		} else if (s1 == E1 && s2 == C1) || (s1 == E8 && s2 == C8) {
 			m.addTag(QueenSideCastle)
 		}
-		if (p.Color() == White && pos.Board().bbForPiece(WhiteRook).Occupied(s2)) {
-			if (s2.File() < s1.File()) {
+		if p.Color() == White && pos.Board().bbForPiece(WhiteRook).Occupied(s2) {
+			if s2.File() < s1.File() {
 				m.addTag(QueenSideCastle)
 			} else {
 				m.addTag(KingSideCastle)
 			}
 		}
-		if (p.Color() == Black && pos.Board().bbForPiece(BlackRook).Occupied(s2)) {
-			if (s2.File() < s1.File()) {
+		if p.Color() == Black && pos.Board().bbForPiece(BlackRook).Occupied(s2) {
+			if s2.File() < s1.File() {
 				m.addTag(QueenSideCastle)
 			} else {
 				m.addTag(KingSideCastle)
@@ -170,7 +170,7 @@ func formS1(pos *Position, m *Move) string {
 			req = true
 
 			if mv.s1.File() == m.s1.File() {
-				rankReq = true;
+				rankReq = true
 			}
 
 			if mv.s1.Rank() == m.s1.Rank() {

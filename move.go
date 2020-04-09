@@ -67,7 +67,7 @@ func (a moveSlice) find(m *Move) *Move {
 		// Support comparison of legacy and 960 style castling move formats.
 		if move.HasTag(QueenSideCastle) || move.HasTag(KingSideCastle) {
 			castle_flags := QueenSideCastle | KingSideCastle
-			if (move.tags & castle_flags) == (m.tags & castle_flags) && move.s1 == m.s1 {
+			if (move.tags&castle_flags) == (m.tags&castle_flags) && move.s1 == m.s1 {
 				return move
 			}
 		}
