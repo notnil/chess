@@ -6,7 +6,7 @@
 
 ## Introduction
 
-Chess is a go library which provides common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, and others.  It is well tested and optimized for performance and has no dependencies outside the standard library.   
+Chess is a go library which provides common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, and others.  It is well tested and optimized for performance.   
 
 ## Installation
 
@@ -318,7 +318,7 @@ fmt.Println(game.Position().Board().Draw())
 
 #### SVG Representation
 
-[chessimg](https://github.com/notnil/chessimg) is an image utility designed to work with the chess package to render an SVG of a chess position.  It presents configuration options such as dark and white square colors and squares to highlight.
+[chess/image](https://github.com/notnil/chess/image) is an image utility designed to work with the chess package to render an SVG of a chess position.  It presents configuration options such as dark and white square colors and squares to highlight.
 
 ```go
 // create file
@@ -337,8 +337,8 @@ if err := pos.UnmarshalText([]byte(fenStr)); err != nil {
 
 // write board SVG to file
 yellow := color.RGBA{255, 255, 0, 1}
-mark := chessimg.MarkSquares(yellow, chess.D2, chess.D4)
-if err := chessimg.SVG(f, pos.Board(), mark); err != nil {
+mark := image.MarkSquares(yellow, chess.D2, chess.D4)
+if err := image.SVG(f, pos.Board(), mark); err != nil {
 	// handle error
 }
 ```
