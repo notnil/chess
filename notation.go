@@ -48,21 +48,21 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	l := len(s)
 	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos.String())
 	if l < 4 || l > 5 {
-		return nil, err
+		return nil, fmt.Errorf("%w. Length of move string must be in the range [4,5]. Got '%d'", err, l)
 	}
 	s1, ok := strToSquareMap[s[0:2]]
 	if !ok {
-		return nil, err
+		return nil, fmt.Errorf("%w. First square is not valid. Got '%s'", err, s[0:2])
 	}
 	s2, ok := strToSquareMap[s[2:4]]
 	if !ok {
-		return nil, err
+		return nil, fmt.Errorf("%w. Second square is not valid. Got '%s'", err, s[2:4])
 	}
 	promo := NoPieceType
 	if l == 5 {
 		promo = pieceTypeFromChar(s[4:5])
 		if promo == NoPieceType {
-			return nil, err
+			return nil, fmt.Errorf("%w. Invalid  Piece Type. Got '%s'", err, s[4:5])
 		}
 	}
 	m := &Move{s1: s1, s2: s2, promo: promo}
