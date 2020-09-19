@@ -2,6 +2,7 @@ package chess
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -43,13 +44,47 @@ func (_ LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
 	return m.S1().String() + m.S2().String() + m.Promo().String()
 }
 
+// convertToUCI Returns equivalent LongAlgebraicNotation in Universal Chess
+// Interface format.
+//
+// If the provided string is not in Long Algebraic Notation, return the
+// string unmodified.
+func convertToUCI(s string) string {
+
+	// Identify only the squares and promotion if present in the string
+	re := regexp.MustCompile("[KQBNR]?([a-h][1-8])[-x]?([a-h][1-8])(=?([QqBbNnRr]))?[+#]?")
+	matches := re.FindStringSubmatch(s)
+
+	// Two squares were not found
+	if len(matches) == 0 || matches[1] == "" || matches[2] == "" {
+		return s
+	}
+
+	return fmt.Sprintf("%s%s%s",
+		matches[1],
+		matches[2],
+		strings.ToLower(matches[4]),
+	)
+}
+
+// Decode returns the details for a move based off the provided string and
+// board state.
+//
+// While the algorithm is named "LongAlgebraicNotation", this function access
+// both the long algebraic notation and Uiversal Chess Interface notation.
+//
 // Decode implements the Decoder interface.
 func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
+
+	s = convertToUCI(s)
+
 	l := len(s)
 	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos.String())
+
 	if l < 4 || l > 5 {
 		return nil, fmt.Errorf("%w. Length of move string must be in the range [4,5]. Got '%d'", err, l)
 	}
+
 	s1, ok := strToSquareMap[s[0:2]]
 	if !ok {
 		return nil, fmt.Errorf("%w. First square is not valid. Got '%s'", err, s[0:2])
@@ -58,6 +93,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	if !ok {
 		return nil, fmt.Errorf("%w. Second square is not valid. Got '%s'", err, s[2:4])
 	}
+
 	promo := NoPieceType
 	if l == 5 {
 		promo = pieceTypeFromChar(s[4:5])
@@ -65,6 +101,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 			return nil, fmt.Errorf("%w. Invalid  Piece Type. Got '%s'", err, s[4:5])
 		}
 	}
+
 	m := &Move{s1: s1, s2: s2, promo: promo}
 	p := pos.Board().Piece(s1)
 	if p.Type() == King {
@@ -77,11 +114,13 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		m.addTag(EnPassant)
 		m.addTag(Capture)
 	}
+
 	c1 := p.Color()
 	c2 := pos.Board().Piece(s2).Color()
 	if c2 != NoColor && c1 != c2 {
 		m.addTag(Capture)
 	}
+
 	return m, nil
 }
 
@@ -156,7 +195,7 @@ func formS1(pos *Position, m *Move) string {
 			req = true
 
 			if mv.s1.File() == m.s1.File() {
-				rankReq = true;
+				rankReq = true
 			}
 
 			if mv.s1.Rank() == m.s1.Rank() {

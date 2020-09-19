@@ -131,5 +131,12 @@
 		"algText" : "N6d5",
 		"longAlgText" : "b6d5",
 		"description" : "https://lichess.org/editor/8/2B4R/1N6/2Q5/1N1N4/2N5/5k2/1K5R_w_-_-_17_72"
-	}
+	},
+    {
+        "pos1" : "3r1rk1/1p1bqp2/p1pR1p1p/8/4P3/P4B2/1PP1QPP1/3R3K w - - 2 22",
+        "pos2" : "3r1rk1/1p1bqp2/p1pR1p1p/8/4P3/P4B2/1PPRQPP1/7K b - - 3 22",
+        "algText" : "R1d2",
+        "longAlgText" : "Rd1d2",
+        "description" : "https://lichess.org/editor/3r1rk1/1p1bqp2/p1pR1p1p/8/4P3/P4B2/1PP1QPP1/3R3K_w_-_-_2_22"
+    }
 ]

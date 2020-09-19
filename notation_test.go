@@ -112,3 +112,55 @@ func TestInvalidDecoding(t *testing.T) {
 		}
 	}
 }
+
+func TestConvertToUCI(t *testing.T) {
+	tests := []struct {
+		name            string
+		longAlgNotation string
+		expectedUCI     string
+	}{
+		{
+			name:            "Pawn Move (same as UCI)",
+			longAlgNotation: "d6c7",
+			expectedUCI:     "d6c7",
+		},
+		{
+			name:            "UCI with Promotion",
+			longAlgNotation: "d2d1q",
+			expectedUCI:     "d2d1q",
+		},
+		{
+			name:            "Named Piece Move, Check",
+			longAlgNotation: "Nh4f5+",
+			expectedUCI:     "h4f5",
+		},
+		{
+			name:            "Optional Hyphen, Check",
+			longAlgNotation: "Nh4-f5+",
+			expectedUCI:     "h4f5",
+		},
+		{
+			name:            "Capture, Checkmate",
+			longAlgNotation: "Qd4xf6#",
+			expectedUCI:     "d4f6",
+		},
+		{
+			name:            "Pawn Promote",
+			longAlgNotation: "a7b8=Q",
+			expectedUCI:     "a7b8q",
+		},
+		{
+			name:            "Pawn Promote, Checkmate",
+			longAlgNotation: "a7b8=Q#",
+			expectedUCI:     "a7b8q",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if res := convertToUCI(test.longAlgNotation); res != test.expectedUCI {
+				t.Errorf("'%s' not converted to UCI as expected. Got '%s', Expected '%s'", test.longAlgNotation, res, test.expectedUCI)
+			}
+		})
+	}
+}
