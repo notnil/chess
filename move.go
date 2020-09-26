@@ -1,5 +1,7 @@
 package chess
 
+import "fmt"
+
 // A MoveTag represents a notable consequence of a move.
 type MoveTag uint16
 
@@ -69,4 +71,43 @@ func (a moveSlice) find(m *Move) *Move {
 		}
 	}
 	return nil
+}
+
+// An Evaluation represents the strength of a move and how it affects the
+// player's chances for winning
+type Evaluation uint16
+
+const (
+	// The following evaluations are the common ones. While others exist,
+	// they tend to be less formal, so we can ignore them for now
+	Blunder Evaluation = 1 << iota
+	Mistake
+	Dubious
+	// Risky Moves are described as "Interesting but difficult to fully evaluate"
+	Risky
+	Good
+	Brilliant
+	NoEvaluation
+)
+
+func symbolToEvaluation(s string) (Evaluation, error) {
+	switch s {
+	case "??":
+		return Blunder, nil
+	case "?":
+		return Mistake, nil
+	case "?!":
+		return Dubious, nil
+	case "!?":
+		return Risky, nil
+	case "!":
+		return Good, nil
+	case "!!":
+		return Brilliant, nil
+	}
+
+	if s != "" {
+		return NoEvaluation, fmt.Errorf("Evaluation for '%s' appears invalid", s)
+	}
+	return NoEvaluation, nil
 }

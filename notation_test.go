@@ -11,6 +11,7 @@ type validNotationTest struct {
 	Pos1        *Position
 	Pos2        *Position
 	AlgText     string
+	LongAlgText string
 	UCIAlgText  string
 	Description string
 }
@@ -31,13 +32,19 @@ func TestValidDecoding(t *testing.T) {
 	for _, test := range validTests {
 		t.Run(test.Description, func(t *testing.T) {
 			for name, alg := range map[string]Notation{
-				"AlgebraicNotation": AlgebraicNotation{},
-				"UCINotation":       UCINotation{},
+				"AlgebraicNotation":     AlgebraicNotation{},
+				"LongAlgebraicNotation": LongAlgebraicNotation{},
+				"UCINotation":           UCINotation{},
 			} {
 				t.Run(name, func(t *testing.T) {
-					moveText := test.AlgText
-					if name == "UCINotation" {
+					var moveText string
+					switch name {
+					case "LongAlgebraicNotation":
+						moveText = test.LongAlgText
+					case "UCINotation":
 						moveText = test.UCIAlgText
+					default:
+						moveText = test.AlgText
 					}
 
 					m, err := alg.Decode(test.Pos1, moveText)
