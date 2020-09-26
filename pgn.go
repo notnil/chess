@@ -65,9 +65,9 @@ func decodePGN(pgn string) (*Game, error) {
 	g.ignoreAutomaticDraws = true
 	var notation Notation = AlgebraicNotation{}
 	if len(moveStrs) > 0 {
-		_, err := LongAlgebraicNotation{}.Decode(g.Position(), moveStrs[0])
+		_, err := UCINotation{}.Decode(g.Position(), moveStrs[0])
 		if err == nil {
-			notation = LongAlgebraicNotation{}
+			notation = UCINotation{}
 		}
 	}
 	for _, alg := range moveStrs {

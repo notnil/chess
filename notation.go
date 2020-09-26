@@ -28,7 +28,7 @@ type Notation interface {
 	Decoder
 }
 
-// convertToUCI Returns equivalent LongAlgebraicNotation in Universal Chess
+// convertToUCI Returns LongAlgebraicNotation in equivalent Universal Chess
 // Interface format.
 //
 // If the provided string is not in Long Algebraic Notation, return the

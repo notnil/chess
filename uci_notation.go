@@ -2,35 +2,28 @@ package chess
 
 import "fmt"
 
-// LongAlgebraicNotation is a more computer friendly alternative to algebraic
-// notation.  This notation uses the same format as the UCI (Universal Chess
-// Interface).  Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
-type LongAlgebraicNotation struct{}
+// UCINotation is a more computer friendly alternative to algebraic
+// notation.  Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+type UCINotation struct{}
 
-// String implements the fmt.Stringer interface and returns
-// the notation's name.
-func (_ LongAlgebraicNotation) String() string {
-	return "Long Algebraic Notation"
+// String implements the fmt.Stringer interface and returns the notation's name.
+func (_ UCINotation) String() string {
+	return "Universal Chess Interface Notation"
 }
 
 // Encode implements the Encoder interface.
-func (_ LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
+func (_ UCINotation) Encode(pos *Position, m *Move) string {
 	return m.S1().String() + m.S2().String() + m.Promo().String()
 }
 
 // Decode returns the details for a move based off the provided string and
 // board state.
 //
-// While the algorithm is named "LongAlgebraicNotation", this function access
-// both the long algebraic notation and Uiversal Chess Interface notation.
-//
 // Decode implements the Decoder interface.
-func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
-
-	s = convertToUCI(s)
+func (_ UCINotation) Decode(pos *Position, s string) (*Move, error) {
 
 	l := len(s)
-	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos.String())
+	err := fmt.Errorf(`chess: failed to decode UCI notation "%s" for position %s`, s, pos.String())
 
 	if l < 4 || l > 5 {
 		return nil, fmt.Errorf("%w. Length of move string must be in the range [4,5]. Got '%d'", err, l)
