@@ -50,6 +50,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 
 	m := &Move{}
 	err := fmt.Errorf(`chess: failed to decode Long Algebraic Notation "%s" for position %s`, s, pos.String())
+	var decodeErr error
 
 	if len(s) >= 5 && s[0:5] == "O-O-O" {
 		if pos.turn == White {
@@ -75,12 +76,10 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		var pt PieceType
 		pt, s = LongAlgebraicNotation{}.pieceTypeSubstr(s)
 
-		var ok bool
-		m.s1, ok = strToSquareMap[s[0:2]]
-		if !ok {
-			return nil, fmt.Errorf("%w. First square is not valid. Got '%s'", err, s[0:2])
+		m.s1, s, decodeErr = LongAlgebraicNotation{}.squareSubStr(s)
+		if decodeErr != nil {
+			return nil, fmt.Errorf("%w. First square '%s' is not valid. Reason '%s'", err, decodeErr, m.s1)
 		}
-		s = s[2:]
 
 		var isCap bool
 		isCap, s = LongAlgebraicNotation{}.captureSubStr(s)
@@ -88,11 +87,10 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 			m.addTag(Capture)
 		}
 
-		m.s2, ok = strToSquareMap[s[0:2]]
-		if !ok {
-			return nil, fmt.Errorf("%w. Second square is not valid. Got '%s'", err, s[2:4])
+		m.s2, s, decodeErr = LongAlgebraicNotation{}.squareSubStr(s)
+		if decodeErr != nil {
+			return nil, fmt.Errorf("%w. Second square '%s' is not valid. Reason: %s", err, m.s2, decodeErr)
 		}
-		s = s[2:]
 
 		if pt == Pawn && m.s2 == pos.enPassantSquare {
 			m.addTag(EnPassant)
@@ -104,7 +102,7 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 
 	_, s = LongAlgebraicNotation{}.checkSymbolSubstr(s)
 
-	_, decodeErr := symbolToEvaluation(s)
+	_, decodeErr = symbolToEvaluation(s)
 	if decodeErr != nil {
 		return nil, fmt.Errorf("%w. %s", err, decodeErr)
 	}
@@ -132,6 +130,22 @@ func (_ LongAlgebraicNotation) pieceTypeSubstr(s string) (PieceType, string) {
 		return Bishop, s[1:]
 	}
 	return Pawn, s
+}
+
+// squareSubStr returns the next square in the provided string
+//
+// The remaining string (without the capture notation) is also returned
+func (_ LongAlgebraicNotation) squareSubStr(s string) (Square, string, error) {
+	if len(s) < 2 {
+		return NoSquare, s, fmt.Errorf("String '%s' not long enough to parse square", s)
+	}
+
+	square, ok := strToSquareMap[s[0:2]]
+	if !ok {
+		return square, s[2:], fmt.Errorf("String '%s' could not be parsed as square.", s[0:2])
+	}
+
+	return square, s[2:], nil
 }
 
 // captureSubStr returns whether the notation references a capture

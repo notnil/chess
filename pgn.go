@@ -63,15 +63,8 @@ func decodePGN(pgn string) (*Game, error) {
 	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
 	g := NewGame(gameFuncs...)
 	g.ignoreAutomaticDraws = true
-	var notation Notation = AlgebraicNotation{}
-	if len(moveStrs) > 0 {
-		_, err := UCINotation{}.Decode(g.Position(), moveStrs[0])
-		if err == nil {
-			notation = UCINotation{}
-		}
-	}
 	for _, alg := range moveStrs {
-		m, err := notation.Decode(g.Position(), alg)
+		m, err := Decode(g.Position(), alg)
 		if err != nil {
 			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
 		}
@@ -81,6 +74,22 @@ func decodePGN(pgn string) (*Game, error) {
 	}
 	g.outcome = outcome
 	return g, nil
+}
+
+// Decode tries available alorithms to parse incoming notation for the
+// provided position
+func Decode(pos *Position, s string) (*Move, error) {
+	m, err := UCINotation{}.Decode(pos, s)
+	if err == nil {
+		return m, err
+	}
+
+	m, err = LongAlgebraicNotation{}.Decode(pos, s)
+	if err == nil {
+		return m, err
+	}
+
+	return AlgebraicNotation{}.Decode(pos, s)
 }
 
 func encodePGN(g *Game) string {

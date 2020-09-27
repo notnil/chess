@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -110,5 +111,19 @@ func BenchmarkPGN(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		opt, _ := PGN(strings.NewReader(pgn))
 		NewGame(opt)
+	}
+}
+
+func TestGamesFromPGN(t *testing.T) {
+	filename := "./assets/lichess_db_standard_rated_2013-01.pgn"
+	file, err := os.Open(filename)
+	if err != nil {
+		t.Fatalf("Could not read test file '%s': %s\n", filename, err)
+	}
+	defer file.Close()
+
+	_, err = GamesFromPGN(file)
+	if err != nil {
+		t.Fatalf("Error Parsing PGN file: %s", err)
 	}
 }
