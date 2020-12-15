@@ -1,6 +1,6 @@
-// Package chess uci.go (partly) implements the UCI protocol for communicating with
+// Package uci chess uci.go (partly) implements the UCI protocol for communicating with
 // chess engines.
-package chess
+package uci
 
 import (
 	"bufio"
@@ -13,11 +13,13 @@ import (
 	"strings"
 	"time"
 	"unicode"
+
+	chess "github.com/MelleKoning/chess/pkg/chess"
 )
 
 // CommunicationTimeout is the time to wait for a response from the engine. If
 // the engine fails to respond, it is terminated.
-var CommunicationTimeout time.Duration = 5 * time.Second
+var CommunicationTimeout time.Duration = 15 * time.Second
 
 // process implements io.Closer for a running process.
 type process struct {
@@ -124,7 +126,7 @@ func (e *uciEngine) Quit() {
 // Search
 
 // SetPosition implements engine.Engine.
-func (e *uciEngine) SetPosition(position *Position) {
+func (e *uciEngine) SetPosition(position *chess.Position) {
 	e.Send("ucinewgame")
 	fen, err := position.MarshalText()
 	if err != nil {
@@ -202,7 +204,7 @@ type comm struct {
 	err       error                      // error state of the communication
 	linec     <-chan string              // engine output lines
 	infoc     chan<- UciEngineInfo       // for sending out "info ..." lines
-	position  *Position                  // position being searched
+	position  *chess.Position            // position being searched
 	process   io.Closer                  // the thing to close on error
 	stdin     io.Writer                  // for sending commands
 	log       *log.Logger                // communication log
@@ -280,7 +282,7 @@ loop:
 					timeout = time.After(CommunicationTimeout)
 					errc = nil
 				}
-			case *Position:
+			case *chess.Position:
 				c.position = v
 			case chan UciEngineInfo:
 				if c.position == nil {
@@ -427,25 +429,24 @@ func (c *comm) parseOption(line string) {
 }
 
 // Info
-
 type Info struct {
 	Line     string
-	position *Position
+	position *chess.Position
 	err      error
 }
 
 func (i Info) Err() error { return i.err }
 
-func (i Info) BestMove() (Move, bool) {
+func (i Info) BestMove() (chess.Move, bool) {
 	if move, ok := i.Value("bestmove"); ok {
-		lan := LongAlgebraicNotation{}
+		lan := chess.LongAlgebraicNotation{}
 		m, err := lan.Decode(i.position, move) //i. board. ParseMove(move)
 		if err != nil {
-			m = &Move{} // NullMove ?
+			m = &chess.Move{} // NullMove ?
 		}
 		return *m, true
 	}
-	return Move{}, false
+	return chess.Move{}, false
 }
 
 func (i Info) Pv() *Pv {
@@ -464,7 +465,7 @@ func (i Info) Pv() *Pv {
 	}
 	score, _ := strconv.Atoi(s)
 	//if i.board.SideToMove == chess.Black {
-	if i.position.turn == Black {
+	if i.position.Turn() == chess.Black {
 		score = -score
 	}
 	_, upper := i.Value("upperbound")
@@ -473,7 +474,7 @@ func (i Info) Pv() *Pv {
 	// principal variation
 	b := i.position
 	fields := strings.Fields(pv)
-	moves := make([]Move, 0, len(fields))
+	moves := make([]chess.Move, 0, len(fields))
 	for _, move := range fields {
 		m, err := b.ParseMove(move)
 		if err != nil {

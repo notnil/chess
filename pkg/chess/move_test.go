@@ -149,7 +149,7 @@ var (
 )
 
 func unsafeFEN(s string) *Position {
-	pos, err := decodeFEN(s)
+	pos, err := DecodeFEN(s)
 	if err != nil {
 		log.Fatal(err)
 	}

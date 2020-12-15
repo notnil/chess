@@ -35,7 +35,7 @@ var (
 
 func TestValidFENs(t *testing.T) {
 	for _, f := range validFENs {
-		state, err := decodeFEN(f)
+		state, err := DecodeFEN(f)
 		if err != nil {
 			t.Fatal("recieved unexpected error", err)
 		}
@@ -47,7 +47,7 @@ func TestValidFENs(t *testing.T) {
 
 func TestInvalidFENs(t *testing.T) {
 	for _, f := range invalidFENs {
-		if _, err := decodeFEN(f); err == nil {
+		if _, err := DecodeFEN(f); err == nil {
 			t.Fatal("fen expected error from ", f)
 		}
 	}

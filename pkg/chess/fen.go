@@ -9,7 +9,7 @@ import (
 // Decodes FEN notation into a GameState.  An error is returned
 // if there is a parsing error.  FEN notation format:
 // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
-func decodeFEN(fen string) (*Position, error) {
+func DecodeFEN(fen string) (*Position, error) {
 	fen = strings.TrimSpace(fen)
 	parts := strings.Split(fen, " ")
 	if len(parts) != 6 {

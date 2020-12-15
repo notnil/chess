@@ -1,11 +1,12 @@
 // package engine defines a generic interface for communicating with chess
 // engines.
-package chess
+package uci
 
 import (
 	"errors"
 
 	"time"
+	chess "github.com/MelleKoning/chess/pkg/chess"
 )
 
 var (
@@ -18,7 +19,7 @@ var (
 // Engine provides a generic interface to a running chess engine.
 type UciEngine interface {
 	// SetPosition sets the position to search.
-	SetPosition(position *Position)
+	SetPosition(position *chess.Position)
 
 	// Search starts an infinite search of the position; that is, until
 	// Stop is called. During the search, Info's will be sent on the
@@ -55,7 +56,7 @@ type UciEngine interface {
 
 // Pv holds the details of a principal variation from an engine search.
 type Pv struct {
-	Moves      []Move // principal variation moves
+	Moves      []chess.Move // principal variation moves
 	Score      int    // centipawns or moves-to-mate; positive is good for white
 	Mate       bool   // if yes then Score is moves-to-mate
 	Upperbound bool   // Score is a upperbound
@@ -80,7 +81,7 @@ type UciEngineInfo interface {
 
 	// BestMove returns the best move found by the engine. It returns !ok
 	// if no best move has been found yet.
-	BestMove() (move Move, ok bool)
+	BestMove() (move chess.Move, ok bool)
 
 	// Pv returns the principal variation of this Info. It can be nil if no
 	// pv information is available.

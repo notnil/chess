@@ -1,4 +1,4 @@
-package chess
+package uci
 
 import (
 	"fmt"
@@ -6,6 +6,7 @@ import (
 	"os"
 	"testing"
 	"text/tabwriter"
+	chess "github.com/MelleKoning/chess/pkg/chess"
 )
 
 var stdout = os.Stdout
@@ -26,11 +27,11 @@ func TestUciEngine(t *testing.T) {
 	}
 	w.Flush()
 
-	position, err := decodeFEN("5r2/pqN1Qpk1/2r3pp/2n1R3/5R2/6P1/4PPKP/8 w - - 0 1")
+	position, err := chess.DecodeFEN("5r2/pqN1Qpk1/2r3pp/2n1R3/5R2/6P1/4PPKP/8 w - - 0 1")
 	e.SetPosition(position)
 	//board := MustParseFen()
 	//e.SetPosition(board)
-	for info := range e.SearchDepth(8) {
+	for info := range e.SearchDepth(3) {
 		if info.Err() != nil {
 			t.Fatalf("%s", info.Err())
 		}

@@ -149,7 +149,7 @@ func (pos *Position) MarshalText() (text []byte, err error) {
 // UnmarshalText implements the encoding.TextUnarshaler interface and
 // assumes the data is in the FEN format.
 func (pos *Position) UnmarshalText(text []byte) error {
-	cp, err := decodeFEN(string(text))
+	cp, err := DecodeFEN(string(text))
 	if err != nil {
 		return err
 	}
