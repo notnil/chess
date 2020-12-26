@@ -345,6 +345,44 @@ if err := image.SVG(f, pos.Board(), mark); err != nil {
 
 ![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.png)      
 
+### Openings
+
+[chess/opening](https://github.com/notnil/chess/opening) is an opening book of chess openings converted into the chess package format.
+
+#### Datasource
+
+The [Encyclopaedia of Chess Openings](https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings) (ECO) functions as the datasource for this package.  A consise list of openings with PGNs can be found [here](http://www.webcitation.org/query?url=http://www.geocities.com/siliconvalley/lab/7378/eco.htm&date=2010-02-20+10:14:24).
+
+#### Visual
+
+Advance Variation subtree of the French Defense:
+
+![subtree](https://github.com/notnil/opening/raw/master/test.png)
+
+#### Example
+
+```go   
+package main
+
+import (
+    "fmt"
+
+    "github.com/notnil/chess"
+    "github.com/notnil/chess/opening"
+)
+
+func main(){
+    g := chess.NewGame()
+	g.MoveStr("e4")
+	g.MoveStr("e6")
+
+	// print French Defense
+	book := opening.NewBookECO()
+	o := book.Find(g.Moves())
+	fmt.Println(o.Title())
+}
+```
+
 ### Example Program
 
 Valid moves are randomly selected until the game is over: 
