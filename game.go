@@ -104,7 +104,7 @@ func PGN(r io.Reader) (func(*Game), error) {
 // function is designed to be used in the NewGame constructor.
 // An error is returned if there is a problem parsing the FEN data.
 func FEN(fen string) (func(*Game), error) {
-	pos, err := decodeFEN(fen)
+	pos, err := DecodeFEN(fen)
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +140,7 @@ func UseNotation(n Notation) func(*Game) {
 // opening position.  Options can be given to configure
 // the game's initial state.
 func NewGame(options ...func(*Game)) *Game {
-	pos, _ := decodeFEN(startFEN)
+	pos, _ := DecodeFEN(startFEN)
 	game := &Game{
 		notation:  AlgebraicNotation{},
 		moves:     []*Move{},
