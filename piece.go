@@ -83,6 +83,8 @@ func (p PieceType) String() string {
 		return "b"
 	case Knight:
 		return "n"
+	case Pawn:
+		return "p"
 	}
 	return ""
 }

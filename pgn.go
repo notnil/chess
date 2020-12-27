@@ -49,7 +49,19 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)
-	g := NewGame(TagPairs(tagPairs))
+	gameFuncs := []func(*Game){}
+	for _, tp := range tagPairs {
+		if strings.ToLower(tp.Key) == "fen" {
+			fenFunc, err := FEN(tp.Value)
+			if err != nil {
+				return nil, fmt.Errorf("chess: pgn decode error %s on tag %s", err.Error(), tp.Key)
+			}
+			gameFuncs = append(gameFuncs, fenFunc)
+			break
+		}
+	}
+	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
+	g := NewGame(gameFuncs...)
 	g.ignoreAutomaticDraws = true
 	var notation Notation = AlgebraicNotation{}
 	if len(moveStrs) > 0 {

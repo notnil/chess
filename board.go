@@ -58,6 +58,54 @@ func (b *Board) SquareMap() map[Square]Piece {
 	return m
 }
 
+// Rotate rotates the board 90 degrees clockwise.
+func (b *Board) Rotate() *Board {
+	return b.Flip(UpDown).Transpose()
+}
+
+// FlipDirection is the direction for the Board.Flip method
+type FlipDirection int
+
+const (
+	// UpDown flips the board's rank values
+	UpDown FlipDirection = iota
+	// LeftRight flips the board's file values
+	LeftRight
+)
+
+// Flip flips the board over the vertical or hoizontal
+// center line.
+func (b *Board) Flip(fd FlipDirection) *Board {
+	m := map[Square]Piece{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		var mv Square
+		switch fd {
+		case UpDown:
+			file := Square(sq).File()
+			rank := Rank(7 - Square(sq).Rank())
+			mv = getSquare(file, rank)
+		case LeftRight:
+			file := File(7 - Square(sq).File())
+			rank := Square(sq).Rank()
+			mv = getSquare(file, rank)
+		}
+		m[mv] = b.Piece(Square(sq))
+	}
+	return NewBoard(m)
+}
+
+// Transpose flips the board over the A8 to H1 diagonal.
+func (b *Board) Transpose() *Board {
+	m := map[Square]Piece{}
+	for sq := 0; sq < numOfSquaresInBoard; sq++ {
+		file := File(7 - Square(sq).Rank())
+		rank := Rank(7 - Square(sq).File())
+		mv := getSquare(file, rank)
+		m[mv] = b.Piece(Square(sq))
+	}
+	return NewBoard(m)
+}
+
 // Draw returns visual representation of the board useful for debugging.
 func (b *Board) Draw() string {
 	s := "\n A B C D E F G H\n"
