@@ -7,10 +7,6 @@ import (
 	"io/ioutil"
 )
 
-const (
-	startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-)
-
 // A Outcome is the result of a game.
 type Outcome string
 
@@ -140,7 +136,7 @@ func UseNotation(n Notation) func(*Game) {
 // opening position.  Options can be given to configure
 // the game's initial state.
 func NewGame(options ...func(*Game)) *Game {
-	pos, _ := decodeFEN(startFEN)
+	pos := StartingPosition()
 	game := &Game{
 		notation:  AlgebraicNotation{},
 		moves:     []*Move{},

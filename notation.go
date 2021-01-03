@@ -46,7 +46,7 @@ func (_ LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
 // Decode implements the Decoder interface.
 func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	l := len(s)
-	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos.String())
+	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos)
 	if l < 4 || l > 5 {
 		return nil, err
 	}
@@ -66,6 +66,9 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		}
 	}
 	m := &Move{s1: s1, s2: s2, promo: promo}
+	if pos == nil {
+		return m, nil
+	}
 	p := pos.Board().Piece(s1)
 	if p.Type() == King {
 		if (s1 == E1 && s2 == G1) || (s1 == E8 && s2 == G8) {
@@ -156,7 +159,7 @@ func formS1(pos *Position, m *Move) string {
 			req = true
 
 			if mv.s1.File() == m.s1.File() {
-				rankReq = true;
+				rankReq = true
 			}
 
 			if mv.s1.Rank() == m.s1.Rank() {

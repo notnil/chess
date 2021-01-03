@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Image is an chess image utility that converts board positions into [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), or Scalable Vector Graphics, images.  [svgo](https://github.com/ajstarks/svgo), the only outside dependency, is used to construct the SVG document.
+**image** is an chess image utility that converts board positions into [SVG](https://en.wikipedia.org/wiki/Scalable_Vector_Graphics), or Scalable Vector Graphics, images.  [svgo](https://github.com/ajstarks/svgo), the only outside dependency, is used to construct the SVG document.
 
 ## Usage
 
@@ -80,5 +80,5 @@ func main() {
 
 ### Example Program Result
 
-![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](/example.svg)
+![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.svg)
  

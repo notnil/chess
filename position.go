@@ -52,6 +52,17 @@ type Position struct {
 	validMoves      []*Move
 }
 
+const (
+	startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+)
+
+// StartingPosition returns the starting position
+// rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+func StartingPosition() *Position {
+	pos, _ := decodeFEN(startFEN)
+	return pos
+}
+
 // Update returns a new position resulting from the given move.
 // The move itself isn't validated, if validation is needed use
 // Game's Move method.  This method is more performant for bots that

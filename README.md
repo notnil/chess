@@ -6,17 +6,116 @@
 
 ## Introduction
 
-Chess is a go library which provides common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, and others.  It is well tested and optimized for performance.   
+**chess** is a set of go packages which provide common chess utilities such as move generation, turn management, checkmate detection, PGN encoding, UCI interoperability, image generation, opening book exploration, and others.  It is well tested and optimized for performance.   
+
+![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.png)    
+
+
+## Repo Structure
+
+| Package | Docs Link | Description |
+| ------------- | ------------- | ------------- |
+| **chess**  | [notnil/chess](README.md)  | Move generation, serialization / deserialization, turn management, checkmate detection  |
+| **image**  | [notnil/chess/image](image/README.md)  | SVG chess board image generation  |
+| **opening**  | [notnil/chess/opening](opening/README.md)  | Opening book interactivity  |
+| **uci**  | [notnil/chess/uci](uci/README.md)  | Universal Chess Interface client  |
 
 ## Installation
 
-The package can be installed using "go get".
+**chess** can be installed using "go get".
 
 ```bash
 go get -u github.com/notnil/chess
-```
+``` 
 
 ## Usage
+
+### Example Random Game 
+
+```go
+package main
+
+import (
+	"fmt"
+	"math/rand"
+
+	"github.com/notnil/chess"
+)
+
+func main() {
+	game := chess.NewGame()
+	// generate moves until game is over
+	for game.Outcome() == chess.NoOutcome {
+		// select a random move
+		moves := game.ValidMoves()
+		move := moves[rand.Intn(len(moves))]
+		game.Move(move)
+	}
+	// print outcome and game PGN
+	fmt.Println(game.Position().Board().Draw())
+	fmt.Printf("Game completed. %s by %s.\n", game.Outcome(), game.Method())
+	fmt.Println(game.String())
+	/*
+		Output:
+
+		 A B C D E F G H
+		8- - - - - - - -
+		7- - - - - - ♚ -
+		6- - - - ♗ - - -
+		5- - - - - - - -
+		4- - - - - - - -
+		3♔ - - - - - - -
+		2- - - - - - - -
+		1- - - - - - - -
+
+		Game completed. 1/2-1/2 by InsufficientMaterial.
+
+		1.Nc3 b6 2.a4 e6 3.d4 Bb7 ...
+	*/
+}
+```
+
+### Example Stockfish v. Stockfish
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/notnil/chess"
+	"github.com/notnil/chess/uci"
+)
+
+func main() {
+	// set up engine to use stockfish exe
+	eng, err := uci.New("stockfish")
+	if err != nil {
+		panic(err)
+	}
+	defer eng.Close()
+	// initialize uci with new game
+	if err := eng.Run(uci.CmdUCI, uci.CmdIsReady, uci.CmdUCINewGame); err != nil {
+		panic(err)
+	}
+	// have stockfish play speed chess against itself (10 msec per move)
+	game := chess.NewGame()
+	for game.Outcome() == chess.NoOutcome {
+		cmdPos := uci.CmdPosition{Position: game.Position()}
+		cmdGo := uci.CmdGo{MoveTime: time.Second / 100}
+		if err := eng.Run(cmdPos, cmdGo); err != nil {
+			panic(err)
+		}
+		move := eng.SearchResults().BestMove
+		if err := game.Move(move); err != nil {
+			panic(err)
+		}
+	}
+	fmt.Println(game.String())
+	// Output: 
+	// 1.c4 c5 2.Nf3 e6 3.Nc3 Nc6 4.d4 cxd4 5.Nxd4 Nf6 6.a3 d5 7.cxd5 exd5 8.Bf4 Bc5 9.Ndb5 O-O 10.Nc7 d4 11.Na4 Be7 12.Nxa8 Bf5 13.g3 Qd5 14.f3 Rxa8 15.Bg2 Rd8 16.b4 Qe6 17.Nc5 Bxc5 18.bxc5 Nd5 19.O-O Nc3 20.Qd2 Nxe2+ 21.Kh1 d3 22.Bd6 Qd7 23.Rab1 h6 24.a4 Re8 25.g4 Bg6 26.a5 Ncd4 27.Qb4 Qe6 28.Qxb7 Nc2 29.Qxa7 Ne3 30.Rb8 Nxf1 31.Qb6 d2 32.Rxe8+ Qxe8 33.Qb3 Ne3 34.h3 Bc2 35.Qxc2 Nxc2 36.Kh2 d1=Q 37.h4 Qg1+ 38.Kh3 Ne1 39.h5 Qxg2+ 40.Kh4 Nxf3#  0-1
+}
+```
 
 ### Movement
 
@@ -292,10 +391,6 @@ game.MoveStr("e7e5")
 fmt.Println(game) // 1.e2e4 e7e5  *
 ```
 
-### Visualization
-
-Chess has multiple ways to visualize board positions for debugging and presentation.  
-
 #### Text Representation
 
 Board's Draw() method can be used to visualize a position using unicode chess symbols.  
@@ -314,102 +409,6 @@ fmt.Println(game.Position().Board().Draw())
 2♙ ♙ ♙ ♙ ♙ ♙ ♙ ♙
 1♖ ♘ ♗ ♕ ♔ ♗ ♘ ♖
 */
-```
-
-#### SVG Representation
-
-[chess/image](https://github.com/notnil/chess/image) is an image utility designed to work with the chess package to render an SVG of a chess position.  It presents configuration options such as dark and white square colors and squares to highlight.
-
-```go
-// create file
-f, err := os.Create("example.svg")
-if err != nil {
-	// handle error
-}
-defer f.Close()
-
-// create board position
-fenStr := "rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1"
-pos := &chess.Position{}
-if err := pos.UnmarshalText([]byte(fenStr)); err != nil {
-	// handle error
-}
-
-// write board SVG to file
-yellow := color.RGBA{255, 255, 0, 1}
-mark := image.MarkSquares(yellow, chess.D2, chess.D4)
-if err := image.SVG(f, pos.Board(), mark); err != nil {
-	// handle error
-}
-```
-
-![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.png)      
-
-### Openings
-
-[chess/opening](https://github.com/notnil/chess/opening) is an opening book of chess openings converted into the chess package format.
-
-#### Datasource
-
-The [Encyclopaedia of Chess Openings](https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings) (ECO) functions as the datasource for this package.  A consise list of openings with PGNs can be found [here](http://www.webcitation.org/query?url=http://www.geocities.com/siliconvalley/lab/7378/eco.htm&date=2010-02-20+10:14:24).
-
-#### Visual
-
-Advance Variation subtree of the French Defense:
-
-![subtree](https://github.com/notnil/opening/raw/master/test.png)
-
-#### Example
-
-```go   
-package main
-
-import (
-    "fmt"
-
-    "github.com/notnil/chess"
-    "github.com/notnil/chess/opening"
-)
-
-func main(){
-    g := chess.NewGame()
-	g.MoveStr("e4")
-	g.MoveStr("e6")
-
-	// print French Defense
-	book := opening.NewBookECO()
-	o := book.Find(g.Moves())
-	fmt.Println(o.Title())
-}
-```
-
-### Example Program
-
-Valid moves are randomly selected until the game is over: 
-```go
-package main
-
-import (
-	"fmt"
-	"math/rand"
-
-	"github.com/notnil/chess"
-)
-
-func main() {
-	game := chess.NewGame()
-	// generate moves until game is over
-	for game.Outcome() == chess.NoOutcome {
-		// select a random move
-		moves := game.ValidMoves()
-		move := moves[rand.Intn(len(moves))]
-		game.Move(move)
-	}
-	// print outcome and game PGN
-	fmt.Println(game.Position().Board().Draw())
-	fmt.Printf("Game completed. %s by %s.\n", game.Outcome(), game.Method())
-	fmt.Println(game.String())    
-}
 ```
 
 ## Performance

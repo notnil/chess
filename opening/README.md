@@ -1,14 +1,12 @@
 # opening
 
-## Datasource
-
-The [Encyclopaedia of Chess Openings](https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings) (ECO) functions as the datasource for this package.  A consise list of openings with PGNs can be found [here](http://www.webcitation.org/query?url=http://www.geocities.com/siliconvalley/lab/7378/eco.htm&date=2010-02-20+10:14:24).
+**opening** provides interactivity to opening books such as [Encyclopaedia of Chess Openings](https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings) (ECO) which is loadable from the package.  
 
 ## Visual
 
 Advance Variation subtree of the French Defense:
 
-![subtree](https://github.com/notnil/opening/raw/master/test.png)
+![subtree](test.png)
 
 ## Example
 
