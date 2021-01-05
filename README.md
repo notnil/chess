@@ -340,6 +340,25 @@ fmt.Println(game)
 */
 ```
 
+#### Scan PGN
+
+For parsing large PGN database files use Scanner:
+
+```go
+f, err := os.Open("lichess_db_standard_rated_2013-01.pgn")
+if err != nil {
+	panic(err)
+}
+defer f.Close()
+
+scanner := chess.NewScanner(f)
+for scanner.Scan() {
+	game := scanner.Next()
+	fmt.Println(game.GetTagPair("Site"))
+	// Output &{Site https://lichess.org/8jb5kiqw}
+}
+```
+
 ### FEN
 
 [FEN](https://en.wikipedia.org/wiki/Forsyth–Edwards_Notation), or Forsyth–Edwards Notation, is the standard notation for describing a board position.  FENs include piece positions, turn, castle rights, en passant square, half move counter (for [50 move rule](https://en.wikipedia.org/wiki/Fifty-move_rule)), and full move counter. 

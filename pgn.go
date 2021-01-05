@@ -9,10 +9,72 @@ import (
 	"strings"
 )
 
+// Scanner is modeled on the bufio.Scanner type but
+// instead of reading lines, it reads chess games
+// from concatenated PGN files.  It is designed to
+// replace GamesFromPGN in order to handle very large
+// PGN database files such as https://database.lichess.org/.
+type Scanner struct {
+	scanr *bufio.Scanner
+	game  *Game
+	err   error
+}
+
+// NewScanner returns a new scanner.
+func NewScanner(r io.Reader) *Scanner {
+	scanr := bufio.NewScanner(r)
+	return &Scanner{scanr: scanr}
+}
+
+// Scan returns false if there was an error parsing
+// a game or EOF was reached.  Running scan populates
+// data for Next() and Err().
+func (s *Scanner) Scan() bool {
+	s.err = nil
+	var sb strings.Builder
+	count := 0
+	for {
+		scan := s.scanr.Scan()
+		if scan == false {
+			s.err = s.scanr.Err()
+			return false
+		}
+		line := s.scanr.Text() + "\n"
+		if strings.TrimSpace(line) == "" {
+			count++
+		} else {
+			sb.WriteString(line)
+		}
+		if count == 2 {
+			game, err := decodePGN(sb.String())
+			if err != nil {
+				s.err = err
+				return false
+			}
+			s.game = game
+			break
+		}
+	}
+	return true
+}
+
+// Next returns the game from the most recent Scan.
+func (s *Scanner) Next() *Game {
+	return s.game
+}
+
+// Err returns an error encountered during scanning.
+// Typically this will be a PGN parsing error or an
+// io.EOF.
+func (s *Scanner) Err() error {
+	return s.err
+}
+
 // GamesFromPGN returns all PGN decoding games from the
 // reader.  It is designed to be used decoding multiple PGNs
 // in the same file.  An error is returned if there is an
 // issue parsing the PGNs.
+// Deprecated: Use Scanner instead.
 func GamesFromPGN(r io.Reader) ([]*Game, error) {
 	games := []*Game{}
 	current := ""
@@ -46,6 +108,18 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 	return games, nil
 }
 
+type multiDecoder []Decoder
+
+func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
+	for _, d := range a {
+		m, err := d.Decode(pos, s)
+		if err == nil {
+			return m, nil
+		}
+	}
+	return nil, fmt.Errorf(`chess: failed to decode notation text "%s" for position %s`, s, pos)
+}
+
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveStrs, outcome := moveList(pgn)
@@ -63,15 +137,9 @@ func decodePGN(pgn string) (*Game, error) {
 	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
 	g := NewGame(gameFuncs...)
 	g.ignoreAutomaticDraws = true
-	var notation Notation = AlgebraicNotation{}
-	if len(moveStrs) > 0 {
-		_, err := LongAlgebraicNotation{}.Decode(g.Position(), moveStrs[0])
-		if err == nil {
-			notation = LongAlgebraicNotation{}
-		}
-	}
+	decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
 	for _, alg := range moveStrs {
-		m, err := notation.Decode(g.Position(), alg)
+		m, err := decoder.Decode(g.Position(), alg)
 		if err != nil {
 			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
 		}
@@ -162,6 +230,6 @@ func removeSection(leftChar, rightChar, s string) string {
 		if i == nil {
 			return s
 		}
-		s = s[0:i[0]] + s[i[1]:len(s)]
+		s = s[0:i[0]] + s[i[1]:]
 	}
 }

@@ -27,24 +27,24 @@ type Notation interface {
 	Decoder
 }
 
-// LongAlgebraicNotation is a more computer friendly alternative to algebraic
+// UCINotation is a more computer friendly alternative to algebraic
 // notation.  This notation uses the same format as the UCI (Universal Chess
 // Interface).  Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
-type LongAlgebraicNotation struct{}
+type UCINotation struct{}
 
 // String implements the fmt.Stringer interface and returns
 // the notation's name.
-func (_ LongAlgebraicNotation) String() string {
-	return "Long Algebraic Notation"
+func (UCINotation) String() string {
+	return "UCI Notation"
 }
 
 // Encode implements the Encoder interface.
-func (_ LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
+func (UCINotation) Encode(pos *Position, m *Move) string {
 	return m.S1().String() + m.S2().String() + m.Promo().String()
 }
 
 // Decode implements the Decoder interface.
-func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
+func (UCINotation) Decode(pos *Position, s string) (*Move, error) {
 	l := len(s)
 	err := fmt.Errorf(`chess: failed to decode long algebraic notation text "%s" for position %s`, s, pos)
 	if l < 4 || l > 5 {
@@ -89,18 +89,18 @@ func (_ LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 }
 
 // AlgebraicNotation (or Standard Algebraic Notation) is the
-// official chess notation used by FIDE. Examples: e2, e5,
+// official chess notation used by FIDE. Examples: e4, e5,
 // O-O (short castling), e8=Q (promotion)
 type AlgebraicNotation struct{}
 
 // String implements the fmt.Stringer interface and returns
 // the notation's name.
-func (_ AlgebraicNotation) String() string {
+func (AlgebraicNotation) String() string {
 	return "Algebraic Notation"
 }
 
 // Encode implements the Encoder interface.
-func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
+func (AlgebraicNotation) Encode(pos *Position, m *Move) string {
 	checkChar := getCheckChar(pos, m)
 	if m.HasTag(KingSideCastle) {
 		return "O-O" + checkChar
@@ -122,7 +122,7 @@ func (_ AlgebraicNotation) Encode(pos *Position, m *Move) string {
 }
 
 // Decode implements the Decoder interface.
-func (_ AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
+func (AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 	s = removeSubstrings(s, "?", "!", "+", "#", "e.p.")
 	for _, m := range pos.ValidMoves() {
 		str := AlgebraicNotation{}.Encode(pos, m)
@@ -132,6 +132,53 @@ func (_ AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 		}
 	}
 	return nil, fmt.Errorf("chess: could not decode algebraic notation %s for position %s", s, pos.String())
+}
+
+// LongAlgebraicNotation is a fully expanded version of
+// algebraic notation in which the starting and ending
+// squares are specified.
+// Examples: e2e4, Rd3xd7, O-O (short castling), e7e8=Q (promotion)
+type LongAlgebraicNotation struct{}
+
+// String implements the fmt.Stringer interface and returns
+// the notation's name.
+func (LongAlgebraicNotation) String() string {
+	return "Long Algebraic Notation"
+}
+
+// Encode implements the Encoder interface.
+func (LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
+	checkChar := getCheckChar(pos, m)
+	if m.HasTag(KingSideCastle) {
+		return "O-O" + checkChar
+	} else if m.HasTag(QueenSideCastle) {
+		return "O-O-O" + checkChar
+	}
+	p := pos.Board().Piece(m.S1())
+	pChar := charFromPieceType(p.Type())
+	s1Str := m.s1.String()
+	capChar := ""
+	if m.HasTag(Capture) || m.HasTag(EnPassant) {
+		capChar = "x"
+		if p.Type() == Pawn && s1Str == "" {
+			capChar = m.s1.File().String() + "x"
+		}
+	}
+	promoText := charForPromo(m.promo)
+	return pChar + s1Str + capChar + m.s2.String() + promoText + checkChar
+}
+
+// Decode implements the Decoder interface.
+func (LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
+	s = removeSubstrings(s, "?", "!", "+", "#", "e.p.")
+	for _, m := range pos.ValidMoves() {
+		str := LongAlgebraicNotation{}.Encode(pos, m)
+		str = removeSubstrings(str, "?", "!", "+", "#", "e.p.")
+		if str == s {
+			return m, nil
+		}
+	}
+	return nil, fmt.Errorf("chess: could not decode long algebraic notation %s for position %s", s, pos.String())
 }
 
 func getCheckChar(pos *Position, move *Move) string {
