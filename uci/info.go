@@ -189,7 +189,7 @@ func (info *Info) UnmarshalText(text []byte) error {
 			}
 			info.CurrentMoveNumber = v
 		case "currmove":
-			m, err := chess.LongAlgebraicNotation{}.Decode(nil, s)
+			m, err := chess.UCINotation{}.Decode(nil, s)
 			if err != nil {
 				return err
 			}
@@ -225,7 +225,7 @@ func (info *Info) UnmarshalText(text []byte) error {
 			}
 			info.CPULoad = v
 		case "pv":
-			m, err := chess.LongAlgebraicNotation{}.Decode(nil, s)
+			m, err := chess.UCINotation{}.Decode(nil, s)
 			if err != nil {
 				return err
 			}

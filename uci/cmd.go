@@ -164,7 +164,7 @@ func (cmd CmdPosition) String() string {
 	}
 	moveStrs := []string{}
 	for _, m := range cmd.Moves {
-		mStr := chess.LongAlgebraicNotation{}.Encode(nil, m)
+		mStr := chess.UCINotation{}.Encode(nil, m)
 		moveStrs = append(moveStrs, mStr)
 	}
 	return fmt.Sprintf("position fen %s moves %s", cmd.Position, strings.Join(moveStrs, " "))
@@ -268,7 +268,7 @@ func (cmd CmdGo) String() string {
 	if len(cmd.SearchMoves) > 0 {
 		a = append(a, "searchmoves")
 		for _, m := range cmd.SearchMoves {
-			mStr := chess.LongAlgebraicNotation{}.Encode(nil, m)
+			mStr := chess.UCINotation{}.Encode(nil, m)
 			a = append(a, mStr)
 		}
 	}
@@ -286,13 +286,13 @@ func (CmdGo) ProcessResponse(e *Engine) error {
 			if len(parts) <= 1 {
 				return errors.New("best move not found " + text)
 			}
-			bestMove, err := chess.LongAlgebraicNotation{}.Decode(nil, parts[1])
+			bestMove, err := chess.UCINotation{}.Decode(nil, parts[1])
 			if err != nil {
 				return err
 			}
 			results.BestMove = bestMove
 			if len(parts) >= 4 {
-				ponderMove, err := chess.LongAlgebraicNotation{}.Decode(nil, parts[3])
+				ponderMove, err := chess.UCINotation{}.Decode(nil, parts[3])
 				if err != nil {
 					return err
 				}
