@@ -167,12 +167,12 @@ func (pos *Position) UnmarshalText(text []byte) error {
 	if err != nil {
 		return err
 	}
-	pos.board = cp.board                     // 768 bits
-	pos.castleRights = cp.castleRights       // 4 bits
-	pos.turn = cp.turn                       // 1 bit
-	pos.enPassantSquare = cp.enPassantSquare // 8 bits
-	pos.halfMoveClock = cp.halfMoveClock     // 8 bits
-	pos.moveCount = cp.moveCount             // 16 bits
+	pos.board = cp.board
+	pos.castleRights = cp.castleRights
+	pos.turn = cp.turn
+	pos.enPassantSquare = cp.enPassantSquare
+	pos.halfMoveClock = cp.halfMoveClock
+	pos.moveCount = cp.moveCount
 	pos.inCheck = isInCheck(cp)
 	return nil
 }
