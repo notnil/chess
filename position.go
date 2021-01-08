@@ -1,7 +1,10 @@
 package chess
 
 import (
+	"bytes"
 	"crypto/md5"
+	"encoding/binary"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -164,13 +167,118 @@ func (pos *Position) UnmarshalText(text []byte) error {
 	if err != nil {
 		return err
 	}
-	pos.board = cp.board
-	pos.turn = cp.turn
-	pos.castleRights = cp.castleRights
-	pos.enPassantSquare = cp.enPassantSquare
-	pos.halfMoveClock = cp.halfMoveClock
-	pos.moveCount = cp.moveCount
+	pos.board = cp.board                     // 768 bits
+	pos.castleRights = cp.castleRights       // 4 bits
+	pos.turn = cp.turn                       // 1 bit
+	pos.enPassantSquare = cp.enPassantSquare // 8 bits
+	pos.halfMoveClock = cp.halfMoveClock     // 8 bits
+	pos.moveCount = cp.moveCount             // 16 bits
 	pos.inCheck = isInCheck(cp)
+	return nil
+}
+
+const (
+	bitsCastleWhiteKing uint8 = 1 << iota
+	bitsCastleWhiteQueen
+	bitsCastleBlackKing
+	bitsCastleBlackQueen
+	bitsTurn
+	bitsHasEnPassant
+)
+
+// MarshalBinary implements the encoding.BinaryMarshaler interface
+func (pos *Position) MarshalBinary() (data []byte, err error) {
+	boardBytes, err := pos.board.MarshalBinary()
+	if err != nil {
+		return nil, err
+	}
+	buf := bytes.NewBuffer(boardBytes)
+	if err := binary.Write(buf, binary.BigEndian, uint8(pos.halfMoveClock)); err != nil {
+		return nil, err
+	}
+	if err := binary.Write(buf, binary.BigEndian, uint16(pos.moveCount)); err != nil {
+		return nil, err
+	}
+	if err := binary.Write(buf, binary.BigEndian, pos.enPassantSquare); err != nil {
+		return nil, err
+	}
+	var b uint8
+	if pos.castleRights.CanCastle(White, KingSide) {
+		b = b | bitsCastleWhiteKing
+	}
+	if pos.castleRights.CanCastle(White, QueenSide) {
+		b = b | bitsCastleWhiteQueen
+	}
+	if pos.castleRights.CanCastle(Black, KingSide) {
+		b = b | bitsCastleBlackKing
+	}
+	if pos.castleRights.CanCastle(Black, QueenSide) {
+		b = b | bitsCastleBlackQueen
+	}
+	if pos.turn == Black {
+		b = b | bitsTurn
+	}
+	if pos.enPassantSquare != NoSquare {
+		b = b | bitsHasEnPassant
+	}
+	if err := binary.Write(buf, binary.BigEndian, b); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), err
+}
+
+// UnmarshalBinary implements the encoding.BinaryMarshaler interface
+func (pos *Position) UnmarshalBinary(data []byte) error {
+	if len(data) != 101 {
+		return errors.New("chess: position binary data should consist of 101 bytes")
+	}
+	board := &Board{}
+	if err := board.UnmarshalBinary(data[:96]); err != nil {
+		return err
+	}
+	pos.board = board
+	buf := bytes.NewBuffer(data[96:])
+	halfMove := uint8(pos.halfMoveClock)
+	if err := binary.Read(buf, binary.BigEndian, &halfMove); err != nil {
+		return err
+	}
+	pos.halfMoveClock = int(halfMove)
+	moveCount := uint16(pos.moveCount)
+	if err := binary.Read(buf, binary.BigEndian, &moveCount); err != nil {
+		return err
+	}
+	pos.moveCount = int(moveCount)
+	if err := binary.Read(buf, binary.BigEndian, &pos.enPassantSquare); err != nil {
+		return err
+	}
+	var b uint8
+	if err := binary.Read(buf, binary.BigEndian, &b); err != nil {
+		return err
+	}
+	pos.castleRights = ""
+	pos.turn = White
+	if b&bitsCastleWhiteKing != 0 {
+		pos.castleRights += "K"
+	}
+	if b&bitsCastleWhiteQueen != 0 {
+		pos.castleRights += "Q"
+	}
+	if b&bitsCastleBlackKing != 0 {
+		pos.castleRights += "k"
+	}
+	if b&bitsCastleBlackQueen != 0 {
+		pos.castleRights += "q"
+	}
+	if pos.castleRights == "" {
+		pos.castleRights = "-"
+	}
+	if b&bitsTurn != 0 {
+		pos.turn = Black
+	}
+	if b&bitsHasEnPassant == 0 {
+		pos.enPassantSquare = NoSquare
+	}
+	pos.inCheck = isInCheck(pos)
 	return nil
 }
 
