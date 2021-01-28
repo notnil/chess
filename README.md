@@ -399,12 +399,25 @@ game.MoveStr("e5")
 fmt.Println(game) // 1.e4 e5  *
 ```
 
-#### Long AlgebraicNotation Notation
+#### Long Algebraic Notation
 
-LongAlgebraicNotation is a more computer friendly alternative to algebraic notation. This notation uses the same format as the UCI (Universal Chess Interface). Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+[Long Algebraic Notation](https://https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) LongAlgebraicNotation is a more beginner friendly alternative to algebraic notation, where the origin of the piece is visible as well as the destination. Examples: Rd1xd8+, Ng8f6.
 
 ```go
 game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+game.MoveStr("f2f3")
+game.MoveStr("e7e5")
+game.MoveStr("g2g4")
+game.MoveStr("Qd8h4")
+fmt.Println(game) // 1.f2f3 e7e5 2.g2g4 Qd8h4#  0-1
+```
+
+#### UCI Notation
+
+UCI notation is a more computer friendly alternative to algebraic notation. This notation is the Universal Chess Interface notation. Examples: e2e4, e7e5, e1g1 (white short castling), e7e8q (for promotion)
+
+```go
+game := chess.NewGame(chess.UseNotation(chess.UCINotation{}))
 game.MoveStr("e2e4")
 game.MoveStr("e7e5")
 fmt.Println(game) // 1.e2e4 e7e5  *
