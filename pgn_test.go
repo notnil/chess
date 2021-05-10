@@ -1,6 +1,7 @@
 package chess
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
@@ -110,5 +111,45 @@ func BenchmarkPGN(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		opt, _ := PGN(strings.NewReader(pgn))
 		NewGame(opt)
+	}
+}
+
+func TestScanner(t *testing.T) {
+	f, err := os.OpenFile("./assets/scan_test.pgn", os.O_RDONLY, 0600)
+	if err != nil {
+		t.Fatalf("Failed to open scanner test pgn: %v", err)
+	}
+	defer f.Close()
+
+	scanner := NewScanner(f)
+
+	count := 0
+	expectedEcos := []string{"C70", "B13"}
+	expectedFENs := []string{"r1bqkb1r/2pp1ppp/p1n2n2/1p2p3/4P3/1B1P1N2/PPP2PPP/RNBQK2R b KQkq - 0 6", "rnbqkb1r/pp2pppp/5n2/3p4/2PP4/2N5/PP3PPP/R1BQKBNR b KQkq - 2 5"}
+
+	for scanner.Scan() {
+		g := scanner.Next()
+		if g == nil {
+			t.Fatalf("Scan.Next() failed to return game")
+		}
+		tagPair := g.GetTagPair("ECO")
+		if tagPair == nil {
+			t.Fatalf("Scan failed to parse ECO tag")
+		}
+		if tagPair.Value != expectedEcos[count] {
+			t.Fatalf("Expecting %vth game ECO tag of %v but got: %v", count+1, expectedEcos[count], tagPair.Value)
+		}
+		if g.Position().String() != expectedFENs[count] {
+			t.Fatalf("Expecting %vth game final FEN of %v but got: %v", count+1, expectedFENs[count], g.Position().String())
+		}
+		count++
+	}
+
+	if scanner.Err() != nil {
+		t.Fatalf("Unexpected non-nil after count:%v Err(): %v", count, scanner.Err())
+	}
+
+	if count != len(expectedEcos) {
+		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedEcos), count)
 	}
 }

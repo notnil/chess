@@ -32,7 +32,8 @@ func NewScanner(r io.Reader) *Scanner {
 func (s *Scanner) Scan() bool {
 	s.err = nil
 	var sb strings.Builder
-	count := 0
+	var parsedOne bool
+
 	for {
 		scan := s.scanr.Scan()
 		if scan == false {
@@ -41,11 +42,14 @@ func (s *Scanner) Scan() bool {
 		}
 		line := s.scanr.Text() + "\n"
 		if strings.TrimSpace(line) == "" {
-			count++
+			continue
 		} else {
 			sb.WriteString(line)
 		}
-		if count == 2 {
+
+		parsedOne = strings.HasPrefix(line, "1.")
+		if parsedOne {
+			parsedOne = false
 			game, err := decodePGN(sb.String())
 			if err != nil {
 				s.err = err
@@ -122,7 +126,10 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
-	moveStrs, outcome := moveList(pgn)
+	moveStrs, outcome, err := moveList(pgn)
+	if err != nil {
+		return nil, err
+	}
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -194,15 +201,18 @@ var (
 	moveNumRegex = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
 )
 
-func moveList(pgn string) ([]string, Outcome) {
+func moveList(pgn string) ([]string, Outcome, error) {
 	// remove comments
 	text := removeSection("{", "}", pgn)
-	// remove variations
-	text = removeSection(`\(`, `\)`, text)
 	// remove tag pairs
 	text = removeSection(`\[`, `\]`, text)
 	// remove line breaks
 	text = strings.Replace(text, "\n", " ", -1)
+
+	text, err := removeVariations(text)
+	if err != nil {
+		return nil, NoOutcome, err
+	}
 
 	list := strings.Split(text, " ")
 	filtered := []string{}
@@ -220,7 +230,7 @@ func moveList(pgn string) ([]string, Outcome) {
 			}
 		}
 	}
-	return filtered, outcome
+	return filtered, outcome, nil
 }
 
 func removeSection(leftChar, rightChar, s string) string {
@@ -232,4 +242,32 @@ func removeSection(leftChar, rightChar, s string) string {
 		}
 		s = s[0:i[0]] + s[i[1]:]
 	}
+}
+
+func removeVariations(s string) (string, error) {
+	var ret strings.Builder
+	variationDepth := 0
+
+	// cannot just use regexp since variations may be nested
+	for _, c := range s {
+		if c == '(' {
+			variationDepth++
+			continue
+		}
+		if c == ')' {
+			if variationDepth <= 0 {
+				return "", fmt.Errorf("Mismatched parenthesis in variation: %v", s)
+			}
+			variationDepth--
+			continue
+		}
+		if variationDepth == 0 {
+			_, err := ret.WriteRune(c)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	return ret.String(), nil
 }
