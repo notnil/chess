@@ -14,16 +14,33 @@ import (
 // from concatenated PGN files.  It is designed to
 // replace GamesFromPGN in order to handle very large
 // PGN database files such as https://database.lichess.org/.
+type ScannerOpts struct {
+	ExpandVariations bool
+}
 type Scanner struct {
 	scanr *bufio.Scanner
-	game  *Game
+	games []*Game
 	err   error
+	opts  ScannerOpts
 }
 
-// NewScanner returns a new scanner.
+type moveList struct {
+	moveStrs []string
+	outcome  Outcome
+}
+
+// NewScanner returns a new scanner with default options
 func NewScanner(r io.Reader) *Scanner {
+	defaultOpts := ScannerOpts{ExpandVariations: false}
+
+	return NewScannerWithOptions(r, defaultOpts)
+}
+
+// NewScanner returns a new scanner with explicit options
+func NewScannerWithOptions(r io.Reader, o ScannerOpts) *Scanner {
 	scanr := bufio.NewScanner(r)
-	return &Scanner{scanr: scanr}
+	g := make([]*Game, 0)
+	return &Scanner{scanr: scanr, opts: o, games: g}
 }
 
 // Scan returns false if there was an error parsing
@@ -31,6 +48,11 @@ func NewScanner(r io.Reader) *Scanner {
 // data for Next() and Err().
 func (s *Scanner) Scan() bool {
 	s.err = nil
+
+	if len(s.games) > 0 {
+		return true
+	}
+
 	var sb strings.Builder
 	var parsedOne bool
 
@@ -50,12 +72,12 @@ func (s *Scanner) Scan() bool {
 		parsedOne = strings.HasPrefix(line, "1.")
 		if parsedOne {
 			parsedOne = false
-			game, err := decodePGN(sb.String())
+			games, err := decodePGN(sb.String(), s.opts.ExpandVariations)
 			if err != nil {
 				s.err = err
 				return false
 			}
-			s.game = game
+			s.games = games
 			break
 		}
 	}
@@ -64,7 +86,14 @@ func (s *Scanner) Scan() bool {
 
 // Next returns the game from the most recent Scan.
 func (s *Scanner) Next() *Game {
-	return s.game
+	if len(s.games) == 0 {
+		return nil
+	}
+
+	g := s.games[0]
+	s.games = s.games[1:]
+
+	return g
 }
 
 // Err returns an error encountered during scanning.
@@ -98,11 +127,11 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 			current += line
 		}
 		if count == 2 {
-			game, err := decodePGN(current)
+			newGames, err := decodePGN(current, false)
 			if err != nil {
 				return nil, err
 			}
-			games = append(games, game)
+			games = append(games, newGames[0])
 			count = 0
 			current = ""
 			totalCount++
@@ -124,9 +153,9 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 	return nil, fmt.Errorf(`chess: failed to decode notation text "%s" for position %s`, s, pos)
 }
 
-func decodePGN(pgn string) (*Game, error) {
+func decodePGN(pgn string, expandVariations bool) ([]*Game, error) {
 	tagPairs := getTagPairs(pgn)
-	moveStrs, outcome, err := moveList(pgn)
+	moveLists, err := getMoveLists(pgn, expandVariations)
 	if err != nil {
 		return nil, err
 	}
@@ -141,21 +170,32 @@ func decodePGN(pgn string) (*Game, error) {
 			break
 		}
 	}
+
 	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
-	g := NewGame(gameFuncs...)
-	g.ignoreAutomaticDraws = true
-	decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
-	for _, alg := range moveStrs {
-		m, err := decoder.Decode(g.Position(), alg)
-		if err != nil {
-			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
+	games := make([]*Game, 0)
+	varName := "main line"
+
+	for idx, moveList := range moveLists {
+		if idx > 0 {
+			varName = fmt.Sprintf("variation %v", idx)
 		}
-		if err := g.Move(m); err != nil {
-			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
+		g := NewGame(gameFuncs...)
+		g.ignoreAutomaticDraws = true
+		decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
+		for _, alg := range moveList.moveStrs {
+			m, err := decoder.Decode(g.Position(), alg)
+			if err != nil {
+				return nil, fmt.Errorf("chess: pgn decode error %s on move %d of %v", err.Error(), g.Position().moveCount, varName)
+			}
+			if err := g.Move(m); err != nil {
+				return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d of %v", err.Error(), g.Position().moveCount, varName)
+			}
 		}
+		g.outcome = moveList.outcome
+		games = append(games, g)
 	}
-	g.outcome = outcome
-	return g, nil
+
+	return games, nil
 }
 
 func encodePGN(g *Game) string {
@@ -163,7 +203,9 @@ func encodePGN(g *Game) string {
 	for _, tag := range g.tagPairs {
 		s += fmt.Sprintf("[%s \"%s\"]\n", tag.Key, tag.Value)
 	}
-	s += "\n"
+	if s != "" {
+		s += "\n"
+	}
 	for i, move := range g.moves {
 		pos := g.positions[i]
 		txt := g.notation.Encode(pos, move)
@@ -201,7 +243,7 @@ var (
 	moveNumRegex = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
 )
 
-func moveList(pgn string) ([]string, Outcome, error) {
+func getMoveLists(pgn string, expandVariations bool) ([]moveList, error) {
 	// remove comments
 	text := removeSection("{", "}", pgn)
 	// remove tag pairs
@@ -209,28 +251,55 @@ func moveList(pgn string) ([]string, Outcome, error) {
 	// remove line breaks
 	text = strings.Replace(text, "\n", " ", -1)
 
-	text, err := removeVariations(text)
-	if err != nil {
-		return nil, NoOutcome, err
+	var err error
+	if !expandVariations {
+		text, err = removeVariations(text)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		text = strings.ReplaceAll(text, "(", "( ")
+		text = strings.ReplaceAll(text, ")", " )")
 	}
 
 	list := strings.Split(text, " ")
-	filtered := []string{}
-	var outcome Outcome
+
+	moveListIdx := 0
+	moveListIdxStack := make([]int, 0)
+	moveLists := make([]moveList, 0)
+	moveLists = append(moveLists, moveList{moveStrs: make([]string, 0)})
+
 	for _, move := range list {
 		move = strings.TrimSpace(move)
 		switch move {
 		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
-			outcome = Outcome(move)
+			moveLists[moveListIdx].outcome = Outcome(move)
 		case "":
+		case "(":
+			// begin new variation
+			moveListIdxStack = append(moveListIdxStack, moveListIdx)
+			newIdx := len(moveLists)
+			numMoves := len(moveLists[moveListIdx].moveStrs) - 1
+			moveLists = append(moveLists, moveList{moveStrs: make([]string, numMoves)})
+			copy(moveLists[newIdx].moveStrs, moveLists[moveListIdx].moveStrs)
+			moveListIdx = newIdx
+
+		case ")":
+			// end current variation
+			stackSize := len(moveListIdxStack)
+			if stackSize == 0 {
+				return nil, fmt.Errorf("Failed to parse variation")
+			}
+			moveListIdx = moveListIdxStack[stackSize-1]
+			moveListIdxStack = moveListIdxStack[:stackSize-1]
 		default:
 			results := moveNumRegex.FindStringSubmatch(move)
 			if len(results) == 2 && results[1] != "" {
-				filtered = append(filtered, results[1])
+				moveLists[moveListIdx].moveStrs = append(moveLists[moveListIdx].moveStrs, results[1])
 			}
 		}
 	}
-	return filtered, outcome, nil
+	return moveLists, nil
 }
 
 func removeSection(leftChar, rightChar, s string) string {
