@@ -76,7 +76,7 @@ var (
 
 func TestValidPGNs(t *testing.T) {
 	for _, test := range validPGNs {
-		games, err := decodePGN(test.PGN, false)
+		games, err := decodePGN(test.PGN, &ScannerOptsDefault)
 		if err != nil {
 			t.Fatalf("recieved unexpected pgn error %s", err.Error())
 		}
@@ -201,5 +201,103 @@ func TestScannerWithOpts(t *testing.T) {
 
 	if count != len(expectedEcos) {
 		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedEcos), count)
+	}
+}
+
+type filttestcase struct {
+	opts          ScannerOpts
+	expectedCount int
+	lastGameECO   string
+}
+
+func runOneScanFilterTestcase(t *testing.T, tcase *filttestcase) {
+	f, err := os.OpenFile("./assets/scan_filter_test.pgn", os.O_RDONLY, 0600)
+	if err != nil {
+		t.Fatalf("Failed to open scanner filter test pgn: %v", err)
+	}
+	defer f.Close()
+
+	scanner := NewScannerWithOptions(f, tcase.opts)
+
+	count := 0
+	var g *Game
+	for scanner.Scan() {
+		g = scanner.Next()
+		if g == nil {
+			t.Fatalf("Scan.Next() failed to return game")
+		}
+		count++
+	}
+
+	if scanner.Err() != nil {
+		t.Fatalf("Unexpected non-nil after count:%v Err(): %v", count, scanner.Err())
+	}
+
+	if count != tcase.expectedCount {
+		t.Fatalf("Expecting %v games but only parsed %v games with opts %v", tcase.expectedCount, count, tcase.opts)
+	}
+
+	if g != nil {
+		tagPair := g.GetTagPair("ECO")
+		if tagPair == nil {
+			t.Fatalf("Scan failed to parse ECO tag")
+		}
+		if tagPair.Value != tcase.lastGameECO {
+			t.Fatalf("Expecting last game ECO tag of %v but got: %v", tcase.lastGameECO, tagPair.Value)
+		}
+	}
+}
+
+func TestScannerWithFilters(t *testing.T) {
+	cases := []filttestcase{
+		{opts: ScannerOpts{
+			ExpandVariations: true,
+			MinTimeInSecs:    0,
+			MinELO:           0},
+			expectedCount: 4, lastGameECO: "B10"},
+		{opts: ScannerOpts{
+			ExpandVariations: false,
+			MinTimeInSecs:    0,
+			MinELO:           0},
+			expectedCount: 4, lastGameECO: "B10"},
+		{opts: ScannerOpts{
+			ExpandVariations: true,
+			MinTimeInSecs:    300,
+			MinELO:           0},
+			expectedCount: 2, lastGameECO: "A13"},
+		{opts: ScannerOpts{
+			ExpandVariations: false,
+			MinTimeInSecs:    300,
+			MinELO:           0},
+			expectedCount: 2, lastGameECO: "A13"},
+		{opts: ScannerOpts{
+			ExpandVariations: true,
+			MinTimeInSecs:    0,
+			MinELO:           1800},
+			expectedCount: 2, lastGameECO: "B10"},
+		{opts: ScannerOpts{
+			ExpandVariations: false,
+			MinTimeInSecs:    0,
+			MinELO:           1800},
+			expectedCount: 2, lastGameECO: "B10"},
+		{opts: ScannerOpts{
+			ExpandVariations: true,
+			MinTimeInSecs:    300,
+			MinELO:           1800},
+			expectedCount: 1, lastGameECO: "C50"},
+		{opts: ScannerOpts{
+			ExpandVariations: false,
+			MinTimeInSecs:    300,
+			MinELO:           1800},
+			expectedCount: 1, lastGameECO: "C50"},
+		{opts: ScannerOpts{
+			ExpandVariations: false,
+			MinTimeInSecs:    99999,
+			MinELO:           4000},
+			expectedCount: 0, lastGameECO: ""},
+	}
+
+	for _, tcase := range cases {
+		runOneScanFilterTestcase(t, &tcase)
 	}
 }

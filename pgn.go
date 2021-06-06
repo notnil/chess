@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -16,7 +17,16 @@ import (
 // PGN database files such as https://database.lichess.org/.
 type ScannerOpts struct {
 	ExpandVariations bool
+	MinELO           uint64
+	MinTimeInSecs    uint64
 }
+
+var ScannerOptsDefault = ScannerOpts{
+	ExpandVariations: false,
+	MinELO:           0,
+	MinTimeInSecs:    0,
+}
+
 type Scanner struct {
 	scanr *bufio.Scanner
 	games []*Game
@@ -31,9 +41,7 @@ type moveList struct {
 
 // NewScanner returns a new scanner with default options
 func NewScanner(r io.Reader) *Scanner {
-	defaultOpts := ScannerOpts{ExpandVariations: false}
-
-	return NewScannerWithOptions(r, defaultOpts)
+	return NewScannerWithOptions(r, ScannerOptsDefault)
 }
 
 // NewScanner returns a new scanner with explicit options
@@ -72,13 +80,17 @@ func (s *Scanner) Scan() bool {
 		parsedOne = strings.HasPrefix(line, "1.")
 		if parsedOne {
 			parsedOne = false
-			games, err := decodePGN(sb.String(), s.opts.ExpandVariations)
+			games, err := decodePGN(sb.String(), &s.opts)
 			if err != nil {
 				s.err = err
 				return false
 			}
-			s.games = games
-			break
+			if len(games) != 0 {
+				s.games = games
+				break
+			} else {
+				sb.Reset()
+			}
 		}
 	}
 	return true
@@ -127,7 +139,7 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 			current += line
 		}
 		if count == 2 {
-			newGames, err := decodePGN(current, false)
+			newGames, err := decodePGN(current, &ScannerOptsDefault)
 			if err != nil {
 				return nil, err
 			}
@@ -153,12 +165,61 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 	return nil, fmt.Errorf(`chess: failed to decode notation text "%s" for position %s`, s, pos)
 }
 
-func decodePGN(pgn string, expandVariations bool) ([]*Game, error) {
-	tagPairs := getTagPairs(pgn)
-	moveLists, err := getMoveLists(pgn, expandVariations)
-	if err != nil {
-		return nil, err
+func shouldFilterGame(pgn string, opts *ScannerOpts, tagPairs []*TagPair) (bool, error) {
+	eloCount := 0
+	foundTime := false
+
+	for _, tp := range tagPairs {
+		if opts.MinELO > 0 &&
+			(strings.ToLower(tp.Key) == "whiteelo" ||
+				strings.ToLower(tp.Key) == "blackelo") {
+			elo, err := strconv.ParseUint(tp.Value, 10, 64)
+			if err != nil {
+				return false, fmt.Errorf("chess: could not parse ELO from tag %s: %v", err.Error(), tp.Key)
+			}
+			if elo < opts.MinELO {
+				return true, nil
+			}
+			eloCount++
+		}
+		if opts.MinTimeInSecs > 0 && strings.ToLower(tp.Key) == "timecontrol" {
+			// example formats:
+			// 300+3 -> 5 minute game plus 3 seconds per move
+			// 0+2 -> 0 minute game plus 2 seconds per move
+			// 600+5 -> 10 minute game plus 5 seconds per move
+			// "-" -> unlimited/correspondance
+			if tp.Value == "-" {
+				foundTime = true
+				continue
+			} // else
+			timeFields := strings.Split(tp.Value, "+")
+			if len(timeFields) == 0 {
+				return false, fmt.Errorf("chess: could not parse TimeControl from value %s", tp.Value)
+			}
+			baseTime, err := strconv.ParseUint(timeFields[0], 10, 64)
+			if err != nil {
+				return false, fmt.Errorf("chess: could not parse TimeControl from value %s: %v", tp.Value, err)
+			}
+			if baseTime < opts.MinTimeInSecs {
+				return true, nil
+			}
+			foundTime = true
+		}
 	}
+
+	if opts.MinELO > 0 && eloCount != 2 {
+		return true, nil
+	}
+	if opts.MinTimeInSecs > 0 && !foundTime {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func decodePGN(pgn string, opts *ScannerOpts) ([]*Game, error) {
+	tagPairs := getTagPairs(pgn)
+
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -169,6 +230,19 @@ func decodePGN(pgn string, expandVariations bool) ([]*Game, error) {
 			gameFuncs = append(gameFuncs, fenFunc)
 			break
 		}
+	}
+
+	shouldFilter, err := shouldFilterGame(pgn, opts, tagPairs)
+	if err != nil {
+		return nil, err
+	}
+	if shouldFilter {
+		return nil, nil
+	}
+
+	moveLists, err := getMoveLists(pgn, opts.ExpandVariations)
+	if err != nil {
+		return nil, err
 	}
 
 	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
