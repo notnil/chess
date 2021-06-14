@@ -2,6 +2,7 @@ package chess
 
 import (
 	"os"
+	"sort"
 	"strings"
 	"testing"
 )
@@ -126,34 +127,32 @@ func TestScanner(t *testing.T) {
 
 	scanner := NewScanner(f)
 
-	count := 0
-	expectedEcos := []string{"C70", "B13"}
-	expectedFENs := []string{"r1bqkb1r/2pp1ppp/p1n2n2/1p2p3/4P3/1B1P1N2/PPP2PPP/RNBQK2R b KQkq - 0 6", "rnbqkb1r/pp2pppp/5n2/3p4/2PP4/2N5/PP3PPP/R1BQKBNR b KQkq - 2 5"}
+	expectedFinalFENs := []string{"r1bqkb1r/2pp1ppp/p1n2n2/1p2p3/4P3/1B1P1N2/PPP2PPP/RNBQK2R b KQkq - 0 6", "rnbqkb1r/pp2pppp/5n2/3p4/2PP4/2N5/PP3PPP/R1BQKBNR b KQkq - 2 5"}
+	actualFinalFENs := []string{}
 
 	for scanner.Scan() {
 		g := scanner.Next()
 		if g == nil {
 			t.Fatalf("Scan.Next() failed to return game")
 		}
-		tagPair := g.GetTagPair("ECO")
-		if tagPair == nil {
-			t.Fatalf("Scan failed to parse ECO tag")
-		}
-		if tagPair.Value != expectedEcos[count] {
-			t.Fatalf("Expecting %vth game ECO tag of %v but got: %v", count+1, expectedEcos[count], tagPair.Value)
-		}
-		if g.Position().String() != expectedFENs[count] {
-			t.Fatalf("Expecting %vth game final FEN of %v but got: %v", count+1, expectedFENs[count], g.Position().String())
-		}
-		count++
+		actualFinalFENs = append(actualFinalFENs, g.Position().String())
 	}
 
 	if scanner.Err() != nil {
-		t.Fatalf("Unexpected non-nil after count:%v Err(): %v", count, scanner.Err())
+		t.Fatalf("Unexpected non-nil Err(): %v", scanner.Err())
 	}
 
-	if count != len(expectedEcos) {
-		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedEcos), count)
+	if len(actualFinalFENs) != len(expectedFinalFENs) {
+		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedFinalFENs), len(actualFinalFENs))
+	}
+
+	sort.Strings(expectedFinalFENs)
+	sort.Strings(actualFinalFENs)
+
+	for idx, _ := range expectedFinalFENs {
+		if expectedFinalFENs[idx] != actualFinalFENs[idx] {
+			t.Fatalf("Mismatched final FEN idx %v expected %v got %v", idx, expectedFinalFENs[idx], actualFinalFENs[idx])
+		}
 	}
 }
 
@@ -166,9 +165,7 @@ func TestScannerWithOpts(t *testing.T) {
 
 	scanner := NewScannerWithOptions(f, ScannerOpts{ExpandVariations: true})
 
-	count := 0
-	expectedEcos := []string{"C70", "C70", "C70", "C70", "B13", "B13", "B13", "B13"}
-	expectedFENs := []string{"r1bqkb1r/2pp1ppp/p1n2n2/1p2p3/4P3/1B1P1N2/PPP2PPP/RNBQK2R b KQkq - 0 6",
+	expectedFinalFENs := []string{"r1bqkb1r/2pp1ppp/p1n2n2/1p2p3/4P3/1B1P1N2/PPP2PPP/RNBQK2R b KQkq - 0 6",
 		"r1bqkb1r/pppp1ppp/2n2n2/1B2p3/4P3/5N2/PPPP1PPP/RNBQ1RK1 b kq - 5 4",
 		"r2qkbnr/pppb1ppp/2np4/1B6/3NP3/8/PPP2PPP/RNBQK2R w KQkq - 1 6",
 		"r1bqkbnr/2pp1ppp/p7/1p2p3/3NP3/1B6/PPPP1PPP/RNBQK2R b KQkq - 0 6",
@@ -176,38 +173,37 @@ func TestScannerWithOpts(t *testing.T) {
 		"rn1qkbnr/pp3ppp/4p3/2ppPb2/3P4/5N2/PPP1BPPP/RNBQK2R w KQkq - 0 6",
 		"rn1qkbnr/pp2ppp1/2p5/3pP2p/3P3P/3b4/PPP2PP1/RNBQK1NR w KQkq - 0 6",
 		"rn1qkbnr/pp3ppp/2p1p1b1/3pP3/3P2P1/2N5/PPP2P1P/R1BQKBNR w KQkq - 1 6"}
+	actualFinalFENs := []string{}
 
 	for scanner.Scan() {
 		g := scanner.Next()
 		if g == nil {
 			t.Fatalf("Scan.Next() failed to return game")
 		}
-		tagPair := g.GetTagPair("ECO")
-		if tagPair == nil {
-			t.Fatalf("Scan failed to parse ECO tag")
-		}
-		if tagPair.Value != expectedEcos[count] {
-			t.Fatalf("Expecting %vth game ECO tag of %v but got: %v", count+1, expectedEcos[count], tagPair.Value)
-		}
-		if g.Position().String() != expectedFENs[count] {
-			t.Fatalf("Expecting %vth game final FEN of %v but got: %v", count+1, expectedFENs[count], g.Position().String())
-		}
-		count++
+		actualFinalFENs = append(actualFinalFENs, g.Position().String())
 	}
 
 	if scanner.Err() != nil {
-		t.Fatalf("Unexpected non-nil after count:%v Err(): %v", count, scanner.Err())
+		t.Fatalf("Unexpected non-nil Err(): %v", scanner.Err())
 	}
 
-	if count != len(expectedEcos) {
-		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedEcos), count)
+	if len(actualFinalFENs) != len(expectedFinalFENs) {
+		t.Fatalf("Expecting %v games but only parsed %v games", len(expectedFinalFENs), len(actualFinalFENs))
+	}
+
+	sort.Strings(expectedFinalFENs)
+	sort.Strings(actualFinalFENs)
+
+	for idx, _ := range expectedFinalFENs {
+		if expectedFinalFENs[idx] != actualFinalFENs[idx] {
+			t.Fatalf("Mismatched final FEN idx %v expected %v got %v", idx, expectedFinalFENs[idx], actualFinalFENs[idx])
+		}
 	}
 }
 
 type filttestcase struct {
-	opts          ScannerOpts
-	expectedCount int
-	lastGameECO   string
+	opts         ScannerOpts
+	expectedECOs []string
 }
 
 func runOneScanFilterTestcase(t *testing.T, tcase *filttestcase) {
@@ -219,31 +215,34 @@ func runOneScanFilterTestcase(t *testing.T, tcase *filttestcase) {
 
 	scanner := NewScannerWithOptions(f, tcase.opts)
 
-	count := 0
+	actualECOs := []string{}
 	var g *Game
 	for scanner.Scan() {
 		g = scanner.Next()
 		if g == nil {
 			t.Fatalf("Scan.Next() failed to return game")
 		}
-		count++
-	}
-
-	if scanner.Err() != nil {
-		t.Fatalf("Unexpected non-nil after count:%v Err(): %v", count, scanner.Err())
-	}
-
-	if count != tcase.expectedCount {
-		t.Fatalf("Expecting %v games but only parsed %v games with opts %v", tcase.expectedCount, count, tcase.opts)
-	}
-
-	if g != nil {
 		tagPair := g.GetTagPair("ECO")
 		if tagPair == nil {
 			t.Fatalf("Scan failed to parse ECO tag")
 		}
-		if tagPair.Value != tcase.lastGameECO {
-			t.Fatalf("Expecting last game ECO tag of %v but got: %v", tcase.lastGameECO, tagPair.Value)
+		actualECOs = append(actualECOs, tagPair.Value)
+	}
+
+	if scanner.Err() != nil {
+		t.Fatalf("Unexpected non-nil Err(): %v", scanner.Err())
+	}
+
+	if len(actualECOs) != len(tcase.expectedECOs) {
+		t.Fatalf("Expecting %v games but only parsed %v games with opts %v", len(tcase.expectedECOs), len(actualECOs), tcase.opts)
+	}
+
+	sort.Strings(actualECOs)
+	sort.Strings(tcase.expectedECOs)
+
+	for idx, _ := range tcase.expectedECOs {
+		if tcase.expectedECOs[idx] != actualECOs[idx] {
+			t.Fatalf("Mismatched ECO idx %v expected %v got %v", idx, tcase.expectedECOs[idx], actualECOs[idx])
 		}
 	}
 }
@@ -254,47 +253,47 @@ func TestScannerWithFilters(t *testing.T) {
 			ExpandVariations: true,
 			MinTimeInSecs:    0,
 			MinELO:           0},
-			expectedCount: 4, lastGameECO: "B10"},
+			expectedECOs: []string{"C50", "C40", "A13", "B10"}},
 		{opts: ScannerOpts{
 			ExpandVariations: false,
 			MinTimeInSecs:    0,
 			MinELO:           0},
-			expectedCount: 4, lastGameECO: "B10"},
+			expectedECOs: []string{"C50", "C40", "A13", "B10"}},
 		{opts: ScannerOpts{
 			ExpandVariations: true,
 			MinTimeInSecs:    300,
 			MinELO:           0},
-			expectedCount: 2, lastGameECO: "A13"},
+			expectedECOs: []string{"C50", "A13"}},
 		{opts: ScannerOpts{
 			ExpandVariations: false,
 			MinTimeInSecs:    300,
 			MinELO:           0},
-			expectedCount: 2, lastGameECO: "A13"},
+			expectedECOs: []string{"C50", "A13"}},
 		{opts: ScannerOpts{
 			ExpandVariations: true,
 			MinTimeInSecs:    0,
 			MinELO:           1800},
-			expectedCount: 2, lastGameECO: "B10"},
+			expectedECOs: []string{"C50", "B10"}},
 		{opts: ScannerOpts{
 			ExpandVariations: false,
 			MinTimeInSecs:    0,
 			MinELO:           1800},
-			expectedCount: 2, lastGameECO: "B10"},
+			expectedECOs: []string{"C50", "B10"}},
 		{opts: ScannerOpts{
 			ExpandVariations: true,
 			MinTimeInSecs:    300,
 			MinELO:           1800},
-			expectedCount: 1, lastGameECO: "C50"},
+			expectedECOs: []string{"C50"}},
 		{opts: ScannerOpts{
 			ExpandVariations: false,
 			MinTimeInSecs:    300,
 			MinELO:           1800},
-			expectedCount: 1, lastGameECO: "C50"},
+			expectedECOs: []string{"C50"}},
 		{opts: ScannerOpts{
 			ExpandVariations: false,
 			MinTimeInSecs:    99999,
 			MinELO:           4000},
-			expectedCount: 0, lastGameECO: ""},
+			expectedECOs: []string{}},
 	}
 
 	for _, tcase := range cases {

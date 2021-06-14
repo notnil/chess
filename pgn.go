@@ -2,12 +2,16 @@ package chess
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 	"io"
 	"log"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 )
 
 // Scanner is modeled on the bufio.Scanner type but
@@ -28,10 +32,18 @@ var ScannerOptsDefault = ScannerOpts{
 }
 
 type Scanner struct {
-	scanr *bufio.Scanner
-	games []*Game
-	err   error
-	opts  ScannerOpts
+	games             []*Game
+	scanBuf           []byte
+	scanr             *bufio.Scanner
+	err               error
+	opts              ScannerOpts
+	g                 *errgroup.Group
+	ctx               context.Context
+	numGamesProducers int32
+	pgnChan           chan string
+	// for efficiency we send/recv slices of games on the channel rather
+	// than individual games
+	gamesChan chan []*Game
 }
 
 type moveList struct {
@@ -46,9 +58,31 @@ func NewScanner(r io.Reader) *Scanner {
 
 // NewScanner returns a new scanner with explicit options
 func NewScannerWithOptions(r io.Reader, o ScannerOpts) *Scanner {
-	scanr := bufio.NewScanner(r)
-	g := make([]*Game, 0)
-	return &Scanner{scanr: scanr, opts: o, games: g}
+	const IoBufferSize = 1024 * 1024 * 8 // in bytes
+	const PgnBufferLen = 2048            // in number of pgn strings
+	const GamesSliceBufferLen = 256      // in number of game _slices_
+
+	ret := &Scanner{
+		games:             make([]*Game, 0),
+		scanBuf:           make([]byte, IoBufferSize),
+		scanr:             bufio.NewScanner(r),
+		err:               nil,
+		opts:              o,
+		numGamesProducers: int32(runtime.NumCPU()),
+		pgnChan:           make(chan string, PgnBufferLen),
+		gamesChan:         make(chan []*Game, GamesSliceBufferLen),
+	}
+	ret.scanr.Buffer(ret.scanBuf, cap(ret.scanBuf))
+
+	// decode & read in the background so as to avoid starving the I/O
+	// reading thread
+	ret.g, ret.ctx = errgroup.WithContext(context.Background())
+	ret.g.Go(ret.readPGNFiles)
+	for ii := 0; int32(ii) < ret.numGamesProducers; ii++ {
+		ret.g.Go(ret.processPGNs)
+	}
+
+	return ret
 }
 
 // Scan returns false if there was an error parsing
@@ -61,14 +95,34 @@ func (s *Scanner) Scan() bool {
 		return true
 	}
 
+	var ok bool
+	select {
+	case s.games, ok = <-s.gamesChan:
+		if !ok {
+			// EOF
+			return false
+		}
+	case <-s.ctx.Done():
+		err := s.g.Wait()
+		if err != nil {
+			s.err = err
+		}
+
+		return false
+	}
+
+	return true
+}
+
+func (s *Scanner) readPGNFiles() error {
+	defer close(s.pgnChan)
+
 	var sb strings.Builder
-	var parsedOne bool
 
 	for {
 		scan := s.scanr.Scan()
 		if scan == false {
-			s.err = s.scanr.Err()
-			return false
+			return s.scanr.Err()
 		}
 		line := s.scanr.Text() + "\n"
 		if strings.TrimSpace(line) == "" {
@@ -77,23 +131,56 @@ func (s *Scanner) Scan() bool {
 			sb.WriteString(line)
 		}
 
-		parsedOne = strings.HasPrefix(line, "1.")
-		if parsedOne {
-			parsedOne = false
-			games, err := decodePGN(sb.String(), &s.opts)
-			if err != nil {
-				s.err = err
-				return false
+		if strings.HasPrefix(line, "1.") {
+			select {
+			case s.pgnChan <- sb.String():
+			case <-s.ctx.Done():
+				return s.ctx.Err()
 			}
-			if len(games) != 0 {
-				s.games = games
-				break
-			} else {
-				sb.Reset()
-			}
+
+			sb.Reset()
 		}
 	}
-	return true
+
+	return nil
+}
+
+func (s *Scanner) processPGNs() error {
+	defer func() {
+		// last one out the door shuts the lights
+		remaining := atomic.AddInt32(&s.numGamesProducers, -1)
+		if remaining <= 0 {
+			close(s.gamesChan)
+		}
+	}()
+
+	for {
+		select {
+		case pgn, ok := <-s.pgnChan:
+			if !ok {
+				// no more pgns to process
+				return nil
+			}
+
+			games, err := decodePGN(pgn, &s.opts)
+			if err != nil {
+				return err
+			}
+
+			if len(games) != 0 {
+				select {
+				case s.gamesChan <- games:
+					games = make([]*Game, 0)
+				case <-s.ctx.Done():
+					return s.ctx.Err()
+				}
+			}
+		case <-s.ctx.Done():
+			return s.ctx.Err()
+		}
+	}
+
+	return nil
 }
 
 // Next returns the game from the most recent Scan.
