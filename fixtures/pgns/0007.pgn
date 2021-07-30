@@ -1,0 +1,139 @@
+[Event "FIDE World Cup 2021"]
+[Site "Krasnaya Polyana RUS"]
+[Date "2021.07.20"]
+[Round "3.3"]
+[White "Giri,A"]
+[Black "Abdusattorov,Nodirbek"]
+[Result "0-1"]
+[WhiteTitle "GM"]
+[BlackTitle "GM"]
+[WhiteElo "2776"]
+[BlackElo "2634"]
+[ECO "C09"]
+[Opening "French"]
+[Variation "Tarrasch, open variation, main line"]
+[WhiteFideId "24116068"]
+[BlackFideId "14204118"]
+[EventDate "2021.07.12"]
+[EventType "k.o."]
+
+1. e4 e6 2. d4 d5 3. Nd2 c5 4. Ngf3 Nc6 5. exd5 exd5 6. Bb5 Qe7+ 7. Be2 Qc7 8.
+dxc5 Bxc5 9. Nb3 Bb6 10. O-O Nge7 11. Nfd4 O-O 12. Be3 a6 13. Nxc6 bxc6 14. Bxb6
+Qxb6 15. Qd4 Qxd4 16. Nxd4 Rb8 17. Nb3 Bf5 18. Rfc1 a5 19. Rab1 a4 20. Nc5 Ra8
+21. Bd3 Ra5 22. Bxf5 Nxf5 23. Nd7 Re8 24. c4 d4 25. b4 axb3 26. axb3 Ra2 27. Nc5
+Ree2 28. Nd3 Nd6 29. Ra1 Ne4 30. Rxa2 Rxa2 31. Re1 f5 32. g4 Ng5 33. Kg2 fxg4
+34. Kg3 Nf3 35. Re7 Rd2 36. Nf4 d3 37. Re3 h5 38. Nxh5 Rd1 39. Kxg4 Nxh2+ 40.
+Kf4 d2 41. Rd3 Nf1 0-1
+
+[Event "FIDE World Cup 2021"]
+[Site "Krasnaya Polyana RUS"]
+[Date "2021.07.20"]
+[Round "3.3"]
+[White "Mamedyarov,S"]
+[Black "Martirosyan,Haik M."]
+[Result "0-1"]
+[WhiteTitle "GM"]
+[BlackTitle "GM"]
+[WhiteElo "2782"]
+[BlackElo "2632"]
+[ECO "A22"]
+[Opening "English opening"]
+[WhiteFideId "13401319"]
+[BlackFideId "13306553"]
+[EventDate "2021.07.12"]
+[EventType "k.o."]
+
+1. c4 e5 2. Nc3 Nf6 3. e3 Bb4 4. Nge2 c6 5. d4 exd4 6. Qxd4 O-O 7. a3 Be7 8. g4
+d6 9. g5 Nfd7 10. f4 Nc5 11. Qd1 a5 12. Nd4 a4 13. h4 Re8 14. Bg2 Nbd7 15. O-O
+Bf8 16. Qe2 Qb6 17. Rb1 Nb3 18. Nc2 Ndc5 19. Kh2 Be6 20. e4 Qa6 21. Ne3 Na5 22.
+f5 Bxc4 23. Nxc4 Nxc4 24. Rd1 d5 25. Bf4 Rad8 26. Rd4 Nb3 27. Rd3 d4 28. Rbd1
+Bd6 29. Bxd6 Nxd6 30. Qc2 Qc4 31. Qf2 dxc3 32. Rxc3 Nxe4 33. Rxd8 Rxd8 34. Qf4
+Qd4 35. Qxe4 Qxe4 36. Bxe4 Rd4 37. Bc2 Na5 38. Kh3 Kf8 39. f6 gxf6 40. gxf6 Rf4
+41. Kg3 Rxf6 42. Bxa4 b5 43. Bc2 h6 44. b4 Nb7 45. a4 bxa4 46. Bxa4 Nd8 47. b5
+cxb5 48. Bxb5 Ne6 49. Bd7 Nd4 50. Bg4 Kg7 51. Rc4 Nc6 52. Re4 Rd6 53. Bh5 Rd3+
+54. Kg2 Rd5 55. Bf3 Ne5 56. Re2 Ra5 57. Be4 Ra3 58. Bf5 Kf6 59. Rf2 Re3 60. Bb1+
+Kg7 61. Bf5 Rc3 62. Re2 Nc4 63. Rf2 Ne3+ 64. Kh2 Rc4 65. Kg3 Rc3 66. Kh2 Rc5 67.
+Bh3 Kg6 68. Rf3 Re5 69. Kg3 f5 70. Bf1 Kf6 71. Bh3 Nd5 72. Ra3 Re3+ 73. Rxe3
+Nxe3 74. Kf3 Nd5 75. Bf1 Ke5 76. Bc4 Nb4 77. Bb5 Nc2 78. Be8 Nd4+ 79. Ke3 f4+
+80. Kf2 Nf5 81. h5 Nd4 82. Bg6 Kf6 83. Be8 Kg5 84. Bg6 Kg4 85. Be8 Nc2 86. Bg6
+Nb4 87. Be8 Nd3+ 88. Ke2 Ne5 89. Kf2 f3 90. Ke3 Kg3 91. Ke4 Nc4 0-1
+
+[Event "FIDE World Cup 2021"]
+[Site "Krasnaya Polyana RUS"]
+[Date "2021.07.20"]
+[Round "3.3"]
+[White "Vachier Lagrave,M"]
+[Black "Paravyan,D"]
+[Result "1-0"]
+[WhiteTitle "GM"]
+[BlackTitle "GM"]
+[WhiteElo "2749"]
+[BlackElo "2625"]
+[ECO "B33"]
+[Opening "Sicilian"]
+[Variation "Pelikan (Lasker/Sveshnikov) variation"]
+[WhiteFideId "623539"]
+[BlackFideId "4194985"]
+[EventDate "2021.07.12"]
+[EventType "k.o."]
+
+1. e4 c5 2. Nf3 Nc6 3. d4 cxd4 4. Nxd4 Nf6 5. Nc3 e5 6. Ndb5 d6 7. Nd5 Nxd5 8.
+exd5 Ne7 9. c4 Ng6 10. Qa4 Bd7 11. Qb4 Bf5 12. h4 a6 13. Nc3 Be7 14. h5 Nf4 15.
+Qa4+ b5 16. cxb5 O-O 17. Bxf4 axb5 18. Qb4 exf4 19. Qxf4 Bd7 20. Be2 b4 21. Qxb4
+Rb8 22. Nb5 Bf6 23. a4 Re8 24. Kf1 Qe7 25. Re1 Be5 26. g3 Qf6 27. Kg2 Red8 28.
+b3 Bxb5 29. Bxb5 Bc3 30. Qc4 Bxe1 31. Rxe1 Rdc8 32. Bc6 Qb2 33. Re3 Qd2 34. Qf4
+Qc2 35. b4 h6 36. b5 Qc5 37. Re4 Rd8 38. Qe3 Qc2 39. a5 Qd1 40. a6 f5 41. Re7 f4
+42. Qf3 Qa1 43. a7 Rbc8 44. b6 fxg3 45. Qxg3 1-0
+
+[Event "FIDE World Cup 2021"]
+[Site "Krasnaya Polyana RUS"]
+[Date "2021.07.20"]
+[Round "3.3"]
+[White "Vakhidov,J"]
+[Black "Ponkratov,P"]
+[Result "0-1"]
+[WhiteTitle "GM"]
+[BlackTitle "GM"]
+[WhiteElo "2534"]
+[BlackElo "2629"]
+[ECO "A28"]
+[Opening "English"]
+[Variation "four knights, Nimzovich variation"]
+[WhiteFideId "14201801"]
+[BlackFideId "4157800"]
+[EventDate "2021.07.12"]
+[EventType "k.o."]
+
+1. c4 Nf6 2. Nc3 e5 3. Nf3 Nc6 4. e4 Bb4 5. d3 d6 6. a3 Bxc3+ 7. bxc3 O-O 8. g3
+Nd7 9. Bg2 a6 10. a4 Nc5 11. Nh4 Na5 12. Be3 Bd7 13. O-O b5 14. axb5 axb5 15.
+cxb5 Bxb5 16. c4 Bd7 17. Nf5 Kh8 18. f4 exf4 19. Rxf4 Nc6 20. Rxa8 Qxa8 21. d4
+Qa3 22. Bc1 Qd3 23. Qh5 Bxf5 24. exf5 Nxd4 25. Bf1 Qc3 26. f6 g6 27. Qh6 Nce6
+28. Rf2 Nf5 29. Qd2 Qxd2 30. Bxd2 h5 31. Bd3 Nfd4 32. Be4 Rb8 33. Kg2 Kg8 34. h3
+Nc5 35. Bxg6 fxg6 36. f7+ Kg7 37. f8=Q+ Rxf8 38. Bh6+ Kxh6 39. Rxf8 Kg7 40. Rf1
+Nd7 41. Ra1 Kf6 42. Ra7 Ne6 0-1
+
+[Event "FIDE World Cup 2021"]
+[Site "Krasnaya Polyana RUS"]
+[Date "2021.07.20"]
+[Round "3.3"]
+[White "Adhiban,Baskaran"]
+[Black "Vidit,S"]
+[Result "1/2-1/2"]
+[WhiteTitle "GM"]
+[BlackTitle "GM"]
+[WhiteElo "2660"]
+[BlackElo "2726"]
+[ECO "C24"]
+[Opening "Bishop's opening"]
+[Variation "Berlin defence"]
+[WhiteFideId "5018471"]
+[BlackFideId "5029465"]
+[EventDate "2021.07.12"]
+[EventType "k.o."]
+
+1. e4 e5 2. Bc4 Nf6 3. d3 c6 4. Nf3 d5 5. Bb3 a5 6. a4 Bb4+ 7. c3 Bd6 8. exd5
+Nxd5 9. Nbd2 O-O 10. Ne4 Bc7 11. O-O Bg4 12. h3 Bh5 13. Ng3 Bg6 14. Re1 Nd7 15.
+d4 exd4 16. Bxd5 cxd5 17. Qxd4 Re8 18. Rxe8+ Qxe8 19. Qxd5 Bxg3 20. fxg3 Be4 21.
+Qd1 Nc5 22. Nd4 Rd8 23. Bf4 Ne6 24. Be3 Rd6 25. Qg4 Nxd4 26. Bxd4 Rg6 27. Qf4
+Bc6 28. Kh2 h6 29. Rf1 Bxa4 30. Ra1 Bc6 31. Rxa5 Qe2 32. Qf2 Qxf2 33. Bxf2 Re6
+34. Kg1 Re2 35. b4 Rc2 36. Rc5 Rc1+ 37. Kh2 Rc2 38. Kg1 Rc1+ 39. Kh2 1/2-1/2

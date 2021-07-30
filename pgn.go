@@ -35,7 +35,7 @@ func (s *Scanner) Scan() bool {
 	count := 0
 	for {
 		scan := s.scanr.Scan()
-		if scan == false {
+		if !scan {
 			s.err = s.scanr.Err()
 			return false
 		}

@@ -60,6 +60,25 @@ func TestCommentsDetection(t *testing.T) {
 	}
 }
 
+func TestScanner(t *testing.T) {
+	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn"} {
+		f, err := os.Open(fname)
+		if err != nil {
+			panic(err)
+		}
+		defer f.Close()
+		scanner := NewScanner(f)
+		games := []*Game{}
+		for scanner.Scan() {
+			game := scanner.Next()
+			games = append(games, game)
+		}
+		if len(games) != 5 {
+			t.Fatal(fname + " expected 5 games")
+		}
+	}
+}
+
 func BenchmarkPGN(b *testing.B) {
 	pgn := mustParsePGN("fixtures/pgns/0001.pgn")
 	b.ResetTimer()
