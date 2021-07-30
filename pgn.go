@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strings"
 )
@@ -26,36 +25,65 @@ func NewScanner(r io.Reader) *Scanner {
 	return &Scanner{scanr: scanr}
 }
 
+type scanState int
+
+const (
+	notInPGN scanState = iota
+	inTagPairs
+	inMoves
+)
+
 // Scan returns false if there was an error parsing
 // a game or EOF was reached.  Running scan populates
 // data for Next() and Err().
 func (s *Scanner) Scan() bool {
+	if s.err == io.EOF {
+		return false
+	}
 	s.err = nil
 	var sb strings.Builder
-	count := 0
+	state := notInPGN
+	setGame := func() bool {
+		game, err := decodePGN(sb.String())
+		if err != nil {
+			s.err = err
+			return false
+		}
+		s.game = game
+		return true
+	}
 	for {
 		scan := s.scanr.Scan()
 		if !scan {
 			s.err = s.scanr.Err()
-			return false
-		}
-		line := s.scanr.Text() + "\n"
-		if strings.TrimSpace(line) == "" {
-			count++
-		} else {
-			sb.WriteString(line)
-		}
-		if count == 2 {
-			game, err := decodePGN(sb.String())
-			if err != nil {
-				s.err = err
-				return false
+			// err is nil if io.EOF
+			if s.err == nil {
+				s.err = io.EOF
 			}
-			s.game = game
-			break
+			return setGame()
+		}
+		line := strings.TrimSpace(s.scanr.Text())
+		isTagPair := strings.HasPrefix(line, "[")
+		isMoveSeq := strings.HasPrefix(line, "1. ")
+		switch state {
+		case notInPGN:
+			if !isTagPair {
+				break
+			}
+			state = inTagPairs
+			sb.WriteString(line + "\n")
+		case inTagPairs:
+			if isMoveSeq {
+				state = inMoves
+			}
+			sb.WriteString(line + "\n")
+		case inMoves:
+			if line == "" {
+				return setGame()
+			}
+			sb.WriteString(line + "\n")
 		}
 	}
-	return true
 }
 
 // Next returns the game from the most recent Scan.
@@ -102,7 +130,6 @@ func GamesFromPGN(r io.Reader) ([]*Game, error) {
 			count = 0
 			current = ""
 			totalCount++
-			log.Println("Processed game", totalCount)
 		}
 	}
 	return games, nil

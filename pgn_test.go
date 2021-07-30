@@ -74,7 +74,7 @@ func TestScanner(t *testing.T) {
 			games = append(games, game)
 		}
 		if len(games) != 5 {
-			t.Fatal(fname + " expected 5 games")
+			t.Fatalf(fname+" expected 5 games but got %d", len(games))
 		}
 	}
 }
