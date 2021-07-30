@@ -122,7 +122,8 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
-	moveStrs, outcome := moveList(pgn)
+	moveComments, outcome := moveListWithComments(pgn)
+	// moveStrs, outcome := moveList(pgn)
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -138,14 +139,15 @@ func decodePGN(pgn string) (*Game, error) {
 	g := NewGame(gameFuncs...)
 	g.ignoreAutomaticDraws = true
 	decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
-	for _, alg := range moveStrs {
-		m, err := decoder.Decode(g.Position(), alg)
+	for _, move := range moveComments {
+		m, err := decoder.Decode(g.Position(), move.MoveStr)
 		if err != nil {
 			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
 		}
 		if err := g.Move(m); err != nil {
 			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
 		}
+		g.comments = append(g.comments, move.Comments)
 	}
 	g.outcome = outcome
 	return g, nil
@@ -194,6 +196,52 @@ var (
 	moveNumRegex = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
 )
 
+type moveWithComment struct {
+	MoveStr  string
+	Comments []string
+}
+
+func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
+	text := stripTagPairs(pgn)
+	// remove variations
+	text = removeSection(`\(`, `\)`, text)
+	text = strings.Replace(text, "\n", " ", -1)
+	text = strings.TrimSpace(text)
+	tokens := strings.Split(text, " ")
+	var outcome Outcome
+	moves := []moveWithComment{}
+	inComment := false
+	commentTokens := []string{}
+tokenLoop:
+	for _, token := range tokens {
+		token = strings.TrimSpace(token)
+		switch token {
+		case "{":
+			inComment = true
+			commentTokens = []string{}
+		case "}":
+			inComment = false
+			if len(moves) > 0 {
+				moves[len(moves)-1].Comments = append(moves[len(moves)-1].Comments, strings.Join(commentTokens, " "))
+			}
+		case "":
+		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
+			outcome = Outcome(token)
+			break tokenLoop
+		default:
+			if inComment {
+				commentTokens = append(commentTokens, token)
+				break
+			}
+			if strings.HasSuffix(token, ".") {
+				break
+			}
+			moves = append(moves, moveWithComment{MoveStr: token})
+		}
+	}
+	return moves, outcome
+}
+
 func moveList(pgn string) ([]string, Outcome) {
 	// remove comments
 	text := removeSection("{", "}", pgn)
@@ -232,4 +280,16 @@ func removeSection(leftChar, rightChar, s string) string {
 		}
 		s = s[0:i[0]] + s[i[1]:]
 	}
+}
+
+func stripTagPairs(pgn string) string {
+	lines := strings.Split(pgn, "\n")
+	cp := []string{}
+	for _, line := range lines {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "[") {
+			cp = append(cp, line)
+		}
+	}
+	return strings.Join(cp, "\n")
 }
