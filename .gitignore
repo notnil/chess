@@ -28,6 +28,3 @@ _testmain.go
 
 # Benchmarking
 cpu.out
-
-# testing directories
-cmd
