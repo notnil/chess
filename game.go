@@ -195,6 +195,7 @@ func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)
 }
 
+// Comments returns the comments for the game indexed by moves.
 func (g *Game) Comments() [][]string {
 	return append([][]string(nil), g.comments...)
 }

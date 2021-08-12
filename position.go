@@ -6,7 +6,6 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"strconv"
 	"strings"
 )
 
@@ -142,16 +141,8 @@ func (pos *Position) String() string {
 
 // Hash returns a unique hash of the position
 func (pos *Position) Hash() [16]byte {
-	sq := "-"
-	if pos.enPassantSquare != NoSquare {
-		sq = pos.enPassantSquare.String()
-	}
-	s := pos.turn.String() + ":" + pos.castleRights.String() + ":" + sq
-	for _, p := range allPieces {
-		bb := pos.board.bbForPiece(p)
-		s += ":" + strconv.FormatUint(uint64(bb), 16)
-	}
-	return md5.Sum([]byte(s))
+	b, _ := pos.MarshalBinary()
+	return md5.Sum(b)
 }
 
 // MarshalText implements the encoding.TextMarshaler interface and
