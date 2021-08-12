@@ -17,7 +17,7 @@ type validNotationTest struct {
 }
 
 func TestValidDecoding(t *testing.T) {
-	f, err := os.Open("assets/valid_notation_tests.json")
+	f, err := os.Open("fixtures/valid_notation_tests.json")
 	if err != nil {
 		t.Fatal(err)
 		return

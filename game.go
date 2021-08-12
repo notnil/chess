@@ -68,6 +68,7 @@ type Game struct {
 	notation             Notation
 	tagPairs             []*TagPair
 	moves                []*Move
+	comments             [][]string
 	positions            []*Position
 	pos                  *Position
 	outcome              Outcome
@@ -192,6 +193,11 @@ func (g *Game) Positions() []*Position {
 // Moves returns the move history of the game.
 func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)
+}
+
+// Comments returns the comments for the game indexed by moves.
+func (g *Game) Comments() [][]string {
+	return append([][]string(nil), g.comments...)
 }
 
 // TagPairs returns the game's tag pairs.
