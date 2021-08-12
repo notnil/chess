@@ -100,3 +100,15 @@ func mustParsePGN(fname string) string {
 	}
 	return string(b)
 }
+func TestGamesFromPGN(t *testing.T) {
+	for _, test := range validPGNs {
+		reader := strings.NewReader(test.PGN)
+		games, err := GamesFromPGN(reader)
+		if err != nil {
+			t.Fatalf("fail to read games from valid pgn: %s", err.Error())
+		}
+		if len(games) != 1 {
+			t.Fatalf("expected to get 1 game from pgn, got %d", len(games))
+		}
+	}
+}
