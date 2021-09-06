@@ -60,6 +60,19 @@ func TestCommentsDetection(t *testing.T) {
 	}
 }
 
+func TestCutechessCLICommentStyle(t *testing.T) {
+	pgn := mustParsePGN("fixtures/pgns/0008.pgn")
+	game, err := decodePGN(pgn)
+	if err != nil {
+		t.Fatal(err)
+	}
+	comment := strings.Join(game.Comments()[36], " ")
+	expected := `-2.65/9 0.048s`
+	if comment != expected {
+		t.Fatalf("expected pgn comment to be %s but got %s", expected, comment)
+	}
+}
+
 func TestScanner(t *testing.T) {
 	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn"} {
 		f, err := os.Open(fname)

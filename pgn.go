@@ -243,6 +243,16 @@ func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
 tokenLoop:
 	for _, token := range tokens {
 		token = strings.TrimSpace(token)
+		removeInComment := false
+		if strings.HasPrefix(token, "{") {
+			inComment = true
+			commentTokens = []string{}
+			token = token[1:]
+		}
+		if strings.HasSuffix(token, "}") {
+			removeInComment = true
+			token = token[:len(token)-1]
+		}
 		switch token {
 		case "{":
 			inComment = true
@@ -265,6 +275,12 @@ tokenLoop:
 				break
 			}
 			moves = append(moves, moveWithComment{MoveStr: token})
+		}
+		if removeInComment {
+			inComment = false
+			if len(moves) > 0 {
+				moves[len(moves)-1].Comments = append(moves[len(moves)-1].Comments, strings.Join(commentTokens, " "))
+			}
 		}
 	}
 	return moves, outcome
