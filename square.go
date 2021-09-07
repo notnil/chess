@@ -24,7 +24,7 @@ func (sq Square) String() string {
 
 // NewSquare creates a new Square from a File and a Rank
 func NewSquare(file File, rank Rank) Square {
-	return Square(int8(file)*numOfSquaresInRow + int8(rank))
+	return Square(int8(rank)*numOfSquaresInRow + int8(file))
 }
 
 func (sq Square) color() Color {
