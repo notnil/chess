@@ -83,11 +83,11 @@ func (b *Board) Flip(fd FlipDirection) *Board {
 		case UpDown:
 			file := Square(sq).File()
 			rank := Rank(7 - Square(sq).Rank())
-			mv = getSquare(file, rank)
+			mv = NewSquare(file, rank)
 		case LeftRight:
 			file := File(7 - Square(sq).File())
 			rank := Square(sq).Rank()
-			mv = getSquare(file, rank)
+			mv = NewSquare(file, rank)
 		}
 		m[mv] = b.Piece(Square(sq))
 	}
@@ -100,7 +100,7 @@ func (b *Board) Transpose() *Board {
 	for sq := 0; sq < numOfSquaresInBoard; sq++ {
 		file := File(7 - Square(sq).Rank())
 		rank := Rank(7 - Square(sq).File())
-		mv := getSquare(file, rank)
+		mv := NewSquare(file, rank)
 		m[mv] = b.Piece(Square(sq))
 	}
 	return NewBoard(m)
@@ -112,7 +112,7 @@ func (b *Board) Draw() string {
 	for r := 7; r >= 0; r-- {
 		s += Rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
-			p := b.Piece(getSquare(File(f), Rank(r)))
+			p := b.Piece(NewSquare(File(f), Rank(r)))
 			if p == NoPiece {
 				s += "-"
 			} else {
@@ -131,7 +131,7 @@ func (b *Board) String() string {
 	fen := ""
 	for r := 7; r >= 0; r-- {
 		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := getSquare(File(f), Rank(r))
+			sq := NewSquare(File(f), Rank(r))
 			p := b.Piece(sq)
 			if p != NoPiece {
 				fen += p.getFENChar()

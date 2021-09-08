@@ -47,7 +47,7 @@ func (b bitboard) Draw() string {
 	for r := 7; r >= 0; r-- {
 		s += Rank(r).String()
 		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := getSquare(File(f), Rank(r))
+			sq := NewSquare(File(f), Rank(r))
 			if b.Occupied(sq) {
 				s += "1"
 			} else {

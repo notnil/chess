@@ -3,9 +3,9 @@ package chess
 import "testing"
 
 type newSquareTest struct {
-	file   File
-	rank   Rank
-	square Square
+	f  File
+	r  Rank
+	sq Square
 }
 
 func TestNewSquare(t *testing.T) {
@@ -21,9 +21,9 @@ func TestNewSquare(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		square := NewSquare(testCase.file, testCase.rank)
-		if square != testCase.square {
-			t.Fatalf("expected %s, got %s", testCase.square.String(), square.String())
+		square := NewSquare(testCase.f, testCase.r)
+		if square != testCase.sq {
+			t.Fatalf("expected %s, got %s", testCase.sq.String(), square.String())
 		}
 	}
 }

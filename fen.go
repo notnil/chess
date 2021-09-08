@@ -63,7 +63,7 @@ func fenBoard(boardStr string) (*Board, error) {
 			return nil, err
 		}
 		for file, piece := range fileMap {
-			m[getSquare(file, rank)] = piece
+			m[NewSquare(file, rank)] = piece
 		}
 	}
 	return NewBoard(m), nil
