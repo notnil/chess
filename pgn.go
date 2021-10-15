@@ -64,7 +64,7 @@ func (s *Scanner) Scan() bool {
 		}
 		line := strings.TrimSpace(s.scanr.Text())
 		isTagPair := strings.HasPrefix(line, "[")
-		isMoveSeq := strings.HasPrefix(line, "1. ")
+		isMoveSeq := strings.HasPrefix(line, "1. ") || strings.HasPrefix(line, "*")
 		switch state {
 		case notInPGN:
 			if !isTagPair {

@@ -30,6 +30,10 @@ var (
 			PostPos: unsafeFEN("r3kb1r/2qp1pp1/b1n1p2p/pp2P3/5n1B/1PPQ1N2/P1BN1PPP/R3K2R w KQkq - 1 14"),
 			PGN:     mustParsePGN("fixtures/pgns/0004.pgn"),
 		},
+		{
+			PostPos: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			PGN:     mustParsePGN("fixtures/pgns/0009.pgn"),
+		},
 	}
 )
 
@@ -61,7 +65,7 @@ func TestCommentsDetection(t *testing.T) {
 }
 
 func TestScanner(t *testing.T) {
-	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn"} {
+	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn", "fixtures/pgns/0008.pgn"} {
 		f, err := os.Open(fname)
 		if err != nil {
 			panic(err)
