@@ -30,6 +30,18 @@ var (
 			PostPos: unsafeFEN("r3kb1r/2qp1pp1/b1n1p2p/pp2P3/5n1B/1PPQ1N2/P1BN1PPP/R3K2R w KQkq - 1 14"),
 			PGN:     mustParsePGN("fixtures/pgns/0004.pgn"),
 		},
+		{
+			PostPos: unsafeFEN("rnbqkbnr/ppp2ppp/4p3/3p4/3PP3/8/PPP2PPP/RNBQKBNR w KQkq d6 0 3"),
+			PGN:     mustParsePGN("fixtures/pgns/0008.pgn"),
+		},
+		{
+			PostPos: unsafeFEN("r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4"),
+			PGN:     mustParsePGN("fixtures/pgns/0009.pgn"),
+		},
+		{
+			PostPos: unsafeFEN("r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4"),
+			PGN:     mustParsePGN("fixtures/pgns/0010.pgn"),
+		},
 	}
 )
 
@@ -47,16 +59,42 @@ func TestValidPGNs(t *testing.T) {
 	}
 }
 
-func TestCommentsDetection(t *testing.T) {
-	pgn := mustParsePGN("fixtures/pgns/0005.pgn")
-	game, err := decodePGN(pgn)
-	if err != nil {
-		t.Fatal(err)
+type commentTest struct {
+	PGN         string
+	MoveNumber  int
+	CommentText string
+}
+
+var (
+	commentTests = []commentTest{
+		{
+			PGN:         mustParsePGN("fixtures/pgns/0005.pgn"),
+			MoveNumber:  7,
+			CommentText: `(-0.25 → 0.39) Inaccuracy. cxd4 was best. [%eval 0.39] [%clk 0:05:05]`,
+		},
+		{
+			PGN:         mustParsePGN("fixtures/pgns/0009.pgn"),
+			MoveNumber:  5,
+			CommentText: `This opening is called the Ruy Lopez.`,
+		},
+		{
+			PGN:         mustParsePGN("fixtures/pgns/0010.pgn"),
+			MoveNumber:  5,
+			CommentText: `This opening is called the Ruy Lopez.`,
+		},
 	}
-	comment := strings.Join(game.Comments()[7], " ")
-	expected := `Inaccuracy. cxd4 was best. [%eval 0.39] [%clk 0:05:05]`
-	if comment != expected {
-		t.Fatalf("expected pgn comment to be %s but got %s", expected, comment)
+)
+
+func TestCommentsDetection(t *testing.T) {
+	for _, test := range commentTests {
+		game, err := decodePGN(test.PGN)
+		if err != nil {
+			t.Fatal(err)
+		}
+		comment := strings.Join(game.Comments()[test.MoveNumber], " ")
+		if comment != test.CommentText {
+			t.Fatalf("expected pgn comment to be %s but got %s", test.CommentText, comment)
+		}
 	}
 }
 
