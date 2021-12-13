@@ -152,11 +152,23 @@ func (AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
 
 		// Try and remove the disambiguators and see if it parses. Sometimes they
 		// get extraneously added.
-		options := []string{
-			piece + originRank + capture + file + rank + promotes + castles, // no origin file
-			piece + originFile + capture + file + rank + promotes + castles, // no origin rank
-			piece + capture + file + rank + promotes + castles,              // no origin
+		options := []string{}
+
+		if piece != "" {
+			options = append(options, piece+capture+file+rank+promotes+castles)            // no origin
+			options = append(options, piece+originRank+capture+file+rank+promotes+castles) // no origin file
+			options = append(options, piece+originFile+capture+file+rank+promotes+castles) // no origin rank
+		} else {
+			if capture != "" {
+				// Possibly a pawn capture. In order to parse things like d4xe5, we need
+				// to try parsing without the rank.
+				options = append(options, piece+originFile+capture+file+rank+promotes+castles) // no origin rank
+			}
+			if originFile != "" && originRank != "" {
+				options = append(options, piece+capture+file+rank+promotes+castles) // no origin
+			}
 		}
+
 		for _, opt := range options {
 			if opt == moveCleaned {
 				return m, nil
