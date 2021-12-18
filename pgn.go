@@ -151,7 +151,6 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
 	moveComments, outcome := moveListWithComments(pgn)
-	// moveStrs, outcome := moveList(pgn)
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -229,74 +228,33 @@ type moveWithComment struct {
 	Comments []string
 }
 
+var moveListTokenRe = regexp.MustCompile(`(?:\d+\.)|(O-O(?:-O)?|\w*[abcdefgh][12345678]\w*(?:=Q)?)|(?:\{([^}]*)\})|(?:\([^)]*\))|(\*|0-1|1-0|1\/2-1\/2)`)
+
 func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
-	text := stripTagPairs(pgn)
-	// remove variations
-	text = removeSection(`\(`, `\)`, text)
-	text = strings.Replace(text, "\n", " ", -1)
-	text = strings.TrimSpace(text)
-	tokens := strings.Split(text, " ")
+	pgn = stripTagPairs(pgn)
 	var outcome Outcome
 	moves := []moveWithComment{}
-	inComment := false
-	commentTokens := []string{}
-tokenLoop:
-	for _, token := range tokens {
-		token = strings.TrimSpace(token)
-		switch token {
-		case "{":
-			inComment = true
-			commentTokens = []string{}
-		case "}":
-			inComment = false
-			if len(moves) > 0 {
-				moves[len(moves)-1].Comments = append(moves[len(moves)-1].Comments, strings.Join(commentTokens, " "))
-			}
-		case "":
-		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
-			outcome = Outcome(token)
-			break tokenLoop
-		default:
-			if inComment {
-				commentTokens = append(commentTokens, token)
-				break
-			}
-			if strings.HasSuffix(token, ".") {
-				break
-			}
-			moves = append(moves, moveWithComment{MoveStr: token})
+
+	for _, match := range moveListTokenRe.FindAllStringSubmatch(pgn, -1) {
+		move, commentText, outcomeText := match[1], match[2], match[3]
+		if len(move+commentText+outcomeText) == 0 {
+			continue
+		}
+
+		if outcomeText != "" {
+			outcome = Outcome(outcomeText)
+			break
+		}
+
+		if commentText != "" {
+			moves[len(moves)-1].Comments = append(moves[len(moves)-1].Comments, strings.TrimSpace(commentText))
+		}
+
+		if move != "" {
+			moves = append(moves, moveWithComment{MoveStr: move})
 		}
 	}
 	return moves, outcome
-}
-
-func moveList(pgn string) ([]string, Outcome) {
-	// remove comments
-	text := removeSection("{", "}", pgn)
-	// remove variations
-	text = removeSection(`\(`, `\)`, text)
-	// remove tag pairs
-	text = removeSection(`\[`, `\]`, text)
-	// remove line breaks
-	text = strings.Replace(text, "\n", " ", -1)
-
-	list := strings.Split(text, " ")
-	filtered := []string{}
-	var outcome Outcome
-	for _, move := range list {
-		move = strings.TrimSpace(move)
-		switch move {
-		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
-			outcome = Outcome(move)
-		case "":
-		default:
-			results := moveNumRegex.FindStringSubmatch(move)
-			if len(results) == 2 && results[1] != "" {
-				filtered = append(filtered, results[1])
-			}
-		}
-	}
-	return filtered, outcome
 }
 
 func removeSection(leftChar, rightChar, s string) string {
