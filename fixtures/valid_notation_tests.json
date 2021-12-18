@@ -158,5 +158,29 @@
 		"longAlgText" : "Rd1d2",
 		"uciText" : "d1d2",
 		"description" : "From Lichess DB https://lichess.org/editor/3r1rk1/1p1bqp2/p1pR1p1p/8/4P3/P4B2/1PP1QPP1/3R3K_w_-_-_2_22"
-	}   
+	},
+	{
+		"pos1": "r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8 b - - 1 35",
+		"pos2": "r7/1R1nk3/2R1pn2/p4p2/P5p1/4P3/1P2KPP1/8 w - - 2 36",
+		"algText": "Nf6",
+		"longAlgText": "Nd5f6",
+		"uciText": "d5f6",
+		"description" : "https://lichess.org/analysis/fromPosition/r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8_b_-_-_1_35"
+	},
+	{
+		"pos1": "r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8 b - - 1 35",
+		"pos2": "r7/1R1nk3/2R1pn2/p4p2/P5p1/4P3/1P2KPP1/8 w - - 2 36",
+		"algText": "N5f6",
+		"longAlgText": "Nd5f6",
+		"uciText": "d5f6",
+		"description" : "https://lichess.org/analysis/fromPosition/r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8_b_-_-_1_35"
+	},
+	{
+		"pos1": "r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8 b - - 1 35",
+		"pos2": "r7/1R1nk3/2R1pn2/p4p2/P5p1/4P3/1P2KPP1/8 w - - 2 36",
+		"algText": "Ndf6",
+		"longAlgText": "Nd5f6",
+		"uciText": "d5f6",
+		"description" : "https://lichess.org/analysis/fromPosition/r7/1R1nk3/2R1p3/p2n1p2/P5p1/4P3/1P2KPP1/8_b_-_-_1_35"
+	}
 ]

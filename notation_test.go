@@ -100,6 +100,12 @@ var (
 			Pos:  unsafeFEN("rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq e6 0 2"),
 			Text: "nf3",
 		},
+		{
+			// disambiguation should not allow for this since it is not a capture
+			N:    AlgebraicNotation{},
+			Pos:  unsafeFEN("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2"),
+			Text: "bf4",
+		},
 	}
 )
 
