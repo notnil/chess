@@ -1,0 +1,17 @@
+[Event "Rated Blitz game"]
+[Site "https://lichess.org/JXpwpOJf"]
+[White "georgekontos"]
+[Black "zev105"]
+[Result "1-0"]
+[UTCDate "2014.08.31"]
+[UTCTime "22:03:44"]
+[WhiteElo "1292"]
+[BlackElo "1429"]
+[WhiteRatingDiff "+15"]
+[BlackRatingDiff "-15"]
+[ECO "C42"]
+[Opening "Russian Game: Three Knights Game"]
+[TimeControl "300+3"]
+[Termination "Normal"]
+
+1. e4 e5 2. Nf3 Nf6 3. Nc3 Bc5 4. Nxe5 Qe7 5. Bd3 Qxe5 6. O-O O-O 7. a3 d6 8. b4 Bd4 9. Bb2 Nbd7 10. Bc4 Nb6 11. Qe2 Nxc4 12. Qxc4 Be6 13. Qxc7 Nxe4 14. Nxe4 Bxb2 15. Rae1 Rac8 16. Qxd6 Bc4 17. Qxe5 Bxe5 18. d3 Be6 19. Nc5 Bxh2+ 20. Kxh2 Bd5 21. c4 Bc6 22. Re7 Rcd8 23. Rd1 b6 24. b5 Bxb5 25. cxb5 bxc5 26. Rxa7 Rd6 27. Rc7 Rh6+ 28. Kg1 Re8 29. Rxc5 f5 30. b6 f4 31. b7 Rb8 32. Rc8+ Rxc8 33. bxc8=Q+ Kf7 34. Qf5+ Rf6 35. Qxh7 f3 36. g3 Ra6 37. Qh5+ g6 38. Qh7+ Kf6 39. Qh8+ Kg5 40. Re1 Rxa3 41. Re5+ Kg4 42. Qh4# 1-0

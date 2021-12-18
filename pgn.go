@@ -228,7 +228,7 @@ type moveWithComment struct {
 	Comments []string
 }
 
-var moveListTokenRe = regexp.MustCompile(`(?:\d+\.)|(O-O(?:-O)?|\w*[abcdefgh][12345678]\w*(?:=Q)?)|(?:\{([^}]*)\})|(?:\([^)]*\))|(\*|0-1|1-0|1\/2-1\/2)`)
+var moveListTokenRe = regexp.MustCompile(`(?:\d+\.)|(O-O(?:-O)?|\w*[abcdefgh][12345678]\w*(?:=[QRBN])?(?:\+|#)?)|(?:\{([^}]*)\})|(?:\([^)]*\))|(\*|0-1|1-0|1\/2-1\/2)`)
 
 func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
 	pgn = stripTagPairs(pgn)
