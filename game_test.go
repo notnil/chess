@@ -216,6 +216,8 @@ func TestSufficentMaterial(t *testing.T) {
 
 func TestSerializationCycle(t *testing.T) {
 	g := NewGame()
+	g.MoveStr("e4")
+	g.MoveStr("e5")
 	pgn, err := PGN(strings.NewReader(g.String()))
 	if err != nil {
 		t.Fatal(err)

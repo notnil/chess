@@ -191,7 +191,7 @@ func encodePGN(g *Game) string {
 		pos := g.positions[i]
 		txt := g.notation.Encode(pos, move)
 		if i%2 == 0 {
-			s += fmt.Sprintf("%d.%s", (i/2)+1, txt)
+			s += fmt.Sprintf("%d. %s", (i/2)+1, txt)
 		} else {
 			s += fmt.Sprintf(" %s ", txt)
 		}
