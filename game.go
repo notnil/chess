@@ -156,27 +156,46 @@ func NewGame(options ...func(*Game)) *Game {
 
 // Move updates the game with the given move.  An error is returned
 // if the move is invalid or the game has already been completed.
-func (g *Game) Move(m *Move) error {
+func (g *Game) Move(m *Move) (*Move, error) {
 	valid := moveSlice(g.ValidMoves()).find(m)
 	if valid == nil {
-		return fmt.Errorf("chess: invalid move %s", m)
+		return nil, fmt.Errorf("chess: invalid move %s", m)
 	}
 	g.moves = append(g.moves, valid)
 	g.pos = g.pos.Update(valid)
 	g.positions = append(g.positions, g.pos)
 	g.updatePosition()
-	return nil
+	return valid, nil
 }
 
 // MoveStr decodes the given string in game's notation
 // and calls the Move function.  An error is returned if
 // the move can't be decoded or the move is invalid.
-func (g *Game) MoveStr(s string) error {
+func (g *Game) MoveStr(s string) (*Move, error) {
 	m, err := g.notation.Decode(g.pos, s)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	return g.Move(m)
+}
+
+// MoveSquares updates the game with the given move from the
+// origin square to the destination square. An error is returned
+// if the move is invalid or the game has already been completed.
+func (g *Game) MoveSquares(origin Square, destination Square, promo PieceType) (*Move, error) {
+	m := &Move{s1: origin, s2: destination, promo: promo}
+
+	return g.Move(m)
+}
+
+// Get the 0-indexed move from the history of the game.
+// Negative indexes are supported. For example, -2 will get the second-to-last move.
+func (g *Game) GetMove(num int) *Move {
+	if num >= 0 {
+		return g.moves[num]
+	} else {
+		return g.moves[len(g.moves)+num] // Get the move in reverse index
+	}
 }
 
 // ValidMoves returns a list of valid moves in the

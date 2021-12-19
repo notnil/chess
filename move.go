@@ -25,12 +25,13 @@ type Move struct {
 	s2    Square
 	promo PieceType
 	tags  MoveTag
+	piece Piece
 }
 
 // String returns a string useful for debugging.  String doesn't return
 // algebraic notation.
 func (m *Move) String() string {
-	return m.s1.String() + m.s2.String() + m.promo.String()
+	return m.s1.String() + m.s2.String() + m.promo.String() + m.piece.Color().Name() + m.piece.Type().String()
 }
 
 // S1 returns the origin square of the move.
@@ -46,6 +47,15 @@ func (m *Move) S2() Square {
 // Promo returns promotion piece type of the move.
 func (m *Move) Promo() PieceType {
 	return m.promo
+}
+
+func (m *Move) PieceMoved() Piece {
+	return m.piece
+}
+
+// Returns an integer containing all of the MoveTag flags bitwise-ORed together.
+func (m *Move) GetTags() MoveTag {
+	return m.tags
 }
 
 // HasTag returns true if the move contains the MoveTag given.
@@ -64,7 +74,9 @@ func (a moveSlice) find(m *Move) *Move {
 		return nil
 	}
 	for _, move := range a {
-		if move.String() == m.String() {
+		// Don't check piece so we can look for an arbitrary move from A to B without knowing what piece is there
+		// Only one piece is possible from the origin square so this will not break any guarantees
+		if move.s1 == m.s1 && move.s2 == m.s2 && move.promo == m.promo {
 			return move
 		}
 	}

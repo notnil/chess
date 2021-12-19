@@ -1,5 +1,7 @@
 package chess
 
+import "strings"
+
 const (
 	numOfSquaresInBoard = 64
 	numOfSquaresInRow   = 8
@@ -25,6 +27,10 @@ func (sq Square) String() string {
 // NewSquare creates a new Square from a File and a Rank
 func NewSquare(f File, r Rank) Square {
 	return Square(int8(r)*numOfSquaresInRow + int8(f))
+}
+
+func NewSquareFromStr(squareStr string) Square {
+	return strToSquareMap[strings.ToLower(squareStr)]
 }
 
 func (sq Square) color() Color {

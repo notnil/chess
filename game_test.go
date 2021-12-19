@@ -13,8 +13,10 @@ func TestCheckmate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveStr("Qxf7#"); err != nil {
+	if m, err := g.MoveStr("Qxf7#"); err != nil {
 		t.Fatal(err)
+	} else if m.piece != WhiteQueen || m.GetTags() != Check|Capture {
+		t.Fatalf("expected %s move with tags %d but got %s %s %d", "WhiteQueen", Check|Capture, m.piece.Color().Name(), m.piece.Type().String(), m.GetTags())
 	}
 	if g.Method() != Checkmate {
 		t.Fatalf("expected method %s but got %s", Checkmate, g.Method())
@@ -30,9 +32,12 @@ func TestCheckmate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g = NewGame(fen)
-	if err := g.MoveStr("O-O-O"); err != nil {
+	if m, err := g.MoveStr("O-O-O"); err != nil {
 		t.Fatal(err)
+	} else if m.piece != WhiteKing || m.GetTags() != Check|QueenSideCastle {
+		t.Fatalf("expected %s move with tags %d but got %s %s %d", "WhiteKing", Check|QueenSideCastle, m.piece.Color().Name(), m.piece.Type().String(), m.GetTags())
 	}
+
 	if g.Method() != Checkmate {
 		t.Fatalf("expected method %s but got %s", Checkmate, g.Method())
 	}
@@ -65,7 +70,7 @@ func TestStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveStr("Qb6"); err != nil {
+	if _, err := g.MoveStr("Qb6"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Method() != Stalemate {
@@ -84,11 +89,74 @@ func TestInvalidStalemate(t *testing.T) {
 		t.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveStr("d8=Q"); err != nil {
+	if m, err := g.MoveStr("d8=Q"); err != nil {
 		t.Fatal(err)
+	} else if m.piece != WhitePawn || m.promo != Queen || m.GetTags() != 0 {
+		t.Fatalf("expected %s move with tags %d but got %s %s %d", "WhitePawn", 0, m.piece.Color().Name(), m.piece.Type().String(), m.GetTags())
 	}
 	if g.Outcome() != NoOutcome {
 		t.Fatalf("expected outcome %s but got %s", NoOutcome, g.Outcome())
+	}
+}
+
+func TestMoveSquares(t *testing.T) {
+	// Check if moving via Square objects vs strings produces the same result
+	type StrPair struct {
+		from, to string
+	}
+
+	g1 := NewGame(UseNotation(UCINotation{}))
+	g2 := NewGame(UseNotation(UCINotation{}))
+
+	moves := []StrPair{
+		{"e2", "e4"}, {"g8", "f6"},
+		{"e4", "e5"}, {"f6", "d5"},
+		{"c2", "c4"}, {"d5", "b6"},
+		{"d2", "d4"}, {"d7", "d6"},
+		{"f2", "f4"}}
+
+	for i, m := range moves {
+		mStr := m.from + m.to
+		m1, err := g1.MoveStr(mStr)
+
+		if err != nil {
+			t.Fatalf("Error on MoveStr %d. %s: %s", i+1, mStr, err)
+		}
+
+		m2, err := g2.MoveSquares(NewSquareFromStr(m.from), NewSquareFromStr(m.to), NoPieceType)
+
+		if err != nil {
+			t.Fatalf("Error on MoveSquare %d. %s: %s", i+1, mStr, err)
+		}
+
+		if m1.String() != m2.String() || m1.GetTags() != m2.GetTags() {
+			t.Fatalf("MoveStr and MoveSquare do not match for %d. %s.\nMoveStr:\t\t%s tags: %d\nMoveSquare:\t\t%s tags: %d", i+1, mStr, m1.String(), m1.GetTags(), m2.String(), m2.GetTags())
+		}
+	}
+
+	if g1.String() != g2.String() {
+		t.Fatalf("Games do not match.\nMoveStr:\n%s\n\nMoveSquare:\n%s", g1.String(), g2.String())
+	}
+
+	fen, _ := FEN("8/8/8/8/8/8/p7/8 b - - 0 1")
+	g3 := NewGame(fen)
+
+	m, err := g3.MoveSquares(A2, A1, Knight)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	correct := &Move{s1: A2, s2: A1, promo: Knight, piece: BlackPawn}
+
+	if m.String() != correct.String() {
+		t.Fatalf("Incorrect move %s. Expected %s", m.String(), correct.String())
+	}
+
+	piece := g3.Position().Board().Piece(A1)
+
+	if piece != BlackKnight {
+		t.Fatalf("Incorrect promotion %s %s. Expected Black Knight", piece.Color().Name(), piece.Type().String())
 	}
 }
 
@@ -99,7 +167,7 @@ func TestThreeFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveStr(m); err != nil {
+		if _, err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -117,7 +185,7 @@ func TestInvalidThreeFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveStr(m); err != nil {
+		if _, err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -135,7 +203,7 @@ func TestFiveFoldRepition(t *testing.T) {
 		"Nf3", "Nf6", "Ng1", "Ng8",
 	}
 	for _, m := range moves {
-		if err := g.MoveStr(m); err != nil {
+		if _, err := g.MoveStr(m); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -163,7 +231,7 @@ func TestInvalidFiftyMoveRule(t *testing.T) {
 func TestSeventyFiveMoveRule(t *testing.T) {
 	fen, _ := FEN("2r3k1/1q1nbppp/r3p3/3pP3/pPpP4/P1Q2N2/2RN1PPP/2R4K b - b3 149 80")
 	g := NewGame(fen)
-	if err := g.MoveStr("Kf8"); err != nil {
+	if _, err := g.MoveStr("Kf8"); err != nil {
 		t.Fatal(err)
 	}
 	if g.Outcome() != Draw || g.Method() != SeventyFiveMoveRule {
@@ -273,7 +341,7 @@ func BenchmarkStalemateStatus(b *testing.B) {
 		b.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveStr("Qb6"); err != nil {
+	if _, err := g.MoveStr("Qb6"); err != nil {
 		b.Fatal(err)
 	}
 	b.ResetTimer()
@@ -289,7 +357,7 @@ func BenchmarkInvalidStalemateStatus(b *testing.B) {
 		b.Fatal(err)
 	}
 	g := NewGame(fen)
-	if err := g.MoveStr("d8=Q"); err != nil {
+	if _, err := g.MoveStr("d8=Q"); err != nil {
 		b.Fatal(err)
 	}
 	b.ResetTimer()

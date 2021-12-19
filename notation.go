@@ -71,6 +71,7 @@ func (UCINotation) Decode(pos *Position, s string) (*Move, error) {
 		return m, nil
 	}
 	p := pos.Board().Piece(s1)
+	m.piece = p
 	if p.Type() == King {
 		if (s1 == E1 && s2 == G1) || (s1 == E8 && s2 == G8) {
 			m.addTag(KingSideCastle)

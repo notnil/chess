@@ -171,7 +171,7 @@ func decodePGN(pgn string) (*Game, error) {
 		if err != nil {
 			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
 		}
-		if err := g.Move(m); err != nil {
+		if _, err := g.Move(m); err != nil {
 			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
 		}
 		g.comments = append(g.comments, move.Comments)
