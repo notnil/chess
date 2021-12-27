@@ -19,7 +19,7 @@ var StockfishPath string
 
 func init() {
 	dir, _ := os.Getwd()
-	StockfishPath = filepath.Join(dir, "stockfish")
+	StockfishPath = filepath.Join(dir, "..", "stockfish")
 }
 
 func Example() {
