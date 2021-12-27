@@ -129,8 +129,8 @@ var (
 
 const (
 	logOutput = `uci
-Stockfish 12 by the Stockfish developers (see AUTHORS file)
-id name Stockfish 12
+Stockfish 14.1 by the Stockfish developers (see AUTHORS file)
+id name Stockfish 14.1
 id author the Stockfish developers (see AUTHORS file)
 	
 option name Debug Log File type string default 
