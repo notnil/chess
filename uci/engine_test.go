@@ -111,7 +111,8 @@ func TestLogger(t *testing.T) {
 	}
 	expected := infoRegex.ReplaceAllString(logOutput, "")
 	expectedSplit := strings.Split(expected, "\n")
-	actual := string(b.Bytes())
+	actual := b.String()
+	t.Log(actual)
 	actual = infoRegex.ReplaceAllString(actual, "")
 	actualSplit := strings.Split(actual, "\n")
 	for i := 0; i < len(expectedSplit); i++ {
