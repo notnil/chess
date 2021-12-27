@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"testing"
@@ -13,7 +15,12 @@ import (
 	"github.com/notnil/chess/uci"
 )
 
-const StockfishPath = "./stockfish"
+var StockfishPath string
+
+func init() {
+	dir, _ := os.Getwd()
+	StockfishPath = filepath.Join(dir, "stockfish")
+}
 
 func Example() {
 	// set up engine to use stockfish exe
