@@ -90,8 +90,7 @@ func TestStop(t *testing.T) {
 	if err := eng.Run(uci.CmdStop); err != nil {
 		t.Fatal(err)
 	}
-	t.Log(eng.SearchResults().BestMove)
-	if eng.SearchResults().BestMove.S2() != chess.E4 {
+	if eng.SearchResults().BestMove.S2() != chess.D4 {
 		t.Fatal("expected a different move")
 	}
 }
@@ -115,7 +114,6 @@ func TestLogger(t *testing.T) {
 	expected := infoRegex.ReplaceAllString(logOutput, "")
 	expectedSplit := strings.Split(expected, "\n")
 	actual := b.String()
-	t.Log(actual)
 	actual = infoRegex.ReplaceAllString(actual, "")
 	actualSplit := strings.Split(actual, "\n")
 	for i := 0; i < len(expectedSplit); i++ {
