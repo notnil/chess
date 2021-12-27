@@ -122,7 +122,7 @@ func (AlgebraicNotation) Encode(pos *Position, m *Move) string {
 	return pChar + s1Str + capChar + m.s2.String() + promoText + checkChar
 }
 
-var pgnRegex = regexp.MustCompile(`^(?:([RNBQKP]?)([abcdefgh]?)(\d?)(x?)([abcdefgh])(\d)(=Q)?|(O-O(?:-O)?))([+#!?]|e\.p\.)*$`)
+var pgnRegex = regexp.MustCompile(`^(?:([RNBQKP]?)([abcdefgh]?)(\d?)(x?)([abcdefgh])(\d)(=[QRBN])?|(O-O(?:-O)?))([+#!?]|e\.p\.)*$`)
 
 func algebraicNotationParts(s string) (string, string, string, string, string, string, string, string, error) {
 	submatches := pgnRegex.FindStringSubmatch(s)

@@ -42,6 +42,10 @@ var (
 			PostPos: unsafeFEN("r1bqkbnr/1ppp1ppp/p1n5/1B2p3/4P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 4"),
 			PGN:     mustParsePGN("fixtures/pgns/0010.pgn"),
 		},
+		{
+			PostPos: unsafeFEN("8/8/6p1/4R3/6kQ/r2P1pP1/5P2/6K1 b - - 3 42"),
+			PGN:     mustParsePGN("fixtures/pgns/0011.pgn"),
+		},
 	}
 )
 
