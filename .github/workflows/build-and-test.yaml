@@ -1,4 +1,4 @@
-name: PR Build and Test
+name: Build and Test
 on: [push]
 jobs:
   build-and-test:
@@ -12,7 +12,6 @@ jobs:
       - run: wget https://stockfishchess.org/files/stockfish_14.1_linux_x64.zip
       - run: unzip stockfish_14.1_linux_x64.zip
       - run: ln stockfish_14.1_linux_x64/stockfish_14.1_linux_x64 stockfish
-      - run: pwd >> $GITHUB_PATH
       - run: go build -v ./...
       - run: go test -v -bench=. ./...
       

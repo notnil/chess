@@ -13,9 +13,11 @@ import (
 	"github.com/notnil/chess/uci"
 )
 
+const StockfishPath = "./stockfish"
+
 func Example() {
 	// set up engine to use stockfish exe
-	eng, err := uci.New("stockfish")
+	eng, err := uci.New(StockfishPath)
 	if err != nil {
 		panic(err)
 	}
@@ -41,7 +43,7 @@ func Example() {
 }
 
 func TestEngine(t *testing.T) {
-	eng, err := uci.New("stockfish")
+	eng, err := uci.New(StockfishPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,7 +69,7 @@ func TestEngine(t *testing.T) {
 }
 
 func TestStop(t *testing.T) {
-	eng, err := uci.New("stockfish")
+	eng, err := uci.New(StockfishPath)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,7 +91,7 @@ func TestStop(t *testing.T) {
 func TestLogger(t *testing.T) {
 	b := bytes.NewBuffer([]byte{})
 	logger := log.New(b, "", 0)
-	eng, err := uci.New("stockfish", uci.Debug, uci.Logger(logger))
+	eng, err := uci.New(StockfishPath, uci.Debug, uci.Logger(logger))
 	if err != nil {
 		t.Fatal(err)
 	}
