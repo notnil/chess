@@ -46,6 +46,10 @@ var (
 			PostPos: unsafeFEN("8/8/6p1/4R3/6kQ/r2P1pP1/5P2/6K1 b - - 3 42"),
 			PGN:     mustParsePGN("fixtures/pgns/0011.pgn"),
 		},
+		{
+			PostPos: StartingPosition(),
+			PGN:     mustParsePGN("fixtures/pgns/0012.pgn"),
+		},
 	}
 )
 
