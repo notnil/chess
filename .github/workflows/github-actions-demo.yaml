@@ -5,6 +5,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: n8maninger/action-golang-test@v1
+      
+      - uses: actions/setup-go@v2
         with:
-          args: "-bench=.;"
+          go-version: 1.17
+      - run: wget https://stockfishchess.org/files/stockfish_14.1_linux_x64.zip
+      - run: unzip stockfish_14.1_linux_x64.zip
+      - run: ln stockfish_14.1_linux_x64/stockfish_14.1_linux_x64 stockfish
+      - run: go build -v ./...
+      - run: go test -v -bench=. ./...
+      
