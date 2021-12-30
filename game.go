@@ -190,11 +190,20 @@ func (g *Game) MoveSquares(origin Square, destination Square, promo PieceType) (
 
 // Get the 0-indexed move from the history of the game.
 // Negative indexes are supported. For example, -2 will get the second-to-last move.
+// Returns nil if the move does not exist
 func (g *Game) GetMove(num int) *Move {
+	var idx int
+
 	if num >= 0 {
-		return g.moves[num]
+		idx = num
 	} else {
-		return g.moves[len(g.moves)+num] // Get the move in reverse index
+		idx = len(g.moves) + num // Get the move in reverse index
+	}
+
+	if idx >= 0 && idx < len(g.moves) {
+		return g.moves[idx]
+	} else {
+		return nil
 	}
 }
 
