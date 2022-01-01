@@ -194,8 +194,10 @@ func encodePGN(g *Game) string {
 		} else {
 			s += fmt.Sprintf(" %s ", txt)
 		}
-		for _, c := range g.comments[i] {
-			s += " { " + c + " } "
+		if len(g.comments) > i {
+			for _, c := range g.comments[i] {
+				s += " { " + c + " } "
+			}
 		}
 	}
 	s += " " + string(g.outcome)
