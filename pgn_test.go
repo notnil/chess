@@ -106,6 +106,20 @@ func TestCommentsDetection(t *testing.T) {
 	}
 }
 
+func TestNewGameComments(t *testing.T) {
+	for _, test := range commentTests {
+		pgn, err := PGN(strings.NewReader(test.PGN))
+		if err != nil {
+			t.Fatal(err)
+		}
+		game := NewGame(pgn)
+		comment := strings.Join(game.Comments()[test.MoveNumber], " ")
+		if comment != test.CommentText {
+			t.Fatalf("expected pgn comment to be %s but got %s", test.CommentText, comment)
+		}
+	}
+}
+
 func TestWriteComments(t *testing.T) {
 	pgn := mustParsePGN("fixtures/pgns/0005.pgn")
 	game, err := decodePGN(pgn)

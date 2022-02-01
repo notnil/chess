@@ -378,6 +378,7 @@ func (g *Game) copy(game *Game) {
 	g.pos = game.pos
 	g.outcome = game.outcome
 	g.method = game.method
+	g.comments = game.Comments()
 }
 
 func (g *Game) Clone() *Game {
