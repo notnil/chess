@@ -12,7 +12,7 @@ const (
 	Black
 )
 
-// Other returns the opposie color of the receiver.
+// Other returns the opposite color of the receiver.
 func (c Color) Other() Color {
 	switch c {
 	case White:
@@ -87,14 +87,6 @@ func (p PieceType) String() string {
 		return "p"
 	}
 	return ""
-}
-
-func (p PieceType) promotableTo() bool {
-	switch p {
-	case Queen, Rook, Bishop, Knight:
-		return true
-	}
-	return false
 }
 
 // Piece is a piece type with a color.

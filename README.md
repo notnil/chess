@@ -443,6 +443,51 @@ fmt.Println(game.Position().Board().Draw())
 */
 ```
 
+### Move History
+
+Move History is a convenient API for accessing aligned positions, moves, and comments.  Move
+History is useful when trying to understand detailed information about a game.  Below is an 
+example showing how to see which side castled first. 
+
+```go
+package main
+
+import (
+	"fmt"
+	"os"
+
+	"github.com/notnil/chess"
+)
+
+func main() {
+	f, err := os.Open("fixtures/pgns/0001.pgn")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	pgn, err := chess.PGN(f)
+	if err != nil {
+		panic(err)
+	}
+	game := chess.NewGame(pgn)
+	color := chess.NoColor
+	for _, mh := range game.MoveHistory() {
+		if mh.Move.HasTag(chess.KingSideCastle) || mh.Move.HasTag(chess.QueenSideCastle) {
+			color = mh.PrePosition.Turn()
+			break
+		}
+	}
+	switch color {
+	case chess.White:
+		fmt.Println("white castled first")
+	case chess.Black:
+		fmt.Println("black castled first")
+	default:
+		fmt.Println("no side castled")
+	}
+}
+```
+
 ## Performance
 
 Chess has been performance tuned, using [pprof](https://golang.org/pkg/runtime/pprof/), with the goal of being fast enough for use by chess bots.  The original map based board representation was replaced by [bitboards](https://chessprogramming.wikispaces.com/Bitboards) resulting in a large performance increase.

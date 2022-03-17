@@ -301,10 +301,3 @@ func pieceTypeFromChar(c string) PieceType {
 	}
 	return NoPieceType
 }
-
-func removeSubstrings(s string, subs ...string) string {
-	for _, sub := range subs {
-		s = strings.Replace(s, sub, "", -1)
-	}
-	return s
-}

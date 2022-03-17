@@ -224,10 +224,6 @@ func getTagPairs(pgn string) []*TagPair {
 	return tagPairs
 }
 
-var (
-	moveNumRegex = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
-)
-
 type moveWithComment struct {
 	MoveStr  string
 	Comments []string
@@ -260,17 +256,6 @@ func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
 		}
 	}
 	return moves, outcome
-}
-
-func removeSection(leftChar, rightChar, s string) string {
-	r := regexp.MustCompile(leftChar + ".*?" + rightChar)
-	for {
-		i := r.FindStringIndex(s)
-		if i == nil {
-			return s
-		}
-		s = s[0:i[0]] + s[i[1]:]
-	}
 }
 
 func stripTagPairs(pgn string) string {
