@@ -41,7 +41,7 @@ func TestFind(t *testing.T) {
 	}
 	book := opening.NewBookECO()
 	o := book.Find(g.Moves())
-	expected := "Center Counter; Scandanavian; B01"
+	expected := "Scandinavian Defense"
 	if o == nil || o.Title() != expected {
 		t.Fatalf("expected to find opening %s but got %s", expected, o.Title())
 	}
@@ -55,8 +55,8 @@ func TestPossible(t *testing.T) {
 	book := opening.NewBookECO()
 	openings := book.Possible(g.Moves())
 	actual := len(openings)
-	if actual != 4 {
-		t.Fatalf("expected %d possible openings but got %d", 4, actual)
+	if actual != 22 {
+		t.Fatalf("expected %d possible openings but got %d", 22, actual)
 	}
 }
 

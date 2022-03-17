@@ -9,15 +9,15 @@ type bitboardTestPair struct {
 
 var (
 	tests = []bitboardTestPair{
-		bitboardTestPair{
+		{
 			uint64(1),
 			uint64(9223372036854775808),
 		},
-		bitboardTestPair{
+		{
 			uint64(18446744073709551615),
 			uint64(18446744073709551615),
 		},
-		bitboardTestPair{
+		{
 			uint64(0),
 			uint64(0),
 		},

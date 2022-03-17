@@ -123,16 +123,6 @@ func formEnPassant(enPassant string) (Square, error) {
 }
 
 var (
-	fenSkipMap = map[int]string{
-		1: "1",
-		2: "2",
-		3: "3",
-		4: "4",
-		5: "5",
-		6: "6",
-		7: "7",
-		8: "8",
-	}
 	fenPieceMap = map[string]Piece{
 		"K": WhiteKing,
 		"Q": WhiteQueen,

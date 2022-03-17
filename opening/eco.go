@@ -11,7 +11,7 @@ import (
 	"github.com/notnil/chess"
 )
 
-// BookECO represents the Encyclopaedia of Chess Openings https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings
+// BookECO represents the Encyclopedia of Chess Openings https://en.wikipedia.org/wiki/Encyclopaedia_of_Chess_Openings
 // BookECO is safe for concurrent use.
 type BookECO struct {
 	root             *node
@@ -34,6 +34,7 @@ func NewBookECO() *BookECO {
 		startingPosition: startingPosition,
 	}
 	r := csv.NewReader(bytes.NewBuffer(ecoData))
+	r.Comma = '\t'
 	records, err := r.ReadAll()
 	if err != nil {
 		log.Fatal(err)
@@ -42,7 +43,7 @@ func NewBookECO() *BookECO {
 		if i == 0 {
 			continue
 		}
-		o := &Opening{code: row[0], title: row[1], pgn: row[2]}
+		o := &Opening{code: row[0], title: row[1], pgn: row[3]}
 		b.insert(o)
 	}
 	return b
@@ -139,6 +140,9 @@ func (b *BookECO) draw(w io.Writer) error {
 		title := ""
 		if n.opening != nil {
 			title = n.opening.title
+		}
+		if !strings.Contains(title, "French Defense") {
+			continue
 		}
 		s += fmt.Sprintf(`%s [label="%s"];`+"\n", n.label, title)
 		for m, c := range n.children {

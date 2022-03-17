@@ -254,7 +254,7 @@ func (g *Game) UnmarshalText(text []byte) error {
 func (g *Game) Draw(method Method) error {
 	switch method {
 	case ThreefoldRepetition:
-		if g.numOfRepitions() < 3 {
+		if g.numOfRepetitions() < 3 {
 			return errors.New("chess: draw by ThreefoldRepetition requires at least three repetitions of the current board state")
 		}
 	case FiftyMoveRule:
@@ -287,7 +287,7 @@ func (g *Game) Resign(color Color) {
 // EligibleDraws returns valid inputs for the Draw() method.
 func (g *Game) EligibleDraws() []Method {
 	draws := []Method{DrawOffer}
-	if g.numOfRepitions() >= 3 {
+	if g.numOfRepetitions() >= 3 {
 		draws = append(draws, ThreefoldRepetition)
 	}
 	if g.pos.halfMoveClock >= 100 {
@@ -336,6 +336,37 @@ func (g *Game) RemoveTagPair(k string) bool {
 	return found
 }
 
+// MoveHistory is a move's result from Game's MoveHistory method.
+// It contains the move itself, any comments, and the pre and post
+// positions.
+type MoveHistory struct {
+	PrePosition  *Position
+	PostPosition *Position
+	Move         *Move
+	Comments     []string
+}
+
+// MoveHistory returns the moves in order along with the pre and post
+// positions and any comments.
+func (g *Game) MoveHistory() []*MoveHistory {
+	h := []*MoveHistory{}
+	for i, p := range g.positions {
+		if i == 0 {
+			continue
+		}
+		m := g.moves[i-1]
+		c := g.comments[i-1]
+		mh := &MoveHistory{
+			PrePosition:  g.positions[i-1],
+			PostPosition: p,
+			Move:         m,
+			Comments:     c,
+		}
+		h = append(h, mh)
+	}
+	return h
+}
+
 func (g *Game) updatePosition() {
 	method := g.pos.Status()
 	if method == Stalemate {
@@ -353,7 +384,7 @@ func (g *Game) updatePosition() {
 	}
 
 	// five fold rep creates automatic draw
-	if !g.ignoreAutomaticDraws && g.numOfRepitions() >= 5 {
+	if !g.ignoreAutomaticDraws && g.numOfRepetitions() >= 5 {
 		g.outcome = Draw
 		g.method = FivefoldRepetition
 	}
@@ -393,7 +424,7 @@ func (g *Game) Clone() *Game {
 	}
 }
 
-func (g *Game) numOfRepitions() int {
+func (g *Game) numOfRepetitions() int {
 	count := 0
 	for _, pos := range g.Positions() {
 		if g.pos.samePosition(pos) {

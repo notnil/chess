@@ -39,7 +39,6 @@ func TestCheckmate(t *testing.T) {
 	if g.Outcome() != WhiteWon {
 		t.Fatalf("expected outcome %s but got %s", WhiteWon, g.Outcome())
 	}
-
 }
 
 func TestCheckmateFromFen(t *testing.T) {
@@ -92,7 +91,7 @@ func TestInvalidStalemate(t *testing.T) {
 	}
 }
 
-func TestThreeFoldRepition(t *testing.T) {
+func TestThreeFoldRepetition(t *testing.T) {
 	g := NewGame()
 	moves := []string{
 		"Nf3", "Nf6", "Ng1", "Ng8",
@@ -107,11 +106,11 @@ func TestThreeFoldRepition(t *testing.T) {
 		for _, pos := range g.Positions() {
 			log.Println(pos.String())
 		}
-		t.Fatalf("%s - %d reps", err.Error(), g.numOfRepitions())
+		t.Fatalf("%s - %d reps", err.Error(), g.numOfRepetitions())
 	}
 }
 
-func TestInvalidThreeFoldRepition(t *testing.T) {
+func TestInvalidThreeFoldRepetition(t *testing.T) {
 	g := NewGame()
 	moves := []string{
 		"Nf3", "Nf6", "Ng1", "Ng8",
@@ -126,7 +125,7 @@ func TestInvalidThreeFoldRepition(t *testing.T) {
 	}
 }
 
-func TestFiveFoldRepition(t *testing.T) {
+func TestFiveFoldRepetition(t *testing.T) {
 	g := NewGame()
 	moves := []string{
 		"Nf3", "Nf6", "Ng1", "Ng8",
@@ -171,7 +170,7 @@ func TestSeventyFiveMoveRule(t *testing.T) {
 	}
 }
 
-func TestInsufficentMaterial(t *testing.T) {
+func TestInsufficientMaterial(t *testing.T) {
 	fens := []string{
 		"8/2k5/8/8/8/3K4/8/8 w - - 1 1",
 		"8/2k5/8/8/8/3K1N2/8/8 w - - 1 1",
@@ -187,12 +186,12 @@ func TestInsufficentMaterial(t *testing.T) {
 		g := NewGame(fen)
 		if g.Outcome() != Draw || g.Method() != InsufficientMaterial {
 			log.Println(g.Position().Board().Draw())
-			t.Fatalf("%s should automatically draw by insufficent material", f)
+			t.Fatalf("%s should automatically draw by insufficient material", f)
 		}
 	}
 }
 
-func TestSufficentMaterial(t *testing.T) {
+func TestSufficientMaterial(t *testing.T) {
 	fens := []string{
 		"8/2k5/8/8/8/3K1B2/4N3/8 w - - 1 1",
 		"8/2k5/8/8/8/3KBB2/8/8 w - - 1 1",
@@ -209,7 +208,7 @@ func TestSufficentMaterial(t *testing.T) {
 		g := NewGame(fen)
 		if g.Outcome() != NoOutcome {
 			log.Println(g.Position().Board().Draw())
-			t.Fatalf("%s should not find insufficent material", f)
+			t.Fatalf("%s should not find insufficient material", f)
 		}
 	}
 }
@@ -263,6 +262,21 @@ func TestPositionHash(t *testing.T) {
 	}
 	if g1.Position().Hash() != g2.Position().Hash() {
 		t.Fatalf("expected position hashes to be equal but got %s and %s", g1.Position().Hash(), g2.Position().Hash())
+	}
+}
+
+func TestMoveHistory(t *testing.T) {
+	lens := []int{89, 89, 5, 26}
+	for i, test := range validPGNs[0:4] {
+		pgn, err := PGN(strings.NewReader(test.PGN))
+		if err != nil {
+			t.Fatal(err)
+		}
+		game := NewGame(pgn)
+		l := len(game.MoveHistory())
+		if lens[i] != l {
+			t.Fatalf("expected history length to be %d but got %d", lens[i], l)
+		}
 	}
 }
 
