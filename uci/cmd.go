@@ -288,7 +288,6 @@ func (CmdGo) ProcessResponse(e *Engine) error {
 }
 
 func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*SearchResults, error) {
-	fmt.Println("HIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII")
 	results := SearchResults{}
 	for scanner.Scan() {
 		text := scanner.Text()
