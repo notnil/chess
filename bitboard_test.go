@@ -7,6 +7,11 @@ type bitboardTestPair struct {
 	reversed uint64
 }
 
+type bitboardTestNew struct {
+	smap map[Square]bool
+	bits uint64
+}
+
 var (
 	tests = []bitboardTestPair{
 		{
@@ -20,6 +25,50 @@ var (
 		{
 			uint64(0),
 			uint64(0),
+		},
+	}
+	newBitboardTests = []bitboardTestNew{
+		{
+			map[Square]bool{},
+			0b_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000,
+			// all zeroes
+		},
+		{
+			map[Square]bool{
+				A1: true,
+			},
+			0b_10000000_00000000_00000000_00000000_10000000_00000000_00000000_00000000,
+			// ^
+		},
+		{
+			map[Square]bool{
+				B1: true,
+			},
+			0b_01000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000,
+			//  ^
+		},
+		{
+			map[Square]bool{
+				B3: true,
+			},
+			0b_00000000_00000000_01000000_00000000_00000000_00000000_00000000_00000000,
+			//                    ^
+		},
+		{
+			map[Square]bool{
+				H8: true,
+			},
+			0b_00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000001,
+			//                                                                       ^
+		},
+		{
+			map[Square]bool{
+				A1: true,
+				B3: true,
+				H8: true,
+			},
+			0b_10000000_00000000_01000000_00000000_00000000_00000000_00000000_00000001,
+			// ^                  ^                                                  ^
 		},
 	}
 )
@@ -52,4 +101,13 @@ func BenchmarkBitboardReverse(b *testing.B) {
 
 func intStr(i uint64) string {
 	return bitboard(i).String()
+}
+
+func TestBitboardNew(t *testing.T) {
+	for _, c := range newBitboardTests {
+		bb := newBitboard(c.smap)
+		if uint64(bb) != c.bits {
+			t.Fatalf("new bitboard from %v expected %s but got %s", c.smap, intStr(c.bits), bb)
+		}
+	}
 }
