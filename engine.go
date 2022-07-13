@@ -133,25 +133,25 @@ func squaresAreAttacked(pos *Position, sqs ...Square) bool {
 			continue
 		}
 		// check queen attack vector
-		queenBB := pos.board.bbForPiece(getPiece(Queen, otherColor))
+		queenBB := pos.board.bbForPiece(GetPiece(Queen, otherColor))
 		bb := (diaAttack(occ, sq) | hvAttack(occ, sq)) & queenBB
 		if bb != 0 {
 			return true
 		}
 		// check rook attack vector
-		rookBB := pos.board.bbForPiece(getPiece(Rook, otherColor))
+		rookBB := pos.board.bbForPiece(GetPiece(Rook, otherColor))
 		bb = hvAttack(occ, sq) & rookBB
 		if bb != 0 {
 			return true
 		}
 		// check bishop attack vector
-		bishopBB := pos.board.bbForPiece(getPiece(Bishop, otherColor))
+		bishopBB := pos.board.bbForPiece(GetPiece(Bishop, otherColor))
 		bb = diaAttack(occ, sq) & bishopBB
 		if bb != 0 {
 			return true
 		}
 		// check knight attack vector
-		knightBB := pos.board.bbForPiece(getPiece(Knight, otherColor))
+		knightBB := pos.board.bbForPiece(GetPiece(Knight, otherColor))
 		bb = bbKnightMoves[sq] & knightBB
 		if bb != 0 {
 			return true
@@ -173,7 +173,7 @@ func squaresAreAttacked(pos *Position, sqs ...Square) bool {
 			}
 		}
 		// check king attack vector
-		kingBB := pos.board.bbForPiece(getPiece(King, otherColor))
+		kingBB := pos.board.bbForPiece(GetPiece(King, otherColor))
 		bb = bbKingMoves[sq] & kingBB
 		if bb != 0 {
 			return true

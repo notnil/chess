@@ -128,7 +128,7 @@ var (
 	}
 )
 
-func getPiece(t PieceType, c Color) Piece {
+func GetPiece(t PieceType, c Color) Piece {
 	for _, p := range allPieces {
 		if p.Color() == c && p.Type() == t {
 			return p
