@@ -51,7 +51,8 @@ func TestValidDecoding(t *testing.T) {
 			}
 			postPos := test.Pos1.Update(m)
 			if test.Pos2.String() != postPos.String() {
-				t.Fatalf("starting from board \n%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+				t.Fatalf("starting from board \n%s%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+					test.Pos1.String(),
 					test.Pos1.board.Draw(), m.String(), test.Pos2.String(),
 					test.Pos2.board.Draw(), postPos.String(), postPos.board.Draw())
 			}
@@ -86,7 +87,7 @@ var (
 			N:       AlgebraicNotation{},
 			Pos:     unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9"),
 			Text:    "O-O-O-O",
-			PostPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
+			PostPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 2 9"),
 		},
 		{
 			// http://en.lichess.org/W91M4jms#23

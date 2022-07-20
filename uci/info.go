@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/notnil/chess"
+	"github.com/torresomarmx/chess-lib"
 )
 
 // SearchResults is the result from the most recent CmdGo invocation.  It includes
