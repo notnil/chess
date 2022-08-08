@@ -233,7 +233,7 @@ func (b *Board) update(m *Move) {
 	}
 	// check promotion
 	if m.promo != NoPieceType {
-		newPiece := GetPiece(m.promo, p1.Color())
+		newPiece := NewPiece(m.promo, p1.Color())
 		// remove pawn
 		bbPawn := b.bbForPiece(p1)
 		b.setBBForPiece(p1, bbPawn & ^s2BB)
