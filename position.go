@@ -74,11 +74,10 @@ func (pos *Position) Update(m *Move) *Position {
 	if pos.turn == Black {
 		moveCount++
 	}
-	cr := pos.CastleRights()
 	ncr := pos.updateCastleRights(m)
 	p := pos.board.Piece(m.s1)
 	halfMove := pos.halfMoveClock
-	if p.Type() == Pawn || m.HasTag(Capture) || cr != ncr {
+	if p.Type() == Pawn || m.HasTag(Capture) {
 		halfMove = 0
 	} else {
 		halfMove++

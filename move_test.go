@@ -133,7 +133,7 @@ var (
 		{
 			m:       &Move{s1: E1, s2: G1, tags: KingSideCastle},
 			pos:     unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"),
-			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 0 1"),
+			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"),
 		},
 		{
 			m:       &Move{s1: A4, s2: B3, tags: EnPassant},
@@ -143,7 +143,49 @@ var (
 		{
 			m:       &Move{s1: E1, s2: G1, tags: KingSideCastle},
 			pos:     unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B1K2R w KQkq - 1 9"),
-			postPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 0 9"),
+			postPos: unsafeFEN("r2qk2r/pp1n1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P4PPP/R1B2RK1 b kq - 2 9"),
+		},
+		// half move clock - knight move to f3 from starting position
+		{
+			m:       &Move{s1: G1, s2: F3},
+			pos:     unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			postPos: unsafeFEN("rnbqkbnr/pppppppp/8/8/8/5N2/PPPPPPPP/RNBQKB1R b KQkq - 1 1"),
+		},
+		// half move clock - king side castle
+		{
+			m:       &Move{s1: E1, s2: G1, tags: KingSideCastle},
+			pos:     unsafeFEN("r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1"),
+			postPos: unsafeFEN("r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"),
+		},
+		// half move clock - queen side castle
+		{
+			m:       &Move{s1: E1, s2: C1, tags: QueenSideCastle},
+			pos:     unsafeFEN("r3k2r/ppqn1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P2B1PPP/R3K2R w KQkq - 3 10"),
+			postPos: unsafeFEN("r3k2r/ppqn1ppp/2pbpn2/3p4/2PP4/1PNQPN2/P2B1PPP/2KR3R b kq - 4 10"),
+		},
+		// half move clock - pawn push
+		{
+			m:       &Move{s1: E2, s2: E4},
+			pos:     unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			postPos: unsafeFEN("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"),
+		},
+		// half move clock - pawn capture
+		{
+			m:       &Move{s1: E4, s2: D5, tags: Capture},
+			pos:     unsafeFEN("r1bqkbnr/ppp1pppp/2n5/3p4/4P3/5N2/PPPP1PPP/RNBQKB1R w KQkq - 2 3"),
+			postPos: unsafeFEN("r1bqkbnr/ppp1pppp/2n5/3P4/8/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 3"),
+		},
+		// half move clock - en passant
+		{
+			m:       &Move{s1: E5, s2: F6, tags: EnPassant},
+			pos:     unsafeFEN("r1bqkbnr/ppp1p1pp/2n5/3pPp2/8/5N2/PPPP1PPP/RNBQKB1R w KQkq f6 0 4"),
+			postPos: unsafeFEN("r1bqkbnr/ppp1p1pp/2n2P2/3p4/8/5N2/PPPP1PPP/RNBQKB1R b KQkq - 0 4"),
+		},
+		// half move clock - piece captured by knight
+		{
+			m:       &Move{s1: C6, s2: D4, tags: Capture},
+			pos:     unsafeFEN("r1bqkbnr/ppp1p1pp/2n5/3pPp2/3N4/8/PPPP1PPP/RNBQKB1R b KQkq - 1 4"),
+			postPos: unsafeFEN("r1bqkbnr/ppp1p1pp/8/3pPp2/3n4/8/PPPP1PPP/RNBQKB1R w KQkq - 0 5"),
 		},
 	}
 )
