@@ -40,6 +40,18 @@ mark := image.MarkSquares(yellow, chess.D2, chess.D4)
 image.SVG(file, pos.Board(), mark)
 ```
 
+### Perspective
+
+Perspective is designed to be used as an optional argument
+to the SVG function.  It draws the board from the perspective
+of the given color.  White is the default.  The following 
+generates a board from Black's perspective:
+
+```go
+fromBlack := image.Perspective(chess.Black)
+image.SVG(file, pos.Board(), fromBlack)
+```
+
 ### Example Program
 
 ```go
