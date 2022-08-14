@@ -14,8 +14,8 @@ import (
 	"github.com/notnil/chess/image"
 )
 
-const expectedMD5 = "da140af8b83ce7903915ee39973e36dd"
-const expectedMD5Black = "eafa61620f0a8bf987a3bf92d10d9950"
+const expectedMD5 = "08aaa6fcfde3bb900fc54bdfef3d5c81"
+const expectedMD5Black = "badac5ca5cfbdea9b98a1f9988ba54bc"
 
 func TestSVG(t *testing.T) {
 	// create buffer of actual svg

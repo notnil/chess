@@ -88,6 +88,7 @@ var (
 	orderOfRanks      = []chess.Rank{chess.Rank8, chess.Rank7, chess.Rank6, chess.Rank5, chess.Rank4, chess.Rank3, chess.Rank2, chess.Rank1}
 	orderOfRanksBlack = []chess.Rank{chess.Rank1, chess.Rank2, chess.Rank3, chess.Rank4, chess.Rank5, chess.Rank6, chess.Rank7, chess.Rank8}
 	orderOfFiles      = []chess.File{chess.FileA, chess.FileB, chess.FileC, chess.FileD, chess.FileE, chess.FileF, chess.FileG, chess.FileH}
+	orderOfFilesBlack = []chess.File{chess.FileH, chess.FileG, chess.FileF, chess.FileE, chess.FileD, chess.FileC, chess.FileB, chess.FileA}
 )
 
 // EncodeSVG writes the board SVG representation into
@@ -100,11 +101,13 @@ func (e *encoder) EncodeSVG(b *chess.Board) error {
 	canvas.Rect(0, 0, boardWidth, boardHeight)
 
 	ranks := orderOfRanks
+	files := orderOfFiles
 	if e.perspective == chess.Black {
 		ranks = orderOfRanksBlack
+		files = orderOfFilesBlack
 	}
 	for i, rank := range ranks {
-		for j, file := range orderOfFiles {
+		for j, file := range files {
 			x := j * sqHeight
 			y := i * sqHeight
 			sq := chess.NewSquare(file, rank)
@@ -124,7 +127,7 @@ func (e *encoder) EncodeSVG(b *chess.Board) error {
 			}
 			// draw rank text on file A
 			txtColor := e.colorForText(sq)
-			if sq.File() == chess.FileA {
+			if j == 0 {
 				style := "font-size:11px;fill: " + colorToHex(txtColor)
 				canvas.Text(x+(sqWidth*1/20), y+(sqHeight*5/20), sq.Rank().String(), style)
 			}
