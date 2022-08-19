@@ -1,6 +1,7 @@
 package uci_test
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"log"
@@ -125,6 +126,54 @@ func TestLogger(t *testing.T) {
 	}
 }
 
+func TestEngineOutputParsing(t *testing.T) {
+	scanner := bufio.NewScanner(strings.NewReader(logOutput))
+
+	results, err := uci.ProcessEngineOutput(scanner, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.MultiPV) != 1 {
+		t.Fatalf("expected 1 multipv results but got %d", len(results.MultiPV))
+	}
+
+	if results.MultiPV[0].Score.CP != 50 {
+		t.Fatalf("expected score of 50 but got %d", results.MultiPV[0].Score.CP)
+	}
+	if results.Info.Score.CP != 50 {
+		t.Fatalf("expected score of 50 but got %d", results.Info.Score.CP)
+	}
+
+	// Parse BestMove and assert it is expected
+	if results.BestMove.S2() != chess.E4 {
+		t.Fatalf("expected E4 to be best move square, got %s", results.BestMove.S2())
+	}
+}
+
+func TestMultiPVEngineOutputParsing(t *testing.T) {
+	scanner := bufio.NewScanner(strings.NewReader(multipvTestingString))
+
+	results, err := uci.ProcessEngineOutput(scanner, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(results.MultiPV) != 10 {
+		t.Fatalf("expected 10 multipv results but got %d", len(results.MultiPV))
+	}
+
+	if results.MultiPV[0].Score.CP != 47 {
+		t.Fatalf("expected score of 47 but got %d", results.MultiPV[0].Score.CP)
+	}
+	if results.MultiPV[1].Score.CP != 31 {
+		t.Fatalf("expected score of 31 but got %d", results.MultiPV[1].Score.CP)
+	}
+
+	// Parse BestMove and assert it is expected
+	if results.BestMove.S2() != chess.E4 {
+		t.Fatalf("expected E4 to be best move square, got %s", results.BestMove.S2())
+	}
+}
+
 var (
 	infoRegex = regexp.MustCompile("(?m)[\r\n]+^.*info.*$")
 )
@@ -176,5 +225,30 @@ info depth 9 seldepth 11 multipv 1 score cp 54 nodes 12053 nps 573952 tbhits 0 t
 info depth 10 seldepth 13 multipv 1 score cp 35 nodes 28785 nps 564411 tbhits 0 time 51 pv e2e4 e7e6 d2d4 d7d5 e4d5 e6d5 g1f3 f8d6 f1d3 g8f6 e1g1 e8g8
 info depth 11 seldepth 14 multipv 1 score cp 50 nodes 34551 nps 575850 tbhits 0 time 60 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 b1c3 f8b4
 info depth 12 seldepth 14 multipv 1 score cp 50 nodes 55039 nps 534359 tbhits 0 time 103 pv e2e4 e7e5 g1f3 b8c6 d2d4 e5d4 f3d4 g8f6 b1c3 f8b4
+bestmove e2e4 ponder c7c5`
+)
+
+const (
+	multipvTestingString = `
+info depth 19 currmove f2f3 currmovenumber 13
+info depth 19 currmove g1h3 currmovenumber 14
+info depth 19 currmove f2f4 currmovenumber 15
+info depth 19 currmove b1a3 currmovenumber 16
+info depth 19 currmove a2a4 currmovenumber 17
+info depth 19 currmove h2h4 currmovenumber 18
+info depth 19 currmove b2b4 currmovenumber 19
+info depth 19 currmove g2g4 currmovenumber 20
+info depth 19 currmove d2d3 currmovenumber 10
+info depth 19 currmove b2b3 currmovenumber 11
+info depth 19 seldepth 23 multipv 1 score cp 47 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv e2e4 c7c5 g1f3 b8c6 d2d4 c5d4 f3d4 g7g6 c2c4 g8f6 b1c3 d7d6 f2f3 c6d4 d1d4 f8g7 c1e3 c8e6 f1e2 e8g8 d4d2 a8c8 c3d5
+info depth 19 seldepth 23 multipv 2 score cp 31 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv g1f3 g8f6 c2c4 e7e6 b1c3 d7d5 d2d4 f8b4 c1g5 b8d7 c4d5 e6d5 d1c2 h7h6 g5f6 b4c3 b2c3 d7f6 e2e3 e8g8 f1d3
+info depth 19 seldepth 22 multipv 3 score cp 30 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv c2c4 g8f6 g1f3 e7e6 b1c3 d7d5 d2d4 f8b4 c1g5 b8d7 c4d5 e6d5 d1c2 h7h6 g5f6 d8f6 a2a3 b4c3 c2c3 c7c6 e2e3 e8g8
+info depth 19 seldepth 22 multipv 4 score cp 29 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv d2d4 g8f6 c2c4 e7e6 g1f3 d7d5 b1c3 f8b4 c1g5 b8d7 c4d5 e6d5 d1c2 h7h6 g5f6 b4c3 b2c3 d7f6 e2e3 e8g8 f1d3 c8g4
+info depth 19 seldepth 24 multipv 5 score cp 23 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv g2g3 d7d5 g1f3 c7c5 f1g2 g8f6 e1g1 e7e6 d2d4 c5d4 f3d4 e6e5 d4b3 c8e6 c2c4 b8c6 c4d5 f6d5 b1c3 d5c3 b2c3 a8c8
+info depth 19 seldepth 21 multipv 6 score cp 13 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv e2e3 d7d5 d2d4 g8f6 g1f3 e7e6 f1d3 c7c5 b2b3 b7b6 e1g1 f8d6 b1d2 c5d4 e3d4 b8c6 a2a3 e8g8 c1b2
+info depth 19 seldepth 22 multipv 7 score cp 4 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv c2c3 g8f6 d2d4 c7c5 g1f3 d7d5 d4c5 e7e6 c1e3 f8e7 e3d4 d8c7 e2e3 e7c5 d4c5 c7c5 f1d3 e8g8 e1g1
+info depth 19 seldepth 25 multipv 8 score cp 0 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv a2a3 e7e5 e2e4 g8f6 b1c3 d7d5 e4d5 f6d5 d1h5 d5f6 h5e5 f8e7 c3b5 b8a6 e5d4 c8d7 b5c3 e8g8 f1a6 b7a6 g1f3 c7c5 d4f4 f6h5 f4e5
+info depth 19 seldepth 28 multipv 9 score cp 0 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv b1c3 d7d5 d2d4 g8f6 c1f4 c7c5 e2e3 c5d4 e3d4 a7a6 f1d3 b8c6 c3e2 d8b6 c2c3 b6b2 g1f3 c8g4 a2a4 g4f3
+info depth 19 seldepth 26 multipv 10 score cp -22 nodes 5953192 nps 550813 hashfull 953 tbhits 0 time 10808 pv d2d3 d7d5 e2e4 d5e4 d3e4 d8d1 e1d1 e7e5 c1e3 g8f6 f2f3 c8e6 b1d2 b8d7 d2c4 e8c8 d1e1 f6e8 b2b3 e8d6 c4d6 f8d6
 bestmove e2e4 ponder c7c5`
 )

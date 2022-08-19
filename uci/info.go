@@ -17,6 +17,7 @@ type SearchResults struct {
 	BestMove *chess.Move
 	Ponder   *chess.Move
 	Info     Info
+	MultiPV  []*Info
 }
 
 // Info corresponds to the "info" engine output:
