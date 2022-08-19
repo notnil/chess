@@ -120,6 +120,16 @@ func (pos *Position) Turn() Color {
 	return pos.turn
 }
 
+// HalfMoveClock returns the half-move clock (50-rule).
+func (pos *Position) HalfMoveClock() int {
+	return pos.halfMoveClock
+}
+
+// EnPassantSquare returns the en-passant square.
+func (pos *Position) EnPassantSquare() Square {
+	return pos.enPassantSquare
+}
+
 // CastleRights returns the castling rights of the position.
 func (pos *Position) CastleRights() CastleRights {
 	return pos.castleRights

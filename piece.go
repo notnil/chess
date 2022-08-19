@@ -128,7 +128,9 @@ var (
 	}
 )
 
-func getPiece(t PieceType, c Color) Piece {
+// NewPiece returns the piece matching the PieceType and Color.
+// NoPiece is returned if the PieceType or Color isn't valid.
+func NewPiece(t PieceType, c Color) Piece {
 	for _, p := range allPieces {
 		if p.Color() == c && p.Type() == t {
 			return p
