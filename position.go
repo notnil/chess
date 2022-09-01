@@ -74,6 +74,19 @@ func (pos *Position) Update(m *Move) *Position {
 	if pos.turn == Black {
 		moveCount++
 	}
+
+	if m == nil {
+		return &Position{
+			board:           pos.board.copy(),
+			turn:            pos.turn.Other(),
+			castleRights:    pos.castleRights,
+			enPassantSquare: NoSquare,
+			halfMoveClock:   pos.halfMoveClock + 1,
+			moveCount:       moveCount,
+			inCheck:         false,
+		}
+	}
+
 	ncr := pos.updateCastleRights(m)
 	p := pos.board.Piece(m.s1)
 	halfMove := pos.halfMoveClock
