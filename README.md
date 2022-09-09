@@ -402,7 +402,7 @@ fmt.Println(game) // 1.e4 e5  *
 
 #### Long Algebraic Notation
 
-[Long Algebraic Notation](https://https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) LongAlgebraicNotation is a more beginner friendly alternative to algebraic notation, where the origin of the piece is visible as well as the destination. Examples: Rd1xd8+, Ng8f6.
+[Long Algebraic Notation](https://en.wikipedia.org/wiki/Algebraic_notation_(chess)#Long_algebraic_notation) LongAlgebraicNotation is a more beginner friendly alternative to algebraic notation, where the origin of the piece is visible as well as the destination. Examples: Rd1xd8+, Ng8f6.
 
 ```go
 game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
