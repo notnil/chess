@@ -314,7 +314,7 @@ func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*Sear
 			break
 		}
 
-		info := &Info{}
+		var info Info
 		err := info.UnmarshalText([]byte(text))
 		if err != nil {
 			continue
@@ -322,10 +322,10 @@ func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*Sear
 		switch info.Multipv {
 		case 1:
 			// We've received the first PV line, so we can clear the multipvInfo
-			results.MultiPV = []*Info{}
-			results.Info = *info
+			results.MultiPV = []Info{}
+			results.Info = info
 		case 0:
-			results.Info = *info
+			results.Info = info
 		}
 		results.MultiPV = append(results.MultiPV, info)
 	}
