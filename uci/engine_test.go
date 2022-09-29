@@ -167,6 +167,9 @@ func TestMultiPVEngineOutputParsing(t *testing.T){
 	if results.MultiPV[1].Score.CP != 31 {
 		t.Fatalf("expected score of 31 but got %d", results.MultiPV[1].Score.CP)
 	}
+	if results.Info.Score.CP != 47 {
+		t.Fatalf("expected score of 47 but got %d", results.Info.Score.CP)
+	}
 
 	// Parse BestMove and assert it is expected
 	if results.BestMove.S2() != chess.E4 {

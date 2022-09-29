@@ -319,10 +319,13 @@ func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*Sear
 		if err != nil {
 			continue
 		}
-		results.Info = *info
-		if info.Multipv == 1 {
+		switch info.Multipv {
+		case 1:
 			// We've received the first PV line, so we can clear the multipvInfo
 			results.MultiPV = []*Info{}
+			results.Info = *info
+		case 0:
+			results.Info = *info
 		}
 		results.MultiPV = append(results.MultiPV, info)
 	}
