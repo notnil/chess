@@ -327,7 +327,9 @@ func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*Sear
 		case 0:
 			results.Info = info
 		}
-		results.MultiPV = append(results.MultiPV, info)
+		if info.Multipv > 0 {
+			results.MultiPV = append(results.MultiPV, info)
+		}
 	}
 	return &results, nil
 }
