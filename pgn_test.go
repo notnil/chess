@@ -1,6 +1,8 @@
 package chess
 
 import (
+	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -151,6 +153,40 @@ func TestScanner(t *testing.T) {
 		if len(games) != 5 {
 			t.Fatalf(fname+" expected 5 games but got %d", len(games))
 		}
+	}
+}
+
+func TestScannerWithNested(t *testing.T) {
+	fname := "fixtures/pgns/0013.pgn"
+	f, err := os.Open(fname)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	scanner := NewScanner(f)
+	games := []*Game{}
+	for scanner.Scan() {
+		err = scanner.Err()
+		if err != nil && err != io.EOF {
+			t.Fatalf(fname+" Unexpected non-nil/non-EOF err %v", err)
+		}
+		game := scanner.Next()
+		moveList := game.Moves()
+		if len(moveList) == 0 {
+			continue
+		}
+		games = append(games, game)
+	}
+	err = scanner.Err()
+	if err != io.EOF {
+		t.Fatalf(fname+" Unexpected non-EOF err %v", err)
+	}
+	if len(games) != 3 {
+		for idx, g := range games {
+			fmt.Printf("Parsed game %v: %v\n\n", idx, g)
+		}
+		t.Fatalf(fname+" expected 3 games but got %d", len(games))
 	}
 }
 

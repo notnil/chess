@@ -150,7 +150,11 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 
 func decodePGN(pgn string) (*Game, error) {
 	tagPairs := getTagPairs(pgn)
-	moveComments, outcome := moveListWithComments(pgn)
+	moveComments, outcome, err := moveListWithComments(pgn)
+	if err != nil {
+		return nil, err
+	}
+
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -177,6 +181,7 @@ func decodePGN(pgn string) (*Game, error) {
 		g.comments = append(g.comments, move.Comments)
 	}
 	g.outcome = outcome
+
 	return g, nil
 }
 
@@ -231,10 +236,15 @@ type moveWithComment struct {
 
 var moveListTokenRe = regexp.MustCompile(`(?:\d+\.)|(O-O(?:-O)?|\w*[abcdefgh][12345678]\w*(?:=[QRBN])?(?:\+|#)?)|(?:\{([^}]*)\})|(?:\([^)]*\))|(\*|0-1|1-0|1\/2-1\/2)`)
 
-func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
+func moveListWithComments(pgn string) ([]moveWithComment, Outcome, error) {
 	pgn = stripTagPairs(pgn)
 	var outcome Outcome
 	moves := []moveWithComment{}
+	// moveListTokenRe doesn't work w/ nested variations
+	pgn, err := stripVariations(pgn)
+	if err != nil {
+		return moves, outcome, err
+	}
 
 	for _, match := range moveListTokenRe.FindAllStringSubmatch(pgn, -1) {
 		move, commentText, outcomeText := match[1], match[2], match[3]
@@ -255,7 +265,7 @@ func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
 			moves = append(moves, moveWithComment{MoveStr: move})
 		}
 	}
-	return moves, outcome
+	return moves, outcome, nil
 }
 
 func stripTagPairs(pgn string) string {
@@ -268,4 +278,44 @@ func stripTagPairs(pgn string) string {
 		}
 	}
 	return strings.Join(cp, "\n")
+}
+
+func stripVariations(pgn string) (string, error) {
+	var ret strings.Builder
+
+	variationDepth := 0
+	inCommentSection := false
+
+	for _, c := range pgn {
+		if c == '{' {
+			if inCommentSection {
+				return "", fmt.Errorf("chess: pgn decode mismatched { in variation: %v", pgn)
+			}
+			inCommentSection = true
+		} else if c == '}' {
+			if !inCommentSection {
+				return "", fmt.Errorf("chess: pgn decode mismatched } in variation: %v", pgn)
+			}
+			inCommentSection = false
+		}
+		if !inCommentSection && c == '(' {
+			variationDepth++
+			continue
+		}
+		if !inCommentSection && c == ')' {
+			if variationDepth <= 0 {
+				return "", fmt.Errorf("chess: pgn decode mismatched parenthesis in variation: %v", pgn)
+			}
+			variationDepth--
+			continue
+		}
+		if variationDepth == 0 {
+			_, err := ret.WriteRune(c)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	return ret.String(), nil
 }
