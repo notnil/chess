@@ -302,7 +302,7 @@ func moveListSetWithComments(pgn string, expandVariations bool) (moveListSet, er
 		return ret, nil
 	}
 
-	return ret, fmt.Errorf("unimplemented")
+	return moveListSetExpanded(pgn)
 }
 
 func moveListWithCommentsNoExpand(pgn string) (moveListAndOutcome, error) {
@@ -335,6 +335,66 @@ func moveListWithCommentsNoExpand(pgn string) (moveListAndOutcome, error) {
 			ret.moves = append(ret.moves, moveWithComment{MoveStr: move})
 		}
 	}
+	return ret, nil
+}
+
+var moveNumRe = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
+
+func moveListSetExpanded(pgn string) (moveListSet, error) {
+	firstGame := moveListAndOutcome{
+		moves: []moveWithComment{},
+	}
+	ret := moveListSet{
+		moveLists: []moveListAndOutcome{firstGame},
+	}
+
+	pgn = stripTagPairs(pgn)
+	// remove comments @todo need to add comments back in
+	pgn = removeSection("{", "}", pgn)
+	// remove line breaks
+	pgn = strings.Replace(pgn, "\n", " ", -1)
+	pgn = strings.ReplaceAll(pgn, "(", "( ")
+	pgn = strings.ReplaceAll(pgn, ")", " )")
+
+	moveListIdx := 0
+	moveListIdxStack := make([]int, 0)
+	list := strings.Split(pgn, " ")
+
+	for _, move := range list {
+		move = strings.TrimSpace(move)
+		switch move {
+		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
+			ret.moveLists[moveListIdx].outcome = Outcome(move)
+		case "":
+		case "(":
+			// begin new variation
+			moveListIdxStack = append(moveListIdxStack, moveListIdx)
+			newIdx := len(ret.moveLists)
+			numMoves := len(ret.moveLists[moveListIdx].moves) - 1
+			newGame := moveListAndOutcome{}
+			newGame.moves = make([]moveWithComment, numMoves)
+			copy(newGame.moves, ret.moveLists[moveListIdx].moves)
+			ret.moveLists = append(ret.moveLists, newGame)
+			moveListIdx = newIdx
+
+		case ")":
+			// end current variation
+			stackSize := len(moveListIdxStack)
+			if stackSize == 0 {
+				return ret, fmt.Errorf("Failed to parse variation")
+			}
+			moveListIdx = moveListIdxStack[stackSize-1]
+			moveListIdxStack = moveListIdxStack[:stackSize-1]
+		default:
+			results := moveNumRe.FindStringSubmatch(move)
+			tmp := moveWithComment{}
+			if len(results) == 2 && results[1] != "" {
+				tmp.MoveStr = results[1]
+				ret.moveLists[moveListIdx].moves = append(ret.moveLists[moveListIdx].moves, tmp)
+			}
+		}
+	}
+
 	return ret, nil
 }
 
@@ -388,4 +448,15 @@ func stripVariations(pgn string) (string, error) {
 	}
 
 	return ret.String(), nil
+}
+
+func removeSection(leftChar, rightChar, s string) string {
+	r := regexp.MustCompile(leftChar + ".*?" + rightChar)
+	for {
+		i := r.FindStringIndex(s)
+		if i == nil {
+			return s
+		}
+		s = s[0:i[0]] + s[i[1]:]
+	}
 }
