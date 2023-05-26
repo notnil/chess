@@ -13,16 +13,28 @@ import (
 // from concatenated PGN files.  It is designed to
 // replace GamesFromPGN in order to handle very large
 // PGN database files such as https://database.lichess.org/.
+type ScannerOpts struct {
+	ExpandVariations bool
+}
 type Scanner struct {
 	scanr *bufio.Scanner
-	game  *Game
+	games []*Game
 	err   error
+	opts  ScannerOpts
 }
 
-// NewScanner returns a new scanner.
+// NewScanner returns a new scanner with default options
 func NewScanner(r io.Reader) *Scanner {
+	defaultOpts := ScannerOpts{ExpandVariations: false}
+
+	return NewScannerWithOptions(r, defaultOpts)
+}
+
+// NewScanner returns a new scanner with explicit options
+func NewScannerWithOptions(r io.Reader, o ScannerOpts) *Scanner {
 	scanr := bufio.NewScanner(r)
-	return &Scanner{scanr: scanr}
+	g := make([]*Game, 0)
+	return &Scanner{scanr: scanr, opts: o, games: g}
 }
 
 type scanState int
@@ -41,15 +53,18 @@ func (s *Scanner) Scan() bool {
 		return false
 	}
 	s.err = nil
+	if len(s.games) > 0 {
+		return true
+	}
 	var sb strings.Builder
 	state := notInPGN
-	setGame := func() bool {
-		game, err := decodePGN(sb.String())
+	setGames := func() bool {
+		games, err := decodePGNs(sb.String(), s.opts.ExpandVariations)
 		if err != nil {
 			s.err = err
 			return false
 		}
-		s.game = game
+		s.games = games
 		return true
 	}
 	for {
@@ -60,7 +75,7 @@ func (s *Scanner) Scan() bool {
 			if s.err == nil {
 				s.err = io.EOF
 			}
-			return setGame()
+			return setGames()
 		}
 		line := strings.TrimSpace(s.scanr.Text())
 		isTagPair := strings.HasPrefix(line, "[")
@@ -79,7 +94,7 @@ func (s *Scanner) Scan() bool {
 			sb.WriteString(line + "\n")
 		case inMoves:
 			if line == "" {
-				return setGame()
+				return setGames()
 			}
 			sb.WriteString(line + "\n")
 		}
@@ -88,7 +103,14 @@ func (s *Scanner) Scan() bool {
 
 // Next returns the game from the most recent Scan.
 func (s *Scanner) Next() *Game {
-	return s.game
+	if len(s.games) == 0 {
+		return nil
+	}
+
+	g := s.games[0]
+	s.games = s.games[1:]
+
+	return g
 }
 
 // Err returns an error encountered during scanning.
@@ -149,8 +171,25 @@ func (a multiDecoder) Decode(pos *Position, s string) (*Move, error) {
 }
 
 func decodePGN(pgn string) (*Game, error) {
+	gameList, err := decodePGNs(pgn, false)
+	if err != nil {
+		return nil, err
+	}
+	if len(gameList) != 1 {
+		return nil, fmt.Errorf("chess: pgn decode error unexpected game count %v", len(gameList))
+	}
+
+	return gameList[0], nil
+}
+
+func decodePGNs(pgn string, expandVariations bool) ([]*Game, error) {
+	ret := []*Game{}
 	tagPairs := getTagPairs(pgn)
-	moveComments, outcome := moveListWithComments(pgn)
+	moveListSet, err := moveListSetWithComments(pgn, expandVariations)
+	if err != nil {
+		return nil, err
+	}
+
 	gameFuncs := []func(*Game){}
 	for _, tp := range tagPairs {
 		if strings.ToLower(tp.Key) == "fen" {
@@ -163,21 +202,27 @@ func decodePGN(pgn string) (*Game, error) {
 		}
 	}
 	gameFuncs = append(gameFuncs, TagPairs(tagPairs))
-	g := NewGame(gameFuncs...)
-	g.ignoreAutomaticDraws = true
-	decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
-	for _, move := range moveComments {
-		m, err := decoder.Decode(g.Position(), move.MoveStr)
-		if err != nil {
-			return nil, fmt.Errorf("chess: pgn decode error %s on move %d", err.Error(), g.Position().moveCount)
+
+	for idx, ml := range moveListSet.moveLists {
+		g := NewGame(gameFuncs...)
+		g.ignoreAutomaticDraws = true
+		decoder := multiDecoder([]Decoder{AlgebraicNotation{}, LongAlgebraicNotation{}, UCINotation{}})
+		for _, move := range ml.moves {
+			m, err := decoder.Decode(g.Position(), move.MoveStr)
+			if err != nil {
+				return nil, fmt.Errorf("chess: pgn decode error %s on variation	%d move %d", err.Error(), idx, g.Position().moveCount)
+			}
+			if err := g.Move(m); err != nil {
+				return nil, fmt.Errorf("chess: pgn invalid move error %s on	variation %d move %d", err.Error(), idx, g.Position().moveCount)
+			}
+			g.comments = append(g.comments, move.Comments)
 		}
-		if err := g.Move(m); err != nil {
-			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
-		}
-		g.comments = append(g.comments, move.Comments)
+		g.outcome = ml.outcome
+
+		ret = append(ret, g)
 	}
-	g.outcome = outcome
-	return g, nil
+
+	return ret, nil
 }
 
 func encodePGN(g *Game) string {
@@ -229,12 +274,44 @@ type moveWithComment struct {
 	Comments []string
 }
 
+type moveListAndOutcome struct {
+	moves   []moveWithComment
+	outcome Outcome
+}
+
+type moveListSet struct {
+	moveLists []moveListAndOutcome
+}
+
 var moveListTokenRe = regexp.MustCompile(`(?:\d+\.)|(O-O(?:-O)?|\w*[abcdefgh][12345678]\w*(?:=[QRBN])?(?:\+|#)?)|(?:\{([^}]*)\})|(?:\([^)]*\))|(\*|0-1|1-0|1\/2-1\/2)`)
 
-func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
+func moveListSetWithComments(pgn string, expandVariations bool) (moveListSet, error) {
+	ret := moveListSet{
+		moveLists: []moveListAndOutcome{},
+	}
+
+	if !expandVariations {
+		ml, err := moveListWithCommentsNoExpand(pgn)
+		if err != nil {
+			return ret, err
+		}
+		ret.moveLists = append(ret.moveLists, ml)
+		return ret, nil
+	}
+
+	return moveListSetExpanded(pgn)
+}
+
+func moveListWithCommentsNoExpand(pgn string) (moveListAndOutcome, error) {
 	pgn = stripTagPairs(pgn)
-	var outcome Outcome
-	moves := []moveWithComment{}
+	ret := moveListAndOutcome{
+		moves: []moveWithComment{},
+	}
+	// moveListTokenRe doesn't work w/ nested variations
+	pgn, err := stripVariations(pgn)
+	if err != nil {
+		return ret, err
+	}
 
 	for _, match := range moveListTokenRe.FindAllStringSubmatch(pgn, -1) {
 		move, commentText, outcomeText := match[1], match[2], match[3]
@@ -243,19 +320,79 @@ func moveListWithComments(pgn string) ([]moveWithComment, Outcome) {
 		}
 
 		if outcomeText != "" {
-			outcome = Outcome(outcomeText)
+			ret.outcome = Outcome(outcomeText)
 			break
 		}
 
 		if commentText != "" {
-			moves[len(moves)-1].Comments = append(moves[len(moves)-1].Comments, strings.TrimSpace(commentText))
+			ret.moves[len(ret.moves)-1].Comments = append(ret.moves[len(ret.moves)-1].Comments, strings.TrimSpace(commentText))
 		}
 
 		if move != "" {
-			moves = append(moves, moveWithComment{MoveStr: move})
+			ret.moves = append(ret.moves, moveWithComment{MoveStr: move})
 		}
 	}
-	return moves, outcome
+	return ret, nil
+}
+
+var moveNumRe = regexp.MustCompile(`(?:\d+\.+)?(.*)`)
+
+func moveListSetExpanded(pgn string) (moveListSet, error) {
+	firstGame := moveListAndOutcome{
+		moves: []moveWithComment{},
+	}
+	ret := moveListSet{
+		moveLists: []moveListAndOutcome{firstGame},
+	}
+
+	pgn = stripTagPairs(pgn)
+	// remove comments @todo need to add comments back in
+	pgn = removeSection("{", "}", pgn)
+	// remove line breaks
+	pgn = strings.Replace(pgn, "\n", " ", -1)
+	pgn = strings.ReplaceAll(pgn, "(", "( ")
+	pgn = strings.ReplaceAll(pgn, ")", " )")
+
+	moveListIdx := 0
+	moveListIdxStack := make([]int, 0)
+	list := strings.Split(pgn, " ")
+
+	for _, move := range list {
+		move = strings.TrimSpace(move)
+		switch move {
+		case string(NoOutcome), string(WhiteWon), string(BlackWon), string(Draw):
+			ret.moveLists[moveListIdx].outcome = Outcome(move)
+		case "":
+		case "(":
+			// begin new variation
+			moveListIdxStack = append(moveListIdxStack, moveListIdx)
+			newIdx := len(ret.moveLists)
+			numMoves := len(ret.moveLists[moveListIdx].moves) - 1
+			newGame := moveListAndOutcome{}
+			newGame.moves = make([]moveWithComment, numMoves)
+			copy(newGame.moves, ret.moveLists[moveListIdx].moves)
+			ret.moveLists = append(ret.moveLists, newGame)
+			moveListIdx = newIdx
+
+		case ")":
+			// end current variation
+			stackSize := len(moveListIdxStack)
+			if stackSize == 0 {
+				return ret, fmt.Errorf("Failed to parse variation")
+			}
+			moveListIdx = moveListIdxStack[stackSize-1]
+			moveListIdxStack = moveListIdxStack[:stackSize-1]
+		default:
+			results := moveNumRe.FindStringSubmatch(move)
+			tmp := moveWithComment{}
+			if len(results) == 2 && results[1] != "" {
+				tmp.MoveStr = results[1]
+				ret.moveLists[moveListIdx].moves = append(ret.moveLists[moveListIdx].moves, tmp)
+			}
+		}
+	}
+
+	return ret, nil
 }
 
 func stripTagPairs(pgn string) string {
@@ -268,4 +405,55 @@ func stripTagPairs(pgn string) string {
 		}
 	}
 	return strings.Join(cp, "\n")
+}
+
+func stripVariations(pgn string) (string, error) {
+	var ret strings.Builder
+
+	variationDepth := 0
+	inCommentSection := false
+
+	for _, c := range pgn {
+		if c == '{' {
+			if inCommentSection {
+				return "", fmt.Errorf("chess: pgn decode mismatched { in variation: %v", pgn)
+			}
+			inCommentSection = true
+		} else if c == '}' {
+			if !inCommentSection {
+				return "", fmt.Errorf("chess: pgn decode mismatched } in variation: %v", pgn)
+			}
+			inCommentSection = false
+		}
+		if !inCommentSection && c == '(' {
+			variationDepth++
+			continue
+		}
+		if !inCommentSection && c == ')' {
+			if variationDepth <= 0 {
+				return "", fmt.Errorf("chess: pgn decode mismatched parenthesis in variation: %v", pgn)
+			}
+			variationDepth--
+			continue
+		}
+		if variationDepth == 0 {
+			_, err := ret.WriteRune(c)
+			if err != nil {
+				return "", err
+			}
+		}
+	}
+
+	return ret.String(), nil
+}
+
+func removeSection(leftChar, rightChar, s string) string {
+	r := regexp.MustCompile(leftChar + ".*?" + rightChar)
+	for {
+		i := r.FindStringIndex(s)
+		if i == nil {
+			return s
+		}
+		s = s[0:i[0]] + s[i[1]:]
+	}
 }
