@@ -148,6 +148,47 @@ func (pos *Position) String() string {
 	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, pos.halfMoveClock, pos.moveCount)
 }
 
+// XFENString() is similar to String() except that it returns a string with
+// the X-FEN format
+func (pos *Position) XFENString() string {
+	b := pos.board.String()
+	t := pos.turn.String()
+	c := pos.castleRights.String()
+	sq := "-"
+	if pos.enPassantSquare != NoSquare {
+		// Check if there is a pawn in a position to capture en passant
+		var rank Rank
+		if pos.turn == White {
+			rank = Rank5
+		} else {
+			rank = Rank4
+		}
+		// The en passant target square will always be on the rank opposite the current turn's pawns
+		file := pos.enPassantSquare.File()
+		potentialPawnFiles := []File{file - 1, file + 1} // Pawns that could capture en passant will be on an adjacent file
+
+		for _, f := range potentialPawnFiles {
+			if f < FileA || f > FileH { // Ensure file is within bounds
+				continue
+			}
+
+			potentialPawnSquare := NewSquare(f, rank)
+			potentialPawn := pos.board.Piece(potentialPawnSquare)
+			if potentialPawn == NoPiece {
+				continue
+			}
+			if potentialPawn.Type() != Pawn {
+				continue
+			}
+			if potentialPawn.Color() == pos.turn {
+				sq = pos.enPassantSquare.String()
+				break
+			}
+		}
+	}
+	return fmt.Sprintf("%s %s %s %s %d %d", b, t, c, sq, pos.halfMoveClock, pos.moveCount)
+}
+
 // Hash returns a unique hash of the position
 func (pos *Position) Hash() [16]byte {
 	b, _ := pos.MarshalBinary()
