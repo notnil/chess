@@ -37,6 +37,8 @@ const (
 // a game or EOF was reached.  Running scan populates
 // data for Next() and Err().
 func (s *Scanner) Scan() bool {
+	moveListRe := regexp.MustCompile(`^\d+\.`)
+
 	if s.err == io.EOF {
 		return false
 	}
@@ -64,7 +66,7 @@ func (s *Scanner) Scan() bool {
 		}
 		line := strings.TrimSpace(s.scanr.Text())
 		isTagPair := strings.HasPrefix(line, "[")
-		isMoveSeq := strings.HasPrefix(line, "1. ")
+		isMoveSeq := moveListRe.MatchString(line)
 		switch state {
 		case notInPGN:
 			if !isTagPair {
