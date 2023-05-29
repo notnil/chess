@@ -1,0 +1,55 @@
+[Event "Fantasy Caro-Kann: Starting Position"]
+[Result "*"]
+[UTCDate "2023.05.29"]
+[UTCTime "16:05:07"]
+[Variant "Standard"]
+[ECO "B12"]
+[Opening "Caro-Kann Defense: Maróczy Variation"]
+
+1. e4 c6 2. d4 d5 3. f3 *
+
+
+[Event "Fantasy Caro-Kann: 3. ... dxe4"]
+[Result "*"]
+[UTCDate "2023.05.29"]
+[UTCTime "16:05:48"]
+[Variant "Standard"]
+[FEN "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3"]
+[SetUp "1"]
+
+3... dxe4 4. fxe4 e5 5. Nf3 Bg4 (5... exd4 6. Bc4) 6. Bc4 Nd7 7. O-O Ngf6 8. c3 *
+
+
+[Event "Fantasy Caro-Kann: 3. ... e6"]
+[Result "*"]
+[UTCDate "2023.05.29"]
+[UTCTime "16:06:13"]
+[Variant "Standard"]
+[FEN "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3"]
+[SetUp "1"]
+
+3... e6 4. Nc3 Bb4 (4... Nf6 5. e5) 5. Bd2 Ne7 6. Bd3 *
+
+
+[Event "Fantasy Caro-Kann: 3. ... g6"]
+[Result "*"]
+[UTCDate "2023.05.29"]
+[UTCTime "16:06:42"]
+[Variant "Standard"]
+[FEN "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3"]
+[SetUp "1"]
+
+3... g6 4. Nc3 Bg7 5. Be3 *
+
+
+[Event "Fantasy Caro-Kann: 3. ... Qb6"]
+[Result "*"]
+[UTCDate "2023.05.29"]
+[UTCTime "16:07:08"]
+[Variant "Standard"]
+[FEN "rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3"]
+[SetUp "1"]
+
+3... Qb6 4. Nc3 dxe4 5. fxe4 e5 6. Nf3 exd4 7. Nxd4 *
+
+

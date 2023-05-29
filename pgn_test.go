@@ -154,6 +154,41 @@ func TestScanner(t *testing.T) {
 	}
 }
 
+func TestScannerWithFromPosFENs(t *testing.T) {
+	finalPositions := []string{
+		"rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3",
+		"r2qkb1r/pp1n1ppp/2p2n2/4p3/2BPP1b1/2P2N2/PP4PP/RNBQ1RK1 b kq - 0 8",
+		"rnbqk2r/pp2nppp/2p1p3/3p4/1b1PP3/2NB1P2/PPPB2PP/R2QK1NR b KQkq - 5 6",
+		"rnbqk1nr/pp2ppbp/2p3p1/3p4/3PP3/2N1BP2/PPP3PP/R2QKBNR b KQkq - 3 5",
+		"rnb1kbnr/pp3ppp/1qp5/8/3NP3/2N5/PPP3PP/R1BQKB1R b KQkq - 0 7",
+	}
+	fname := "fixtures/pgns/0014.pgn"
+	f, err := os.Open(fname)
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+	scanner := NewScanner(f)
+	games := []*Game{}
+	for idx := 0; scanner.Scan(); {
+		game := scanner.Next()
+		if len(game.moves) == 0 {
+			continue
+		}
+		finalPos := game.Position().String()
+		if finalPos != finalPositions[idx] {
+			t.Fatalf(fname+" game %v expected final pos %v but got %v", idx,
+				finalPositions[idx], finalPos)
+		}
+		games = append(games, game)
+		idx++
+	}
+	if len(games) != len(finalPositions) {
+		t.Fatalf(fname+" expected %v games but got %v", len(finalPositions),
+			len(games))
+	}
+}
+
 func BenchmarkPGN(b *testing.B) {
 	pgn := mustParsePGN("fixtures/pgns/0001.pgn")
 	b.ResetTimer()
