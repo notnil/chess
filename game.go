@@ -153,10 +153,7 @@ func NewGame(options ...func(*Game)) *Game {
 	}
 	return game
 }
-
-// Move updates the game with the given move.  An error is returned
-// if the move is invalid or the game has already been completed.
-func (g *Game) Move(m *Move) error {
+func (g *Game) MoveWithComments(m *Move, comments []string) error {
 	valid := moveSlice(g.ValidMoves()).find(m)
 	if valid == nil {
 		return fmt.Errorf("chess: invalid move %s", m)
@@ -165,7 +162,14 @@ func (g *Game) Move(m *Move) error {
 	g.pos = g.pos.Update(valid)
 	g.positions = append(g.positions, g.pos)
 	g.updatePosition()
+	g.comments = append(g.comments, comments)
 	return nil
+}
+
+// Move updates the game with the given move.  An error is returned
+// if the move is invalid or the game has already been completed.
+func (g *Game) Move(m *Move) error {
+	return g.MoveWithComments(m, nil)
 }
 
 // MoveStr decodes the given string in game's notation
