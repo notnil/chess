@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 )
 
 // A Outcome is the result of a game.
@@ -82,11 +81,26 @@ type Game struct {
 // function is designed to be used in the NewGame constructor.
 // An error is returned if there is a problem parsing the PGN data.
 func PGN(r io.Reader) (func(*Game), error) {
-	b, err := ioutil.ReadAll(r)
+	b, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 	game, err := decodePGN(string(b))
+	if err != nil {
+		return nil, err
+	}
+	return func(g *Game) {
+		g.copy(game)
+	}, nil
+}
+
+// PGNFromString takes a pgn string and returns a function that updates
+// the game to reflect the PGN data.  The PGN can use any
+// move notation supported by this package.  The returned
+// function is designed to be used in the NewGame constructor.
+// An error is returned if there is a problem parsing the PGN data.
+func PGNFromString(pgn string) (func(*Game), error) {
+	game, err := decodePGN(pgn)
 	if err != nil {
 		return nil, err
 	}
