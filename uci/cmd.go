@@ -282,6 +282,13 @@ func (CmdGo) ProcessResponse(e *Engine) error {
 	results := SearchResults{}
 	for scanner.Scan() {
 		text := e.readLine(scanner)
+
+		info := &Info{}
+		err := info.UnmarshalText([]byte(text))
+		if err == nil {
+			results.Infos = append(results.Infos, *info)
+		}
+
 		if strings.HasPrefix(text, "bestmove") {
 			parts := strings.Split(text, " ")
 			if len(parts) <= 1 {
@@ -300,12 +307,6 @@ func (CmdGo) ProcessResponse(e *Engine) error {
 				results.Ponder = ponderMove
 			}
 			break
-		}
-
-		info := &Info{}
-		err := info.UnmarshalText([]byte(text))
-		if err == nil {
-			results.Infos = append(results.Infos, *info)
 		}
 	}
 	e.results = results
