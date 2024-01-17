@@ -174,8 +174,13 @@ func (p Piece) String() string {
 	return pieceUnicodes[int(p)]
 }
 
+func (p Piece) DarkString() string {
+	return pieceDarkUnicodes[int(p)]
+}
+
 var (
-	pieceUnicodes = []string{" ", "♔", "♕", "♖", "♗", "♘", "♙", "♚", "♛", "♜", "♝", "♞", "♟"}
+	pieceUnicodes     = []string{" ", "♔", "♕", "♖", "♗", "♘", "♙", "♚", "♛", "♜", "♝", "♞", "♟"}
+	pieceDarkUnicodes = []string{" ", "♚", "♛", "♜", "♝", "♞", "♟", "♔", "♕", "♖", "♗", "♘", "♙"}
 )
 
 func (p Piece) getFENChar() string {
