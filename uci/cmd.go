@@ -129,7 +129,6 @@ var (
 //	 "setoption name Nullmove value true\n"
 //	"setoption name Selectivity value 3\n"
 //	 "setoption name Style value Risky\n"
-//	 "setoption name Clear Hash\n"
 //	 "setoption name NalimovPath value c:\chess\tb\4;c:\chess\tb\5\n"
 type CmdSetOption struct {
 	Name  string
@@ -142,6 +141,21 @@ func (cmd CmdSetOption) String() string {
 
 // ProcessResponse implements the Cmd interface
 func (cmd CmdSetOption) ProcessResponse(e *Engine) error {
+	return nil
+}
+
+// CmdClearHash corresponds to the "setoption name clear hash" command:
+//
+//	"setoption name Clear Hash\n"
+type CmdSetOptionClearHash struct {
+}
+
+func (cmd CmdSetOptionClearHash) String() string {
+	return fmt.Sprintf("setoption name clear hash")
+}
+
+// ProcessResponse implements the Cmd interface
+func (cmd CmdSetOptionClearHash) ProcessResponse(e *Engine) error {
 	return nil
 }
 
