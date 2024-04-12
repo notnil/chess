@@ -13,7 +13,7 @@ func decodeFEN(fen string) (*Position, error) {
 	fen = strings.TrimSpace(fen)
 	parts := strings.Split(fen, " ")
 	if len(parts) != 6 {
-		return nil, fmt.Errorf("chess: fen invalid notiation %s must have 6 sections", fen)
+		return nil, fmt.Errorf("chess: fen invalid notation %s must have 6 sections", fen)
 	}
 	b, err := fenBoard(parts[0])
 	if err != nil {
