@@ -205,7 +205,6 @@
     style="opacity:1; fill:#ffffff; fill-opacity:1; fill-rule:nonzero; stroke:#000000; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:miter; stroke-miterlimit:4; stroke-dasharray:none; stroke-opacity:1;" />
 </svg>
 <rect x="180" y="45" width="45" height="45" style="fill: #a57551" />
-<rect x="180" y="45" width="45" height="45" style="fill-opacity:0.2;fill: #ffff00" />
 <rect x="225" y="45" width="45" height="45" style="fill: #ebd1a6" />
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="360" height="360" viewBox="-225 -45 360 360">
   <path
@@ -239,7 +238,6 @@
 <rect x="90" y="135" width="45" height="45" style="fill: #a57551" />
 <rect x="135" y="135" width="45" height="45" style="fill: #ebd1a6" />
 <rect x="180" y="135" width="45" height="45" style="fill: #a57551" />
-<rect x="180" y="135" width="45" height="45" style="fill-opacity:0.2;fill: #ffff00" />
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="360" height="360" viewBox="-180 -135 360 360">
   <path
     d="M 22,9 C 19.79,9 18,10.79 18,13 C 18,13.89 18.29,14.71 18.78,15.38 C 16.83,16.5 15.5,18.59 15.5,21 C 15.5,23.03 16.44,24.84 17.91,26.03 C 14.91,27.09 10.5,31.58 10.5,39.5 L 33.5,39.5 C 33.5,31.58 29.09,27.09 26.09,26.03 C 27.56,24.84 28.5,23.03 28.5,21 C 28.5,18.59 27.17,16.5 25.22,15.38 C 25.71,14.71 26,13.89 26,13 C 26,10.79 24.21,9 22,9 z "
@@ -540,13 +538,297 @@
       markerHeight="4"
       refX="0"
       refY="1.5">
-      <path d="M0,0 V3 L2,1.5 Z" fill="#000000" fill-opacity="75%" />
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
     </marker>
   </defs>
   <path
+    stroke-width="8px"
+    d="M112.500000,232.500000 112.500000,153.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
     marker-end="url(#head-0)"
     stroke-width="8px"
-    d="M202.500000,82.500000 202.500000,142.500000"
-    stroke="#000000"
+    d="M116.500000,157.500000 142.500000,157.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-1" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M127.500000,247.500000 206.500000,247.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-1)"
+    stroke-width="8px"
+    d="M202.500000,243.500000 202.500000,217.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-2" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M127.500000,247.500000 206.500000,247.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-2)"
+    stroke-width="8px"
+    d="M202.500000,251.500000 202.500000,277.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-3" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M112.500000,262.500000 112.500000,341.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-3)"
+    stroke-width="8px"
+    d="M116.500000,337.500000 142.500000,337.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-4" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M112.500000,232.500000 112.500000,153.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-4)"
+    stroke-width="8px"
+    d="M108.500000,157.500000 82.500000,157.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-5" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M97.500000,247.500000 18.500000,247.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-5)"
+    stroke-width="8px"
+    d="M22.500000,243.500000 22.500000,217.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-6" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M97.500000,247.500000 18.500000,247.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-6)"
+    stroke-width="8px"
+    d="M22.500000,251.500000 22.500000,277.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-7" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M112.500000,262.500000 112.500000,341.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-7)"
+    stroke-width="8px"
+    d="M108.500000,337.500000 82.500000,337.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-8" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M277.500000,22.500000 198.500000,22.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-8)"
+    stroke-width="8px"
+    d="M202.500000,26.500000 202.500000,52.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-9" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    stroke-width="8px"
+    d="M292.500000,322.500000 292.500000,243.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+  <path
+    marker-end="url(#head-9)"
+    stroke-width="8px"
+    d="M288.500000,247.500000 262.500000,247.500000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-10" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    marker-end="url(#head-10)"
+    stroke-width="8px"
+    d="M255.000000,165.000000 330.000000,240.000000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-11" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    marker-end="url(#head-11)"
+    stroke-width="8px"
+    d="M240.000000,165.000000 210.000000,195.000000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-12" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    marker-end="url(#head-12)"
+    stroke-width="8px"
+    d="M255.000000,150.000000 330.000000,75.000000"
+    stroke="#f7b54b"
+    stroke-opacity="75%" />
+</svg><svg>
+  <defs>
+    <marker 
+      id="head-13" 
+      orient="auto"
+      markerWidth="3"
+      markerHeight="4"
+      refX="0"
+      refY="1.5">
+      <path d="M0,0 V3 L2,1.5 Z" fill="#f7b54b" fill-opacity="75%" />
+    </marker>
+  </defs>
+  <path
+    marker-end="url(#head-13)"
+    stroke-width="8px"
+    d="M240.000000,150.000000 210.000000,120.000000"
+    stroke="#f7b54b"
     stroke-opacity="75%" />
 </svg></svg>
