@@ -110,6 +110,37 @@ func TestThreeFoldRepetition(t *testing.T) {
 	}
 }
 
+func TestUndo(t *testing.T) {
+	g := NewGame()
+	_, err := g.Undo()
+	if err == nil {
+		t.Fatal("should require at least one move before undo")
+	}
+
+	moves := []string{
+		"Nf3", "Nf6", "Ng1", "Ng8",
+	}
+
+	for _, m := range moves {
+		if err = g.MoveStr(m); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	lastMove, err := g.Undo()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if lastMove.String() != "f6g8" {
+		t.Fatal("last move should be f6g8")
+	}
+
+	if g.moves[len(g.moves)-1].String() != "f3g1" {
+		t.Fatal("last move should be f3g1")
+	}
+}
+
 func TestInvalidThreeFoldRepetition(t *testing.T) {
 	g := NewGame()
 	moves := []string{
