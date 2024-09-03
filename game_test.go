@@ -139,6 +139,30 @@ func TestUndo(t *testing.T) {
 	if g.moves[len(g.moves)-1].String() != "f3g1" {
 		t.Fatal("last move should be f3g1")
 	}
+
+	g = NewGame()
+	moves = []string{
+		"f4", "e6", "g4", "Qh4",
+	}
+
+	for _, m := range moves {
+		if err = g.MoveStr(m); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	lastMove, err = g.Undo()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = g.MoveStr("h6"); err != nil {
+		t.Fatal(err)
+	}
+	if g.Outcome() != NoOutcome {
+		t.Fatal("unexpected game outcome")
+	}
+
 }
 
 func TestInvalidThreeFoldRepetition(t *testing.T) {
