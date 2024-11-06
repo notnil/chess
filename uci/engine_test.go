@@ -55,14 +55,27 @@ func TestEngine(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer eng.Close()
-	setOpt := uci.CmdSetOption{Name: "UCI_Elo", Value: "1500"}
+	setEloOpt := uci.CmdSetOption{Name: "UCI_Elo", Value: "1500"}
+	setWdlOpt := uci.CmdSetOption{Name: "UCI_ShowWDL", Value: "true"}
 	setPos := uci.CmdPosition{Position: chess.StartingPosition()}
-	setGo := uci.CmdGo{MoveTime: time.Second / 10}
-	if err := eng.Run(uci.CmdUCI, uci.CmdIsReady, setOpt, uci.CmdUCINewGame, setPos, setGo); err != nil {
+	setGo := uci.CmdGo{MoveTime: 5 * time.Second}
+	if err := eng.Run(uci.CmdUCI, uci.CmdIsReady, setEloOpt, setWdlOpt, uci.CmdUCINewGame, setPos, setGo); err != nil {
 		t.Fatal(err)
 	}
-	if eng.SearchResults().BestMove.S2() != chess.E4 {
+	if eng.SearchResults().BestMove.S2() != chess.D4 {
 		t.Fatal("expected a different move")
+	}
+	// these wdl values are sensitive to stockfish version, KNPS, cpu, and
+	// search time. current values were set via stockfish version 17 on
+	// AMD Ryzen 7 5800X3D
+	if eng.SearchResults().Info.Score.Win != 86 {
+		t.Fatalf("expected a different win probability: %v", eng.SearchResults().Info.Score.Win)
+	}
+	if eng.SearchResults().Info.Score.Draw != 894 {
+		t.Fatalf("expected a different draw probability: %v", eng.SearchResults().Info.Score.Draw)
+	}
+	if eng.SearchResults().Info.Score.Loss != 20 {
+		t.Fatalf("expected a different draw probability: %v", eng.SearchResults().Info.Score.Loss)
 	}
 	pos := &chess.Position{}
 	pos.UnmarshalText([]byte("r4r2/1b2bppk/ppq1p3/2pp3n/5P2/1P2P3/PBPPQ1PP/R4RK1 w - - 0 2"))
@@ -90,7 +103,7 @@ func TestStop(t *testing.T) {
 	if err := eng.Run(uci.CmdStop); err != nil {
 		t.Fatal(err)
 	}
-	if eng.SearchResults().BestMove.S2() != chess.D4 {
+	if eng.SearchResults().BestMove.S2() != chess.E4 {
 		t.Fatal("expected a different move")
 	}
 }
