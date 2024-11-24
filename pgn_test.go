@@ -138,7 +138,12 @@ func TestWriteComments(t *testing.T) {
 }
 
 func TestScanner(t *testing.T) {
-	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn"} {
+  m := map[string]int{
+    "fixtures/pgns/0006.pgn":5,
+    "fixtures/pgns/0007.pgn":5,
+    "fixtures/pgns/0013.pgn":3,
+  }
+	for fname, count := range m {
 		f, err := os.Open(fname)
 		if err != nil {
 			panic(err)
@@ -150,43 +155,44 @@ func TestScanner(t *testing.T) {
 			game := scanner.Next()
 			games = append(games, game)
 		}
-		if len(games) != 5 {
-			t.Fatalf(fname+" expected 5 games but got %d", len(games))
+		if len(games) != count {
+			t.Fatalf(fname+" expected %d games but got %d", count, len(games))
 		}
 	}
 }
 
-func TestScannerWithNested(t *testing.T) {
-	fname := "fixtures/pgns/0013.pgn"
+func TestScannerWithFromPosFENs(t *testing.T) {
+	finalPositions := []string{
+		"rnbqkbnr/pp2pppp/2p5/3p4/3PP3/5P2/PPP3PP/RNBQKBNR b KQkq - 0 3",
+		"r2qkb1r/pp1n1ppp/2p2n2/4p3/2BPP1b1/2P2N2/PP4PP/RNBQ1RK1 b kq - 0 8",
+		"rnbqk2r/pp2nppp/2p1p3/3p4/1b1PP3/2NB1P2/PPPB2PP/R2QK1NR b KQkq - 5 6",
+		"rnbqk1nr/pp2ppbp/2p3p1/3p4/3PP3/2N1BP2/PPP3PP/R2QKBNR b KQkq - 3 5",
+		"rnb1kbnr/pp3ppp/1qp5/8/3NP3/2N5/PPP3PP/R1BQKB1R b KQkq - 0 7",
+	}
+	fname := "fixtures/pgns/0014.pgn"
 	f, err := os.Open(fname)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-
 	scanner := NewScanner(f)
 	games := []*Game{}
-	for scanner.Scan() {
-		err = scanner.Err()
-		if err != nil && err != io.EOF {
-			t.Fatalf(fname+" Unexpected non-nil/non-EOF err %v", err)
-		}
+	for idx := 0; scanner.Scan(); {
 		game := scanner.Next()
-		moveList := game.Moves()
-		if len(moveList) == 0 {
+		if len(game.moves) == 0 {
 			continue
 		}
-		games = append(games, game)
-	}
-	err = scanner.Err()
-	if err != io.EOF {
-		t.Fatalf(fname+" Unexpected non-EOF err %v", err)
-	}
-	if len(games) != 3 {
-		for idx, g := range games {
-			fmt.Printf("Parsed game %v: %v\n\n", idx, g)
+		finalPos := game.Position().String()
+		if finalPos != finalPositions[idx] {
+			t.Fatalf(fname+" game %v expected final pos %v but got %v", idx,
+				finalPositions[idx], finalPos)
 		}
-		t.Fatalf(fname+" expected 3 games but got %d", len(games))
+		games = append(games, game)
+		idx++
+	}
+	if len(games) != len(finalPositions) {
+		t.Fatalf(fname+" expected %v games but got %v", len(finalPositions),
+			len(games))
 	}
 }
 
