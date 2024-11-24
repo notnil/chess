@@ -136,7 +136,12 @@ func TestWriteComments(t *testing.T) {
 }
 
 func TestScanner(t *testing.T) {
-	for _, fname := range []string{"fixtures/pgns/0006.pgn", "fixtures/pgns/0007.pgn"} {
+	m := map[string]int{
+		"fixtures/pgns/0006.pgn": 5,
+		"fixtures/pgns/0007.pgn": 5,
+		"fixtures/pgns/0013.pgn": 3,
+	}
+	for fname, count := range m {
 		f, err := os.Open(fname)
 		if err != nil {
 			panic(err)
@@ -146,10 +151,13 @@ func TestScanner(t *testing.T) {
 		games := []*Game{}
 		for scanner.Scan() {
 			game := scanner.Next()
+			if len(game.Moves()) == 0 {
+				continue
+			}
 			games = append(games, game)
 		}
-		if len(games) != 5 {
-			t.Fatalf(fname+" expected 5 games but got %d", len(games))
+		if len(games) != count {
+			t.Fatalf(fname+" expected %d games but got %d", count, len(games))
 		}
 	}
 }
