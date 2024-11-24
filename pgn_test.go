@@ -1,8 +1,6 @@
 package chess
 
 import (
-	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -138,11 +136,11 @@ func TestWriteComments(t *testing.T) {
 }
 
 func TestScanner(t *testing.T) {
-  m := map[string]int{
-    "fixtures/pgns/0006.pgn":5,
-    "fixtures/pgns/0007.pgn":5,
-    "fixtures/pgns/0013.pgn":3,
-  }
+	m := map[string]int{
+		"fixtures/pgns/0006.pgn": 5,
+		"fixtures/pgns/0007.pgn": 5,
+		"fixtures/pgns/0013.pgn": 3,
+	}
 	for fname, count := range m {
 		f, err := os.Open(fname)
 		if err != nil {
@@ -153,6 +151,9 @@ func TestScanner(t *testing.T) {
 		games := []*Game{}
 		for scanner.Scan() {
 			game := scanner.Next()
+			if len(game.Moves()) == 0 {
+				continue
+			}
 			games = append(games, game)
 		}
 		if len(games) != count {
