@@ -12,8 +12,8 @@ import (
 	"github.com/notnil/chess/image"
 )
 
-const expectedMD5 = "a2ee66ca19e4c347aec41371c1ca07f8"
-const expectedMD5Black = "ce4d4e033a50678898c62928b8e0a15c"
+const expectedMD5 = "625c63ef80796a3485004952a18c9b25"
+const expectedMD5Black = "1988104209a5401be2f645967fadec78"
 const expectedMD5KnightsAndDiagonalArrows = "9c95aa56cec67be2ceee141f259753f7"
 
 func TestSVG(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSVG(t *testing.T) {
 	if err := pos.UnmarshalText([]byte(fenStr)); err != nil {
 		t.Error(err)
 	}
-	mark := image.MarkSquares(color.RGBA{255, 255, 0, 1}, chess.D2, chess.D4)
+	mark := image.MarkSquares(color.RGBA{255, 255, 0, 100}, chess.D2, chess.D4)
 	arrows := image.MarkArrows(image.Arrow(chess.D2, chess.D4))
 	if err := image.SVG(buf, pos.Board(), mark, arrows); err != nil {
 		t.Error(err)
@@ -46,7 +46,7 @@ func TestSVGFromBlack(t *testing.T) {
 	if err := pos.UnmarshalText([]byte(fenStr)); err != nil {
 		t.Error(err)
 	}
-	mark := image.MarkSquares(color.RGBA{255, 255, 0, 1}, chess.D2, chess.D4)
+	mark := image.MarkSquares(color.RGBA{255, 255, 0, 51}, chess.D2, chess.D4)
 	arrows := image.MarkArrows(image.Arrow(chess.D2, chess.D4).WithColor(color.Black))
 	per := image.Perspective(chess.Black)
 	if err := image.SVG(buf, pos.Board(), mark, arrows, per); err != nil {
