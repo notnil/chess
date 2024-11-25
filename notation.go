@@ -133,44 +133,12 @@ func algebraicNotationParts(s string) (string, string, string, string, string, s
 	return submatches[1], submatches[2], submatches[3], submatches[4], submatches[5], submatches[6], submatches[7], submatches[8], nil
 }
 
-// Decode implements the Decoder interface.
 func (AlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
-	piece, originFile, originRank, capture, file, rank, promotes, castles, err := algebraicNotationParts(s)
-	if err != nil {
-		return nil, fmt.Errorf("chess: %+v for position %s", err, pos.String())
-	}
-
+	s = sanitizeNotationString(s)
 	for _, m := range pos.ValidMoves() {
-		moveStr := AlgebraicNotation{}.Encode(pos, m)
-		moveSubmatches := pgnRegex.FindStringSubmatch(moveStr)
-		moveCleaned := strings.Join(moveSubmatches[1:9], "")
-
-		cleaned := piece + originFile + originRank + capture + file + rank + promotes + castles
-		if cleaned == moveCleaned {
-			return m, nil
-		}
-
-		// Try and remove the disambiguators and see if it parses. Sometimes they
-		// get extraneously added.
-		options := []string{}
-
-		if piece != "" {
-			options = append(options, piece+capture+file+rank+promotes+castles)            // no origin
-			options = append(options, piece+originRank+capture+file+rank+promotes+castles) // no origin file
-			options = append(options, piece+originFile+capture+file+rank+promotes+castles) // no origin rank
-		} else {
-			if capture != "" {
-				// Possibly a pawn capture. In order to parse things like d4xe5, we need
-				// to try parsing without the rank.
-				options = append(options, piece+originFile+capture+file+rank+promotes+castles) // no origin rank
-			}
-			if originFile != "" && originRank != "" {
-				options = append(options, piece+capture+file+rank+promotes+castles) // no origin
-			}
-		}
-
-		for _, opt := range options {
-			if opt == moveCleaned {
+		for _, v := range notationVariants(s) {
+			moveStr := AlgebraicNotation{}.Encode(pos, m)
+			if moveStr == v {
 				return m, nil
 			}
 		}
@@ -214,7 +182,16 @@ func (LongAlgebraicNotation) Encode(pos *Position, m *Move) string {
 
 // Decode implements the Decoder interface.
 func (LongAlgebraicNotation) Decode(pos *Position, s string) (*Move, error) {
-	return AlgebraicNotation{}.Decode(pos, s)
+	s = sanitizeNotationString(s)
+	for _, m := range pos.ValidMoves() {
+		for _, v := range notationVariants(s) {
+			moveStr := LongAlgebraicNotation{}.Encode(pos, m)
+			if moveStr == v {
+				return m, nil
+			}
+		}
+	}
+	return nil, fmt.Errorf("chess: could not decode long algebraic notation %s for position %s", s, pos.String())
 }
 
 func getCheckChar(pos *Position, move *Move) string {
@@ -300,4 +277,18 @@ func pieceTypeFromChar(c string) PieceType {
 		return Knight
 	}
 	return NoPieceType
+}
+
+func sanitizeNotationString(s string) string {
+	s = strings.Replace(s, "!", "", -1)
+	s = strings.Replace(s, "?", "", -1)
+	return s
+}
+
+func notationVariants(s string) []string {
+	return []string{
+		s,
+		s + "+",
+		s + "#",
+	}
 }

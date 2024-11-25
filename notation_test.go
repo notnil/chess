@@ -51,7 +51,7 @@ func TestValidDecoding(t *testing.T) {
 			}
 			postPos := test.Pos1.Update(m)
 			if test.Pos2.String() != postPos.String() {
-				t.Fatalf("starting from board \n%s%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
+				t.Errorf("starting from board \n%s%s\n after move %s\n expected board to be %s\n%s\n but was %s\n%s\n",
 					test.Pos1.String(),
 					test.Pos1.board.Draw(), m.String(), test.Pos2.String(),
 					test.Pos2.board.Draw(), postPos.String(), postPos.board.Draw())
@@ -107,13 +107,19 @@ var (
 			Pos:  unsafeFEN("rnbqkbnr/ppp1pppp/8/3p4/3P4/8/PPP1PPPP/RNBQKBNR w KQkq - 0 2"),
 			Text: "bf4",
 		},
+		{
+			// invalid notation
+			N:    AlgebraicNotation{},
+			Pos:  unsafeFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"),
+			Text: "g1f3",
+		},
 	}
 )
 
 func TestInvalidDecoding(t *testing.T) {
 	for _, test := range invalidDecodeTests {
 		if _, err := test.N.Decode(test.Pos, test.Text); err == nil {
-			t.Fatalf("starting from board\n%s\n expected move notation %s to be invalid", test.Pos.board.Draw(), test.Text)
+			t.Errorf("starting from board\n%s\n expected move notation %s to be invalid", test.Pos.board.Draw(), test.Text)
 		}
 	}
 }
