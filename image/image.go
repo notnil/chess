@@ -152,7 +152,9 @@ func (e *Encoder) EncodeSVG(b *chess.Board) error {
 			canvas.Rect(x, y, sqWidth, sqHeight, "fill: "+colorToHex(c))
 			markColor, ok := e.marks[sq]
 			if ok {
-				canvas.Rect(x, y, sqWidth, sqHeight, "fill-opacity:0.2;fill: "+colorToHex(markColor))
+				_, _, _, a := markColor.RGBA()
+				opacity := float64(a) / 0xffff
+				canvas.Rect(x, y, sqWidth, sqHeight, fmt.Sprintf("fill-opacity:%f;fill: %s", opacity, colorToHex(markColor)))
 			}
 			// draw piece
 			p := boardMap[sq]

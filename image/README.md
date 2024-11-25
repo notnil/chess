@@ -24,8 +24,8 @@ image.SVG(file, pos.Board())
 The default colors, shown in the example SVG below, are (235, 209, 166) for light squares and (165, 117, 81) for dark squares.  The light and dark squares can be customized using the SquareColors() option. 
 
 ```go
-white := color.RGBA{255, 255, 255, 1}
-gray := color.RGBA{120, 120, 120, 1}
+white := color.RGBA{255, 255, 255, 255}
+gray := color.RGBA{120, 120, 120, 255}
 sqrs := image.SquareColors(white, gray)
 image.SVG(file, pos.Board(), sqrs)
 ```
@@ -35,7 +35,7 @@ image.SVG(file, pos.Board(), sqrs)
 MarkSquares is designed to be used as an optional argument to the SVG function.  It marks the given squares with the color.  A possible usage includes marking squares of the previous move.
 
 ```go
-yellow := color.RGBA{255, 255, 0, 1}
+yellow := color.RGBA{255, 255, 0, 51}
 mark := image.MarkSquares(yellow, chess.D2, chess.D4)
 image.SVG(file, pos.Board(), mark)
 ```
@@ -82,7 +82,7 @@ func main() {
     }
 
     // write board SVG to file
-    yellow := color.RGBA{255, 255, 0, 1}
+    yellow := color.RGBA{255, 255, 0, 51}
     mark := image.MarkSquares(yellow, chess.D2, chess.D4)
     arrows := image.MarkArrows(image.Arrow(chess.D2, chess.D4))
     if err := image.SVG(f, pos.Board(), mark, arrows); err != nil {
