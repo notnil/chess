@@ -84,7 +84,8 @@ func main() {
     // write board SVG to file
     yellow := color.RGBA{255, 255, 0, 1}
     mark := image.MarkSquares(yellow, chess.D2, chess.D4)
-    if err := image.SVG(f, pos.Board(), mark); err != nil {
+    arrows := image.MarkArrows(image.Arrow(chess.D2, chess.D4))
+    if err := image.SVG(f, pos.Board(), mark, arrows); err != nil {
         log.Fatal(err)
     }
 }
@@ -92,5 +93,5 @@ func main() {
 
 ### Example Program Result
 
-![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](example.svg)
+![rnbqkbnr/pppppppp/8/8/3P4/8/PPP1PPPP/RNBQKBNR b KQkq - 0 1](examples/example.svg)
  

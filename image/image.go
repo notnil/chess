@@ -48,8 +48,8 @@ func (arrow arrow) WithColor(col color.Color) arrow {
 // MarkArrows is designed to be used as an optional argument
 // to the SVG function.  It marks an arrow between the given
 // squares with the an Arrow of the given color.
-func MarkArrows(arrows ...arrow) func(*encoder) {
-	return func(e *encoder) {
+func MarkArrows(arrows ...arrow) func(*Encoder) {
+	return func(e *Encoder) {
 		e.arrows = append(e.arrows, arrows...)
 	}
 }

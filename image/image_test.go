@@ -5,8 +5,6 @@ import (
 	"crypto/md5"
 	"fmt"
 	"image/color"
-	"io"
-	"os"
 	"strings"
 	"testing"
 
@@ -38,16 +36,6 @@ func TestSVG(t *testing.T) {
 	if actualMD5 != expectedMD5 {
 		t.Errorf("expected actual md5 hash to be %s but got %s", expectedMD5, actualMD5)
 	}
-
-	// create actual svg file for visualization
-	f, err := os.Create("example.svg")
-	defer f.Close()
-	if err != nil {
-		t.Error(err)
-	}
-	if _, err := io.Copy(f, bytes.NewBufferString(actualSVG)); err != nil {
-		t.Error(err)
-	}
 }
 
 func TestSVGFromBlack(t *testing.T) {
@@ -70,16 +58,6 @@ func TestSVGFromBlack(t *testing.T) {
 	actualMD5 := fmt.Sprintf("%x", md5.Sum([]byte(actualSVG)))
 	if actualMD5 != expectedMD5Black {
 		t.Errorf("expected actual md5 hash to be %s but got %s", expectedMD5Black, actualMD5)
-	}
-
-	// create actual svg file for visualization
-	f, err := os.Create("black_example.svg")
-	defer f.Close()
-	if err != nil {
-		t.Error(err)
-	}
-	if _, err := io.Copy(f, bytes.NewBufferString(actualSVG)); err != nil {
-		t.Error(err)
 	}
 }
 
@@ -124,15 +102,5 @@ func TestSVGKnightsAndDiagonals(t *testing.T) {
 	actualMD5 := fmt.Sprintf("%x", md5.Sum([]byte(actualSVG)))
 	if actualMD5 != expectedMD5KnightsAndDiagonalArrows {
 		t.Errorf("expected actual md5 hash to be %s but got %s", expectedMD5KnightsAndDiagonalArrows, actualMD5)
-	}
-
-	// create actual svg file for visualization
-	f, err := os.Create("knight_arrows_example.svg")
-	defer f.Close()
-	if err != nil {
-		t.Error(err)
-	}
-	if _, err := io.Copy(f, bytes.NewBufferString(actualSVG)); err != nil {
-		t.Error(err)
 	}
 }
