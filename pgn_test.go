@@ -50,6 +50,10 @@ var (
 			PostPos: StartingPosition(),
 			PGN:     mustParsePGN("fixtures/pgns/0012.pgn"),
 		},
+		{
+			PostPos: unsafeFEN("rnbqkbnr/pppp1ppp/8/4p3/8/5N2/PPPPPPPP/RNBQKB1R w KQkq e6 0 2"),
+			PGN:     mustParsePGN("fixtures/pgns/0015.pgn"),
+		},
 	}
 )
 
