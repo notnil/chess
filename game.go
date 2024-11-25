@@ -164,6 +164,7 @@ func (g *Game) Move(m *Move) error {
 	g.moves = append(g.moves, valid)
 	g.pos = g.pos.Update(valid)
 	g.positions = append(g.positions, g.pos)
+	g.comments = append(g.comments, []string{})
 	g.updatePosition()
 	return nil
 }

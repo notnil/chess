@@ -180,6 +180,7 @@ func decodePGN(pgn string) (*Game, error) {
 		if err := g.Move(m); err != nil {
 			return nil, fmt.Errorf("chess: pgn invalid move error %s on move %d", err.Error(), g.Position().moveCount)
 		}
+		g.comments = g.comments[:len(g.comments)-1]
 		g.comments = append(g.comments, move.Comments)
 	}
 	g.outcome = outcome

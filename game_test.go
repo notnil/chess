@@ -280,6 +280,17 @@ func TestMoveHistory(t *testing.T) {
 	}
 }
 
+func TestMoveHistoryProgrammatic(t *testing.T) {
+	game := NewGame()
+	game.MoveStr("e4")
+	game.MoveStr("e5")
+	game.Resign(Black)
+	history := game.MoveHistory() // Panics here
+	if len(history) != 2 {
+		t.Fatal("Didn't retrieve full history")
+	}
+}
+
 func BenchmarkStalemateStatus(b *testing.B) {
 	fenStr := "k1K5/8/8/8/8/8/8/1Q6 w - - 0 1"
 	fen, err := FEN(fenStr)
