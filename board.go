@@ -108,6 +108,22 @@ func (b *Board) Transpose() *Board {
 
 // Draw returns visual representation of the board useful for debugging.
 func (b *Board) Draw() string {
+	return b.drawForWhite(false)
+}
+
+// Draw2 returns visual representation of the board useful for debugging.
+// It is similar to Draw() except allows the caller to specify perspective
+// and dark mode options
+func (b *Board) Draw2(perspective Color, darkMode bool) string {
+	if perspective == Black {
+		return b.drawForBlack(darkMode)
+	} // else
+
+	return b.drawForWhite(darkMode)
+}
+
+// drawForWhite returns visual representation of the board from white's perspective
+func (b *Board) drawForWhite(darkMode bool) string {
 	s := "\n A B C D E F G H\n"
 	for r := 7; r >= 0; r-- {
 		s += Rank(r).String()
@@ -116,7 +132,34 @@ func (b *Board) Draw() string {
 			if p == NoPiece {
 				s += "-"
 			} else {
-				s += p.String()
+				if darkMode {
+					s += p.DarkString()
+				} else {
+					s += p.String()
+				}
+			}
+			s += " "
+		}
+		s += "\n"
+	}
+	return s
+}
+
+// drawForBlack returns visual representation of the board from black's perspective
+func (b *Board) drawForBlack(darkMode bool) string {
+	s := "\n H G F E D C B A\n"
+	for r := 0; r <= 7; r++ {
+		s += Rank(r).String()
+		for f := numOfSquaresInRow - 1; f >= 0; f-- {
+			p := b.Piece(NewSquare(File(f), Rank(r)))
+			if p == NoPiece {
+				s += "-"
+			} else {
+				if darkMode {
+					s += p.DarkString()
+				} else {
+					s += p.String()
+				}
 			}
 			s += " "
 		}
