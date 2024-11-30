@@ -8,6 +8,16 @@ import (
 	"strings"
 )
 
+var fenReplacer = strings.NewReplacer(
+	"11111111", "8",
+	"1111111", "7",
+	"111111", "6",
+	"11111", "5",
+	"1111", "4",
+	"111", "3",
+	"11", "2",
+)
+
 // A Board represents a chess board and its relationship between squares and pieces.
 type Board struct {
 	bbWhiteKing   bitboard
@@ -149,6 +159,51 @@ func (b *Board) String() string {
 		fen = strings.Replace(fen, repeatStr, countStr, -1)
 	}
 	return fen
+}
+
+func (b *Board) StringV2() string {
+	var fenBuilder strings.Builder
+	for r := 7; r >= 0; r-- {
+		for f := 0; f < numOfSquaresInRow; f++ {
+			sq := NewSquare(File(f), Rank(r))
+			p := b.Piece(sq)
+			if p != NoPiece {
+				fenBuilder.WriteString(p.getFENChar())
+			} else {
+				fenBuilder.WriteString("1")
+			}
+		}
+		if r != 0 {
+			fenBuilder.WriteString("/")
+		}
+	}
+	fen := fenBuilder.String()
+	for i := 8; i > 1; i-- {
+		repeatStr := strings.Repeat("1", i)
+		countStr := strconv.Itoa(i)
+		fen = strings.Replace(fen, repeatStr, countStr, -1)
+	}
+	return fen
+}
+
+func (b *Board) StringV3() string {
+	var fenBuilder strings.Builder
+	for r := 7; r >= 0; r-- {
+		for f := 0; f < numOfSquaresInRow; f++ {
+			sq := NewSquare(File(f), Rank(r))
+			p := b.Piece(sq)
+			if p != NoPiece {
+				fenBuilder.WriteString(p.getFENChar())
+			} else {
+				fenBuilder.WriteString("1")
+			}
+		}
+		if r != 0 {
+			fenBuilder.WriteString("/")
+		}
+	}
+
+	return fenReplacer.Replace(fenBuilder.String())
 }
 
 // Piece returns the piece for the given square.
