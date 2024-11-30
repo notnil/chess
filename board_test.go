@@ -21,21 +21,12 @@ func TestBoardTextSerialization(t *testing.T) {
 			if fen != string(txt) {
 				t.Fatalf("fen expected board string %s but got %s", fen, string(txt))
 			}
-			other := b.StringV2()
-			if fen != string(other) {
-				t.Fatalf("fen expected board string %s but got %s", fen, string(txt))
-			}
-
-			other = b.StringV3()
-			if fen != string(other) {
-				t.Fatalf("fen expected board string %s but got %s", fen, string(txt))
-			}
 		})
 	}
 
 }
 
-func BenchmarkTextSerialization(b *testing.B) {
+func BenchmarkBoardTextSerialization(b *testing.B) {
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
 	board := &Board{}
 	if err := board.UnmarshalText([]byte(fen)); err != nil {
@@ -43,28 +34,6 @@ func BenchmarkTextSerialization(b *testing.B) {
 	}
 	for i := 0; i < b.N; i++ {
 		board.String()
-	}
-}
-
-func BenchmarkTextSerializationV2(b *testing.B) {
-	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-	board := &Board{}
-	if err := board.UnmarshalText([]byte(fen)); err != nil {
-		b.Fatal("recieved unexpected error", err)
-	}
-	for i := 0; i < b.N; i++ {
-		board.StringV2()
-	}
-}
-
-func BenchmarkTextSerializationV3(b *testing.B) {
-	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-	board := &Board{}
-	if err := board.UnmarshalText([]byte(fen)); err != nil {
-		b.Fatal("recieved unexpected error", err)
-	}
-	for i := 0; i < b.N; i++ {
-		board.StringV3()
 	}
 }
 

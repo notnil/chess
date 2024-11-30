@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"strconv"
 	"strings"
 )
 
@@ -138,55 +137,6 @@ func (b *Board) Draw() string {
 // String implements the fmt.Stringer interface and returns
 // a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 func (b *Board) String() string {
-	fen := ""
-	for r := 7; r >= 0; r-- {
-		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := NewSquare(File(f), Rank(r))
-			p := b.Piece(sq)
-			if p != NoPiece {
-				fen += p.getFENChar()
-			} else {
-				fen += "1"
-			}
-		}
-		if r != 0 {
-			fen += "/"
-		}
-	}
-	for i := 8; i > 1; i-- {
-		repeatStr := strings.Repeat("1", i)
-		countStr := strconv.Itoa(i)
-		fen = strings.Replace(fen, repeatStr, countStr, -1)
-	}
-	return fen
-}
-
-func (b *Board) StringV2() string {
-	var fenBuilder strings.Builder
-	for r := 7; r >= 0; r-- {
-		for f := 0; f < numOfSquaresInRow; f++ {
-			sq := NewSquare(File(f), Rank(r))
-			p := b.Piece(sq)
-			if p != NoPiece {
-				fenBuilder.WriteString(p.getFENChar())
-			} else {
-				fenBuilder.WriteString("1")
-			}
-		}
-		if r != 0 {
-			fenBuilder.WriteString("/")
-		}
-	}
-	fen := fenBuilder.String()
-	for i := 8; i > 1; i-- {
-		repeatStr := strings.Repeat("1", i)
-		countStr := strconv.Itoa(i)
-		fen = strings.Replace(fen, repeatStr, countStr, -1)
-	}
-	return fen
-}
-
-func (b *Board) StringV3() string {
 	var fenBuilder strings.Builder
 	for r := 7; r >= 0; r-- {
 		for f := 0; f < numOfSquaresInRow; f++ {
