@@ -32,6 +32,8 @@ func BenchmarkBoardTextSerialization(b *testing.B) {
 	if err := board.UnmarshalText([]byte(fen)); err != nil {
 		b.Fatal("recieved unexpected error", err)
 	}
+
+	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		board.String()
 	}
