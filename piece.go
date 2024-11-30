@@ -179,10 +179,9 @@ var (
 )
 
 func (p Piece) getFENChar() string {
-	for key, piece := range fenPieceMap {
-		if piece == p {
-			return key
-		}
+	res, ok := pieceFenMap[p]
+	if !ok {
+		return ""
 	}
-	return ""
+	return res
 }

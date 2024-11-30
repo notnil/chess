@@ -4,8 +4,17 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"strconv"
 	"strings"
+)
+
+var fenReplacer = strings.NewReplacer(
+	"11111111", "8",
+	"1111111", "7",
+	"111111", "6",
+	"11111", "5",
+	"1111", "4",
+	"111", "3",
+	"11", "2",
 )
 
 // A Board represents a chess board and its relationship between squares and pieces.
@@ -128,27 +137,23 @@ func (b *Board) Draw() string {
 // String implements the fmt.Stringer interface and returns
 // a string in the FEN board format: rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR
 func (b *Board) String() string {
-	fen := ""
+	var fenBuilder strings.Builder
 	for r := 7; r >= 0; r-- {
 		for f := 0; f < numOfSquaresInRow; f++ {
 			sq := NewSquare(File(f), Rank(r))
 			p := b.Piece(sq)
 			if p != NoPiece {
-				fen += p.getFENChar()
+				fenBuilder.WriteString(p.getFENChar())
 			} else {
-				fen += "1"
+				fenBuilder.WriteString("1")
 			}
 		}
 		if r != 0 {
-			fen += "/"
+			fenBuilder.WriteString("/")
 		}
 	}
-	for i := 8; i > 1; i-- {
-		repeatStr := strings.Repeat("1", i)
-		countStr := strconv.Itoa(i)
-		fen = strings.Replace(fen, repeatStr, countStr, -1)
-	}
-	return fen
+
+	return fenReplacer.Replace(fenBuilder.String())
 }
 
 // Piece returns the piece for the given square.

@@ -5,17 +5,37 @@ import (
 )
 
 func TestBoardTextSerialization(t *testing.T) {
+	for _, fen := range []string{
+		"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+		"rnbqkb1r/pp1p1np1/4pp2/2pP3p/8/2N2NP1/PPP1PP1P/R1BQKBR1",
+	} {
+		t.Run(fen, func(t *testing.T) {
+			b := &Board{}
+			if err := b.UnmarshalText([]byte(fen)); err != nil {
+				t.Fatal("recieved unexpected error", err)
+			}
+			txt, err := b.MarshalText()
+			if err != nil {
+				t.Fatal("recieved unexpected error", err)
+			}
+			if fen != string(txt) {
+				t.Fatalf("fen expected board string %s but got %s", fen, string(txt))
+			}
+		})
+	}
+
+}
+
+func BenchmarkBoardTextSerialization(b *testing.B) {
 	fen := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
-	b := &Board{}
-	if err := b.UnmarshalText([]byte(fen)); err != nil {
-		t.Fatal("recieved unexpected error", err)
+	board := &Board{}
+	if err := board.UnmarshalText([]byte(fen)); err != nil {
+		b.Fatal("recieved unexpected error", err)
 	}
-	txt, err := b.MarshalText()
-	if err != nil {
-		t.Fatal("recieved unexpected error", err)
-	}
-	if fen != string(txt) {
-		t.Fatalf("fen expected board string %s but got %s", fen, string(txt))
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		board.String()
 	}
 }
 
