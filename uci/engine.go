@@ -38,6 +38,13 @@ func Logger(logger *log.Logger) func(e *Engine) {
 	}
 }
 
+func (e *Engine) getDebugLogger() *log.Logger {
+	if e.debug {
+		return e.logger
+	}
+	return nil
+}
+
 // New constructs an engine from the executable path (found using exec.LookPath).
 // New also starts running the executable process in the background.  Once created
 // the Engine can be controlled via the Run method.
