@@ -9,6 +9,8 @@ import (
 	"github.com/notnil/chess"
 )
 
+var missingWdlErr = errors.New("uci: wdl unavailable; this is mostly likely because UCI_ShowWDL has not been set")
+
 // SearchResults is the result from the most recent CmdGo invocation.  It includes
 // data such as the following:
 // info depth 21 seldepth 31 multipv 1 score cp 39 nodes 862438 nps 860716 hashfull 409 tbhits 0 time 1002 pv e2e4
@@ -110,16 +112,62 @@ type Info struct {
 //   the score is just a lower bound.
 // * upperbound
 //    the score is just an upper bound.
+// * win
+//    the probability value of a win from the engine's point of view
+// * draw
+//    the probability value of a draw from the engine's point of view
+// * loss
+//    the probability value of a loss from the engine's point of view
+
 type Score struct {
 	CP         int
 	Mate       int
 	LowerBound bool
 	UpperBound bool
+	Win        int
+	Draw       int
+	Loss       int
+}
+
+// WinPct returns the probability a given position can be converted into a
+// win from the engine's perspective on a scale from 0.0->1.0. The engine
+// must support the UCI_ShowWDL option and it must be set in order for this
+// function to work.
+func (score *Score) WinPct() (float32, error) {
+	total := score.Win + score.Draw + score.Loss
+	if total == 0 {
+		return 0.0, missingWdlErr
+	}
+	return float32(score.Win) / float32(total), nil
+}
+
+// DrawPct returns the probability a given position can be converted into a
+// draw from the engine's perspective on a scale from 0.0->1.0. The engine
+// must support the UCI_ShowWDL option and it must be set in order for this
+// function to work.
+func (score *Score) DrawPct() (float32, error) {
+	total := score.Win + score.Draw + score.Loss
+	if total == 0 {
+		return 0.0, missingWdlErr
+	}
+	return float32(score.Draw) / float32(total), nil
+}
+
+// LossPct returns the probability a given position can be converted into a
+// draw from the engine's perspective on a scale from 0.0->1.0. The engine
+// must support the UCI_ShowWDL option and it must be set in order for this
+// function to work.
+func (score *Score) LossPct() (float32, error) {
+	total := score.Win + score.Draw + score.Loss
+	if total == 0 {
+		return 0.0, missingWdlErr
+	}
+	return float32(score.Loss) / float32(total), nil
 }
 
 // UnmarshalText implements the encoding.TextUnmarshaler interface and parses
 // data like the following:
-// info depth 24 seldepth 32 multipv 1 score cp 29 nodes 5130101 nps 819897 hashfull 967 tbhits 0 time 6257 pv d2d4
+// info depth 24 seldepth 32 multipv 1 score cp 29 wdl 791 209 0 nodes 5130101 nps 819897 hashfull 967 tbhits 0 time 6257 pv d2d4
 func (info *Info) UnmarshalText(text []byte) error {
 	parts := strings.Split(string(text), " ")
 	if len(parts) == 0 {
@@ -170,6 +218,21 @@ func (info *Info) UnmarshalText(text []byte) error {
 				return err
 			}
 			info.Score.CP = v
+		case "wdl":
+			var err error
+			info.Score.Win, err = strconv.Atoi(parts[i])
+			if err != nil {
+				return err
+			}
+			info.Score.Draw, err = strconv.Atoi(parts[i+1])
+			if err != nil {
+				return err
+			}
+			info.Score.Loss, err = strconv.Atoi(parts[i+2])
+			if err != nil {
+				return err
+			}
+			i += 2
 		case "nodes":
 			v, err := strconv.Atoi(s)
 			if err != nil {
