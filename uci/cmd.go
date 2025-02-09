@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"log"
 	"strings"
 	"time"
 
@@ -278,37 +279,59 @@ func (cmd CmdGo) String() string {
 // ProcessResponse implements the Cmd interface
 func (CmdGo) ProcessResponse(e *Engine) error {
 	scanner := bufio.NewScanner(e.out)
+	results, err := ProcessEngineOutput(scanner, e.getDebugLogger())
+	if err != nil {
+		return err
+	}
+	e.results = *results
+	return nil
+}
+
+func ProcessEngineOutput(scanner *bufio.Scanner, debugLogger *log.Logger) (*SearchResults, error) {
 	results := SearchResults{}
 	for scanner.Scan() {
-		text := e.readLine(scanner)
+		text := scanner.Text()
+		if debugLogger != nil {
+			debugLogger.Println(text)
+		}
 		if strings.HasPrefix(text, "bestmove") {
 			parts := strings.Split(text, " ")
 			if len(parts) <= 1 {
-				return errors.New("best move not found " + text)
+				return nil, errors.New("best move not found " + text)
 			}
 			bestMove, err := chess.UCINotation{}.Decode(nil, parts[1])
 			if err != nil {
-				return err
+				return nil, err
 			}
 			results.BestMove = bestMove
 			if len(parts) >= 4 {
 				ponderMove, err := chess.UCINotation{}.Decode(nil, parts[3])
 				if err != nil {
-					return err
+					return nil, err
 				}
 				results.Ponder = ponderMove
 			}
 			break
 		}
 
-		info := &Info{}
+		var info Info
 		err := info.UnmarshalText([]byte(text))
-		if err == nil {
-			results.Info = *info
+		if err != nil {
+			continue
+		}
+		switch info.Multipv {
+		case 1:
+			// We've received the first PV line, so we can clear the multipvInfo
+			results.MultiPV = []Info{}
+			results.Info = info
+		case 0:
+			results.Info = info
+		}
+		if info.Multipv > 0 {
+			results.MultiPV = append(results.MultiPV, info)
 		}
 	}
-	e.results = results
-	return nil
+	return &results, nil
 }
 
 func parseIDLine(s string) (string, string, error) {
