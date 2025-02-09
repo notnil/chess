@@ -196,6 +196,19 @@ func (g *Game) Moves() []*Move {
 	return append([]*Move(nil), g.moves...)
 }
 
+// Undo reverts the last move and restores the previous game state.
+func (g *Game) Undo() (*Move, error) {
+	if len(g.moves) == 0 {
+		return nil, errors.New("chess: no moves to undo")
+	}
+	lastMove := g.moves[len(g.moves)-1]
+	g.moves = g.moves[:len(g.moves)-1]
+	g.positions = g.positions[:len(g.positions)-1]
+	g.pos = g.positions[len(g.positions)-1]
+	g.updatePosition()
+	return lastMove, nil
+}
+
 // Comments returns the comments for the game indexed by moves.
 func (g *Game) Comments() [][]string {
 	return append([][]string(nil), g.comments...)
@@ -379,7 +392,11 @@ func (g *Game) updatePosition() {
 		if g.pos.Turn() == White {
 			g.outcome = BlackWon
 		}
+	} else if method == NoMethod {
+		g.method = NoMethod
+		g.outcome = NoOutcome
 	}
+
 	if g.outcome != NoOutcome {
 		return
 	}
