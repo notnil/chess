@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"sync"
+	"syscall"
 )
 
 // Engine represents a UCI compliant chess engine (e.g. Stockfish, Shredder, etc.).
@@ -51,6 +52,9 @@ func New(path string, opts ...func(e *Engine)) (*Engine, error) {
 	cmd := exec.Command(path)
 	cmd.Stdin = rIn
 	cmd.Stdout = wOut
+	cmd.SysProcAttr = &syscall.SysProcAttr{
+		Setpgid: true,
+	}
 	e := &Engine{cmd: cmd, in: wIn, out: rOut, mu: &sync.RWMutex{}, logger: log.New(os.Stdout, "uci", log.LstdFlags)}
 	for _, opt := range opts {
 		opt(e)
