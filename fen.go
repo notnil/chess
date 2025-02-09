@@ -137,9 +137,18 @@ var (
 		"n": BlackKnight,
 		"p": BlackPawn,
 	}
+	pieceFenMap = reversePieceMap()
 
 	fenTurnMap = map[string]Color{
 		"w": White,
 		"b": Black,
 	}
 )
+
+func reversePieceMap() map[Piece]string {
+	res := make(map[Piece]string)
+	for k, v := range fenPieceMap {
+		res[v] = k
+	}
+	return res
+}
